@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. PUBLIC WEBSITE DESIGN (ALL 6 BOXES RESTORED)
+# 1. PUBLIC WEBSITE DESIGN (COMPLETE 6 SCHEMES & CONDITIONS RESTORED)
 # ==========================================
 public_html_design = """
 <!DOCTYPE html>
@@ -96,7 +96,6 @@ public_html_design = """
             </section>
             
             <section class="container mx-auto px-4 py-12 relative -mt-10 z-10">
-                <!-- ALL 6 BOXES RESTORED HERE -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     <!-- Admin Login -->
                     <div onclick="window.location.href='/admin'" class="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
@@ -119,21 +118,21 @@ public_html_design = """
                         <p class="text-sm mb-4 text-orange-100 font-medium">Track your Application Status</p>
                         <button class="bg-white text-orange-800 font-bold py-2 px-6 rounded-full text-sm">Check <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <!-- Beneficiary Login (Restored) -->
+                    <!-- Beneficiary Login -->
                     <div class="bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
                         <i class="fa-solid fa-users text-5xl mb-4 text-purple-100"></i>
                         <h3 class="font-bold text-2xl mb-2">Beneficiary Login</h3>
                         <p class="text-sm mb-4 text-purple-100 font-medium">Dashboard for Approved Beneficiaries</p>
                         <button class="bg-white text-purple-800 font-bold py-2 px-6 rounded-full text-sm">Login <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <!-- Scheme Details (Restored) -->
+                    <!-- Scheme Details -->
                     <div onclick="switchPage('page-schemes')" class="bg-gradient-to-br from-teal-500 to-teal-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
                         <i class="fa-solid fa-hand-holding-dollar text-5xl mb-4 text-teal-100"></i>
                         <h3 class="font-bold text-2xl mb-2">Scheme Details</h3>
                         <p class="text-sm mb-4 text-teal-100 font-medium">View Payment Structure & Limits</p>
                         <button class="bg-white text-teal-800 font-bold py-2 px-6 rounded-full text-sm">View <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <!-- Strict Rules (Restored) -->
+                    <!-- Strict Rules -->
                     <div onclick="switchPage('page-conditions')" class="bg-gradient-to-br from-red-500 to-red-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
                         <i class="fa-solid fa-triangle-exclamation text-5xl mb-4 text-red-100"></i>
                         <h3 class="font-bold text-2xl mb-2">Strict Rules</h3>
@@ -153,7 +152,6 @@ public_html_design = """
                         <p class="text-sm text-gray-600 font-bold mt-1">Please fill out the form carefully. System verification will reject any mismatches.</p>
                     </div>
                     <form class="p-8 space-y-6">
-                        <!-- Section 1: Basic & Identity -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Pension Type <span class="text-red-500">*</span></label>
@@ -171,7 +169,6 @@ public_html_design = """
                                     <button type="button" class="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700">Verify</button>
                                 </div>
                             </div>
-                            <!-- OTP Verification Feature -->
                             <div class="flex flex-col">
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Mobile Number (Aadhaar Linked Preferred) <span class="text-red-500">*</span></label>
                                 <div class="flex space-x-2">
@@ -185,7 +182,6 @@ public_html_design = """
                             </div>
                         </div>
 
-                        <!-- Section 2: Personal Details -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6">
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Name As Per Aadhaar <span class="text-red-500">*</span></label>
@@ -214,7 +210,6 @@ public_html_design = """
                             </div>
                         </div>
 
-                        <!-- Section 3: Income & Government API Matching -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6 bg-yellow-50 p-4 rounded border border-yellow-200">
                             <div>
                                 <label class="block text-sm font-bold text-gray-800 mb-1">Income Certificate Number / Barcode <span class="text-red-500">*</span></label>
@@ -227,7 +222,6 @@ public_html_design = """
                             </div>
                         </div>
 
-                        <!-- Section 4: Bank Details -->
                         <div class="border-b pb-6 bg-blue-50 p-4 rounded border border-blue-200">
                             <h3 class="font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2"><i class="fa-solid fa-building-columns"></i> Bank Account Information</h3>
                             <div class="mb-4">
@@ -245,7 +239,6 @@ public_html_design = """
                             </div>
                         </div>
 
-                        <!-- Section 5: Payment & Submit -->
                         <div class="bg-gray-100 p-6 rounded text-center border-2 border-gray-300">
                             <h3 class="text-xl font-black text-gray-800 mb-2">Application Fee: ₹100.00</h3>
                             <p class="text-sm text-red-600 font-bold mb-4">Fee is 100% NON-REFUNDABLE. If documents are fake, your Aadhaar will be locked for 3 months.</p>
@@ -274,27 +267,102 @@ public_html_design = """
             </div>
         </div>
 
-        <!-- SCHEMES -->
+        <!-- SCHEMES (ALL 6 CARDS RESTORED) -->
         <div id="page-schemes" class="page-section py-12 bg-gray-50">
             <div class="container mx-auto px-4 max-w-7xl">
-                <div class="text-center mb-10"><h2 class="text-3xl font-extrabold text-blue-900"><i class="fa-solid fa-list-check text-blue-600"></i> Schemes & Limits</h2><div class="w-32 h-1.5 bg-blue-700 mx-auto mt-4"></div></div>
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900"><i class="fa-solid fa-list-check mr-2 text-blue-600"></i> Available Schemes & Limits</h2>
+                    <p class="text-gray-700 font-bold mt-3 text-lg">Scheme Details & Yearly Pension Amount</p>
+                    <div class="w-32 h-1.5 bg-blue-700 mx-auto mt-4 rounded"></div>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-blue-600"><h3 class="text-2xl font-black text-blue-900">Old Age Pension</h3><p class="text-gray-500 mb-2 border-b pb-2">ବୃଦ୍ଧାବସ୍ଥା ପେନସନ୍</p><p class="bg-blue-100 p-2 rounded font-bold mb-2">Age: 55 to 100 Years</p><p class="bg-green-100 p-2 rounded font-bold text-green-800">Amount: ₹3000 / Year</p></div>
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-green-600"><h3 class="text-2xl font-black text-green-900">Disability Pension</h3><p class="text-gray-500 mb-2 border-b pb-2">ଭିନ୍ନକ୍ଷମ ପେନସନ୍</p><p class="bg-green-100 p-2 rounded font-bold mb-2">Age: 10 to 100 Years</p><p class="bg-green-100 p-2 rounded font-bold text-green-800">Amount: ₹3500 / Year</p></div>
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-purple-600"><h3 class="text-2xl font-black text-purple-900">Widow Pension</h3><p class="bg-purple-100 p-2 rounded font-bold">Age: 30 to 55 Years</p></div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-blue-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-blue-900 mb-1">Old Age Pension</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ବୃଦ୍ଧାବସ୍ଥା ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span class="font-bold text-gray-700">Age Limit:</span><span class="bg-blue-200 text-blue-900 font-bold px-3 py-1 rounded">55 to 100 Years</span></div>
+                            <div class="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200"><span class="font-bold text-green-800">Total Amount:</span><span class="font-black text-green-700 text-lg">₹3000 / Year</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-green-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-green-900 mb-1">Disability Pension</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ଭିନ୍ନକ୍ଷମ ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span class="font-bold text-gray-700">Age Limit:</span><span class="bg-green-200 text-green-900 font-bold px-3 py-1 rounded">10 to 100 Years</span></div>
+                            <div class="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200"><span class="font-bold text-green-800">Total Amount:</span><span class="font-black text-green-700 text-lg">₹3500 / Year</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-purple-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-purple-900 mb-1">Widow Pension</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ବିଧବା ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span class="font-bold text-gray-700">Age Limit:</span><span class="bg-purple-200 text-purple-900 font-bold px-3 py-1 rounded">30 to 55 Years</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-pink-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-pink-900 mb-1">Unmarried Woman</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ଅବିବାହିତା ମହିଳା</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span class="font-bold text-gray-700">Age Limit:</span><span class="bg-pink-200 text-pink-900 font-bold px-3 py-1 rounded">30 to 55 Years</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-red-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-red-900 mb-1">Divorcee Women</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ଛାଡପତ୍ର ପାଇଥିବା ମହିଳା</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span class="font-bold text-gray-700">Age Limit:</span><span class="bg-red-200 text-red-900 font-bold px-3 py-1 rounded">35 to 55 Years</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-orange-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-orange-900 mb-1">Transgender</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">କିନ୍ନର ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span class="font-bold text-gray-700">Age Limit:</span><span class="bg-orange-200 text-orange-900 font-bold px-3 py-1 rounded">35 to 55 Years</span></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- CONDITIONS -->
+        <!-- CONDITIONS (ALL STRICT RULES RESTORED) -->
         <div id="page-conditions" class="page-section py-12 bg-white">
             <div class="container mx-auto px-4 max-w-5xl">
-                <div class="text-center mb-10"><h2 class="text-3xl font-extrabold text-red-700">Strict Terms & Conditions</h2><div class="w-32 h-1.5 bg-red-600 mx-auto mt-4"></div></div>
-                <div class="bg-red-50 border-2 border-red-300 rounded-xl p-8 shadow-xl">
-                    <div class="space-y-6">
-                        <div class="bg-white p-5 rounded-lg border border-red-200"><h4 class="font-black text-red-900 text-xl">2-Day Verification & Name Matching</h4><p class="mt-2 text-gray-700 font-bold">All applications undergo a 2-day API check. We use Penny Drop test to match bank name with Aadhaar name exactly. Mismatch = Reject.</p></div>
-                        <div class="bg-white p-5 rounded-lg border border-red-200"><h4 class="font-black text-red-900 text-xl">3-Month Ban & Re-Apply Fee</h4><p class="mt-2 text-gray-700">If rejected due to fake documents, your Aadhaar is locked for 3 months. You must pay the fee again to re-apply.</p></div>
-                        <div class="bg-white p-5 rounded-lg border border-red-200"><h4 class="font-black text-red-900 text-xl">Non-Refundable Fee</h4><p class="mt-2 text-gray-700">Application fees are absolutely NON-REFUNDABLE under any circumstance.</p></div>
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-red-700"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-600"></i> Strict Terms & Conditions</h2>
+                    <p class="text-red-900 font-bold mt-2 text-xl">ଦୟାକରି ଆବେଦନ କରିବା ପୂର୍ବରୁ ଏହି ନିୟମଗୁଡିକ ଭଲଭାବେ ପଢନ୍ତୁ</p>
+                    <div class="w-32 h-1.5 bg-red-600 mx-auto mt-4 rounded"></div>
+                </div>
+                <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6 md:p-10 shadow-xl relative overflow-hidden">
+                    <div class="space-y-6 text-gray-800 text-lg">
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0"><i class="fa-solid fa-money-bill-transfer text-red-600 text-2xl"></i></div>
+                            <div>
+                                <h4 class="font-black text-red-900 text-xl">Non-Refundable Application Fee (ଆବେଦନ ଫିସ୍ ଫେରସ୍ତ ଅଯୋଗ୍ୟ)</h4>
+                                <p class="font-semibold mt-2 text-gray-700">Application fee is mandatory. If application is <b class="text-red-600">rejected</b>, the fee will <b class="text-red-600 underline">NOT BE REFUNDED</b>.</p>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ଫର୍ମ ରିଜେକ୍ଟ ହେଲେ କୌଣସି ପରିସ୍ଥିତିରେ ବି ଫିସ୍ ଫେରସ୍ତ ଦିଆଯିବ ନାହିଁ।</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0"><i class="fa-solid fa-calendar-check text-red-600 text-2xl"></i></div>
+                            <div>
+                                <h4 class="font-black text-red-900 text-xl">Payment Credit & 3-Month Wait Rule (ପେମେଣ୍ଟ୍ ନିୟମ)</h4>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ବାର୍ଷିକ ଟଙ୍କା ମାସିକ କିସ୍ତି ହିସାବରେ ପଠାଯିବ। ଆବେଦନ ତାରିଖ ସରିବାର ଠିକ୍ ୩ ମାସ ପରେ ଯାଇ ପ୍ରଥମ କିସ୍ତି କ୍ରେଡିଟ୍ ହେବ।</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0"><i class="fa-solid fa-gavel text-red-600 text-2xl"></i></div>
+                            <div>
+                                <h4 class="font-black text-red-900 text-xl">Absolute Admin Rights (ମ୍ୟାନେଜମେଣ୍ଟର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର)</h4>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ବିନା କାରଣରେ ପେନସନ୍ ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ଅଛି। ଏଥିପାଇଁ ଆଇନଗତ କାର୍ଯ୍ୟାନୁଷ୍ଠାନ କରାଯାଇପାରିବ ନାହିଁ।</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0"><i class="fa-solid fa-arrows-rotate text-red-600 text-2xl"></i></div>
+                            <div>
+                                <h4 class="font-black text-red-900 text-xl">Mandatory 3-Month Renewal (ରିନ୍ୟୁ ବାଧ୍ୟତାମୂଳକ)</h4>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ପ୍ରତି ୩ ମାସରେ ଥରେ ନିଜ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ ଅଟେ। ନଚେତ୍ ପେନସନ୍ ବନ୍ଦ ହୋଇଯିବ।</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -302,13 +370,24 @@ public_html_design = """
 
         <!-- CONTACT -->
         <div id="page-contact" class="page-section py-12 bg-blue-50">
-            <div class="container mx-auto text-center"><h2 class="text-3xl font-extrabold text-blue-900 mb-6">Contact Us</h2>
-                <div class="bg-white p-10 rounded-xl max-w-2xl mx-auto shadow-xl"><p class="text-2xl font-black"><i class="fa-solid fa-phone text-blue-700"></i> 8910223342</p><p class="text-2xl font-black mt-4"><i class="fa-solid fa-envelope text-blue-700"></i> admin@kulusutar.in</p></div>
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <i class="fa-solid fa-headset text-6xl text-blue-700 mb-6"></i>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-6">Contact & Support</h2>
+                <div class="bg-white p-10 rounded-xl shadow-xl border-t-8 border-blue-700">
+                    <p class="text-xl font-bold text-gray-700 mb-8">For any queries regarding the Private Social Security Pension Scheme, please reach out to us:</p>
+                    <div class="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12">
+                        <div class="flex items-center text-2xl font-black text-blue-900"><div class="bg-blue-100 p-4 rounded-full mr-4"><i class="fa-solid fa-phone text-blue-700"></i></div>8910223342</div>
+                        <div class="flex items-center text-2xl font-black text-blue-900"><div class="bg-blue-100 p-4 rounded-full mr-4"><i class="fa-solid fa-envelope text-blue-700"></i></div>admin@kulusutar.in</div>
+                    </div>
+                </div>
             </div>
         </div>
 
     </main>
-    <footer class="bg-blue-900 text-white py-6 text-center mt-auto"><p>&copy; 2026 Private Social Security Pension Scheme</p></footer>
+    <footer class="bg-blue-900 text-white py-6 border-t-4 border-blue-700 mt-auto text-center">
+        <p class="font-bold">&copy; 2026 Private Social Security Pension Scheme</p>
+        <p class="text-sm text-blue-300 mt-1">This is a 100% private initiative.</p>
+    </footer>
 </body>
 </html>
 """
@@ -338,8 +417,7 @@ admin_html_design = """
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-900 absolute inset-0 z-50">
         <div class="absolute top-4 left-4">
-            <!-- BACK TO HOME BUTTON -->
-            <button onclick="window.location.href='/'" class="bg-white/20 text-white px-4 py-2 rounded-full font-bold hover:bg-white/30 backdrop-blur"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</button>
+            <button onclick="window.location.href='/'" class="bg-white/20 text-white px-4 py-2 rounded-full font-bold hover:bg-white/35 backdrop-blur"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</button>
         </div>
         <div class="bg-white p-10 rounded-xl shadow-2xl w-96 text-center">
             <i class="fa-solid fa-user-shield text-6xl text-blue-700 mb-4"></i>
@@ -380,7 +458,6 @@ admin_html_design = """
 
     <!-- MAIN ADMIN PANEL -->
     <div id="admin-dashboard" class="hidden min-h-screen flex">
-        <!-- SIDEBAR -->
         <div class="w-64 bg-gray-900 text-white flex flex-col shadow-2xl h-screen sticky top-0 overflow-y-auto">
             <div class="p-6 border-b border-gray-800 text-center">
                 <i class="fa-solid fa-user-tie text-4xl text-blue-400 mb-2"></i>
@@ -400,7 +477,6 @@ admin_html_design = """
             </div>
         </div>
 
-        <!-- RIGHT CONTENT -->
         <div class="flex-1 flex flex-col h-screen overflow-y-auto">
             <header class="bg-white shadow p-4 flex justify-between border-b-4 border-blue-600">
                 <h1 class="text-2xl font-bold text-gray-800" id="page-title">Dashboard</h1>
@@ -409,7 +485,6 @@ admin_html_design = """
                 </div>
             </header>
 
-            <!-- DASHBOARD -->
             <main id="view-dash" class="admin-page active p-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded shadow border-l-4 border-blue-500"><p class="text-gray-500 font-bold">Total Forms</p><h3 class="text-3xl font-black">124</h3></div>
@@ -419,14 +494,11 @@ admin_html_design = """
                 </div>
             </main>
 
-            <!-- VERIFICATION (SYSTEM PASSED) -->
             <main id="view-verify" class="admin-page p-6">
                 <h2 class="text-xl font-bold mb-4 text-blue-900"><i class="fa-solid fa-check-double"></i> 2nd Step Verification (System Passed)</h2>
                 <div class="bg-white rounded shadow overflow-hidden">
                     <table class="w-full text-left">
-                        <thead class="bg-gray-100 border-b">
-                            <tr><th class="p-4">App ID</th><th class="p-4">Name</th><th class="p-4">System Status</th><th class="p-4">Action</th></tr>
-                        </thead>
+                        <thead class="bg-gray-100 border-b"><tr><th class="p-4">App ID</th><th class="p-4">Name</th><th class="p-4">System Status</th><th class="p-4">Action</th></tr></thead>
                         <tbody>
                             <tr class="border-b">
                                 <td class="p-4 font-bold">#APP-001</td><td class="p-4">Ramesh Pradhan</td>
@@ -438,7 +510,6 @@ admin_html_design = """
                 </div>
             </main>
 
-            <!-- REJECTED VAULT -->
             <main id="view-rejected" class="admin-page p-6">
                 <h2 class="text-xl font-bold mb-4 text-red-900"><i class="fa-solid fa-folder-closed"></i> Rejected Vault (3-Month Locked)</h2>
                 <div class="bg-red-50 p-6 rounded border border-red-200 shadow">
@@ -448,10 +519,8 @@ admin_html_design = """
             
             <main id="view-vault" class="admin-page p-6"><h2 class="text-xl font-bold mb-4">Active Vault</h2></main>
 
-            <!-- PAYMENT MANAGEMENT & WALLET FUND -->
             <main id="view-payment" class="admin-page p-6">
                 <h2 class="text-2xl font-black mb-6 text-green-900 border-b-2 border-green-200 pb-2"><i class="fa-solid fa-wallet"></i> Admin Wallet & Fund Management</h2>
-                
                 <div class="bg-gradient-to-r from-gray-900 to-gray-800 p-8 rounded-xl shadow-2xl mb-8 flex flex-col md:flex-row justify-between items-center border-l-8 border-green-500">
                     <div class="text-white mb-4 md:mb-0">
                         <p class="text-gray-400 font-bold uppercase tracking-wider text-sm mb-1"><i class="fa-solid fa-building-columns mr-2"></i> System Nodal Account</p>
@@ -487,7 +556,6 @@ admin_html_design = """
                 </div>
             </main>
 
-            <!-- ADMIN PROFILE SECTION -->
             <main id="view-profile" class="admin-page p-6">
                 <h2 class="text-2xl font-black mb-6 text-blue-900 border-b-2 border-blue-200 pb-2"><i class="fa-solid fa-user-gear"></i> Admin Profile & Settings</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -523,23 +591,13 @@ admin_html_design = """
                 document.getElementById('login-error').classList.remove('hidden'); 
             }
         }
-
         function switchAdmin(pageId) {
             var pages = document.getElementsByClassName('admin-page');
             for(var i=0; i<pages.length; i++) pages[i].classList.remove('active');
             document.getElementById('view-' + pageId).classList.add('active');
-            
-            var titles = {
-                'dash':'Dashboard',
-                'verify':'Final Verification (System Passed)',
-                'rejected':'Rejected Vault',
-                'vault':'Active Vault',
-                'payment':'Wallet Fund & Payout Management',
-                'profile':'Admin Profile & Settings'
-            };
+            var titles = {'dash':'Dashboard','verify':'Final Verification (System Passed)','rejected':'Rejected Vault','vault':'Active Vault','payment':'Wallet Fund & Payout Management','profile':'Admin Profile & Settings'};
             document.getElementById('page-title').innerText = titles[pageId];
         }
-        
         function processPayment(type) {
             var confirmAction = confirm("Deduct funds from Wallet and process all pending " + type + " payments?");
             if (confirmAction) {
@@ -547,8 +605,6 @@ admin_html_design = """
                 setTimeout(function() { alert("SUCCESS: All " + type + " transfers completed successfully! Wallet balance updated."); }, 1500);
             }
         }
-
-        // FORGOT PASSWORD LOGIC
         function showForgotPassword() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('forgot-pwd-screen').classList.remove('hidden');
@@ -566,9 +622,7 @@ admin_html_design = """
                 alert("Email Matched! \\nA Demo OTP has been sent to " + email + ". \\n\\n[ DEMO OTP: 123456 ]");
                 document.getElementById('fp-step-1').classList.add('hidden');
                 document.getElementById('fp-step-2').classList.remove('hidden');
-            } else {
-                alert("Error: Email is not registered in the system.");
-            }
+            } else { alert("Error: Email is not registered in the system."); }
         }
         function verifyOTP() {
             var otp = document.getElementById('fp-otp').value;
