@@ -16,7 +16,7 @@ html_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .hero-bg {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
         }
@@ -29,43 +29,46 @@ html_design = """
             background-color: #1d4ed8; 
             color: white;
         }
-        /* Hide sections by default */
+        /* Hide sections by default, JavaScript will toggle this */
         .page-section {
             display: none;
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.5s;
         }
         .page-section.active {
             display: block;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .nav-link.active-nav {
-            color: #1d4ed8;
-            border-bottom: 2px solid #1d4ed8;
+        /* Menu Active state */
+        .nav-link.active-link {
+            color: #1d4ed8; /* blue-700 */
+            border-bottom: 3px solid #1d4ed8;
+            padding-bottom: 4px;
         }
     </style>
+    
     <script>
-        // Page Navigation Logic
-        function showPage(pageId) {
+        // Function to switch between main pages (Home, About, Schemes, Conditions, Contact)
+        function switchPage(pageId) {
             // Hide all pages
             var pages = document.getElementsByClassName('page-section');
             for(var i = 0; i < pages.length; i++) {
                 pages[i].classList.remove('active');
             }
-            // Show selected page
+            // Show the selected page
             document.getElementById(pageId).classList.add('active');
             
-            // Update Menu Highlighting
+            // Update menu link styles
             var links = document.getElementsByClassName('nav-link');
             for(var i = 0; i < links.length; i++) {
-                links[i].classList.remove('active-nav');
+                links[i].classList.remove('active-link');
             }
-            document.getElementById('nav-' + pageId).classList.add('active-nav');
+            document.getElementById('link-' + pageId).classList.add('active-link');
         }
 
-        // About Us Multilingual Logic
+        // Function for Language Tabs in About Us
         function showTab(lang) {
             document.getElementById('about-en').classList.add('hidden');
             document.getElementById('about-hi').classList.add('hidden');
@@ -80,282 +83,319 @@ html_design = """
         }
     </script>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800 flex flex-col min-h-screen">
+<body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Top Header / Navbar (Menu) -->
+    <!-- Top Header / Navbar -->
     <header class="bg-white shadow-md border-b-4 border-blue-800 sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchPage('page-home')">
                 <div class="text-blue-800 text-4xl">
                     <i class="fa-solid fa-hands-holding-child"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-blue-900">Private Social Security Pension</h1>
-                    <p class="text-xs md:text-sm font-semibold text-gray-600">A Private Initiative for the Needy</p>
+                    <h1 class="text-xl md:text-2xl font-extrabold text-blue-900 tracking-tight">Private Social Security Pension Scheme</h1>
+                    <p class="text-sm font-bold text-gray-600">A Private Initiative for the Needy</p>
                 </div>
             </div>
             
             <!-- Menu Links -->
-            <div class="hidden lg:flex space-x-6 mt-4 lg:mt-0">
-                <button id="nav-home" onclick="showPage('home')" class="nav-link active-nav font-bold pb-1 hover:text-blue-800 transition"><i class="fa-solid fa-house mr-1"></i> Home</button>
-                <button id="nav-about" onclick="showPage('about')" class="nav-link font-bold pb-1 hover:text-blue-800 transition text-gray-600"><i class="fa-solid fa-circle-info mr-1"></i> About Us</button>
-                <button id="nav-schemes" onclick="showPage('schemes')" class="nav-link font-bold pb-1 hover:text-blue-800 transition text-gray-600"><i class="fa-solid fa-list mr-1"></i> Schemes</button>
-                <button id="nav-conditions" onclick="showPage('conditions')" class="nav-link font-bold pb-1 hover:text-blue-800 transition text-gray-600"><i class="fa-solid fa-scale-balanced mr-1"></i> Conditions</button>
-                <button id="nav-contact" onclick="showPage('contact')" class="nav-link font-bold pb-1 hover:text-blue-800 transition text-gray-600"><i class="fa-solid fa-phone mr-1"></i> Contact Us</button>
+            <div class="hidden md:flex space-x-6 mt-4 md:mt-0 text-lg">
+                <button id="link-page-home" onclick="switchPage('page-home')" class="nav-link active-link text-gray-700 hover:text-blue-800 font-bold transition flex items-center"><i class="fa-solid fa-house mr-1"></i> Home</button>
+                <button id="link-page-about" onclick="switchPage('page-about')" class="nav-link text-gray-700 hover:text-blue-800 font-bold transition flex items-center"><i class="fa-solid fa-circle-info mr-1"></i> About Us</button>
+                <button id="link-page-schemes" onclick="switchPage('page-schemes')" class="nav-link text-gray-700 hover:text-blue-800 font-bold transition flex items-center"><i class="fa-solid fa-list-check mr-1"></i> Schemes</button>
+                <button id="link-page-conditions" onclick="switchPage('page-conditions')" class="nav-link text-gray-700 hover:text-blue-800 font-bold transition flex items-center"><i class="fa-solid fa-scale-balanced mr-1"></i> Conditions</button>
+                <button id="link-page-contact" onclick="switchPage('page-contact')" class="nav-link text-gray-700 hover:text-blue-800 font-bold transition flex items-center"><i class="fa-solid fa-phone mr-1"></i> Contact Us</button>
             </div>
         </div>
     </header>
 
     <!-- Main Content Area -->
     <main class="flex-grow">
-        
-        <!-- 1. HOME PAGE -->
-        <section id="home" class="page-section active">
+    
+        <!-- ================= HOME PAGE ================= -->
+        <div id="page-home" class="page-section active">
             <!-- Hero Section -->
-            <div class="hero-bg py-16 px-4 border-b border-gray-200">
+            <section class="hero-bg py-16 px-4 border-b">
                 <div class="container mx-auto">
-                    <div class="max-w-2xl bg-white/95 p-8 rounded-xl shadow-xl border-l-8 border-blue-700">
-                        <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 leading-tight">
+                    <div class="max-w-2xl bg-white/95 p-8 rounded-xl shadow-2xl border-l-8 border-blue-700">
+                        <h2 class="text-3xl md:text-4xl font-black text-blue-900 mb-4 leading-tight">
                             Support for Senior Citizens, Widows, Disabled and the Needy
                         </h2>
-                        <p class="text-lg text-gray-700 font-semibold mb-6">Providing financial independence and respect through our private pension initiative. Pension is not just money, it is respect.</p>
-                        <button onclick="showPage('schemes')" class="bg-blue-700 text-white px-8 py-3 rounded font-bold shadow-md hover:bg-blue-800 transition">Apply Now</button>
+                        <p class="text-lg text-gray-800 font-semibold mb-6">Providing financial independence and respect through our private pension initiative. Pension is not just money, it is respect.</p>
+                        <button onclick="switchPage('page-schemes')" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-md font-bold shadow-lg hover:bg-blue-800 transition text-lg">Apply / Learn More</button>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Original 6 Cards -->
-            <div class="container mx-auto px-4 py-12 relative -mt-10 z-10">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-blue-700 text-white rounded-xl p-8 text-center shadow-lg card-hover border border-blue-800 cursor-pointer">
-                        <i class="fa-solid fa-user-shield text-5xl mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">Admin Login</h3>
-                        <p class="text-sm text-blue-100 mb-4">Official login for Management</p>
+            <!-- 6 Action Cards Section -->
+            <section class="container mx-auto px-4 py-12 relative -mt-10 z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    
+                    <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-user-shield text-5xl mb-4 text-blue-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Admin Login</h3>
+                        <p class="text-sm mb-4 text-blue-100 font-medium">Official login for Administration Management</p>
+                        <button class="bg-white text-blue-800 font-bold py-2 px-6 rounded-full text-sm">Login <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <div onclick="showPage('schemes')" class="bg-green-600 text-white rounded-xl p-8 text-center shadow-lg card-hover border border-green-700 cursor-pointer">
-                        <i class="fa-solid fa-pen-to-square text-5xl mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">Pension Apply</h3>
-                        <p class="text-sm text-green-100 mb-4">Apply for New Pension Scheme</p>
+
+                    <div onclick="switchPage('page-schemes')" class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-file-signature text-5xl mb-4 text-green-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Apply Pension</h3>
+                        <p class="text-sm mb-4 text-green-100 font-medium">Apply for New Private Pension Scheme</p>
+                        <button class="bg-white text-green-800 font-bold py-2 px-6 rounded-full text-sm">Apply Now <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <div class="bg-orange-500 text-white rounded-xl p-8 text-center shadow-lg card-hover border border-orange-600 cursor-pointer">
-                        <i class="fa-solid fa-magnifying-glass text-5xl mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">Application Status</h3>
-                        <p class="text-sm text-orange-100 mb-4">Check Application Approval Status</p>
+
+                    <div class="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-magnifying-glass-chart text-5xl mb-4 text-orange-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Check Status</h3>
+                        <p class="text-sm mb-4 text-orange-100 font-medium">Track your Pension Application Status</p>
+                        <button class="bg-white text-orange-800 font-bold py-2 px-6 rounded-full text-sm">Check <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <div class="bg-purple-600 text-white rounded-xl p-8 text-center shadow-lg card-hover border border-purple-700 cursor-pointer">
-                        <i class="fa-solid fa-users text-5xl mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">Beneficiary Login</h3>
-                        <p class="text-sm text-purple-100 mb-4">Login for Pension Beneficiaries</p>
+
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-users text-5xl mb-4 text-purple-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Beneficiary Login</h3>
+                        <p class="text-sm mb-4 text-purple-100 font-medium">Dashboard for Approved Beneficiaries</p>
+                        <button class="bg-white text-purple-800 font-bold py-2 px-6 rounded-full text-sm">Login <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <div onclick="showPage('conditions')" class="bg-red-600 text-white rounded-xl p-8 text-center shadow-lg card-hover border border-red-700 cursor-pointer">
-                        <i class="fa-solid fa-scale-balanced text-5xl mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">Terms & Conditions</h3>
-                        <p class="text-sm text-red-100 mb-4">Read our strict policies and rules</p>
+
+                    <div onclick="switchPage('page-schemes')" class="bg-gradient-to-br from-teal-500 to-teal-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-hand-holding-dollar text-5xl mb-4 text-teal-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Scheme Details</h3>
+                        <p class="text-sm mb-4 text-teal-100 font-medium">View Payment Structure & Limits</p>
+                        <button class="bg-white text-teal-800 font-bold py-2 px-6 rounded-full text-sm">View <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
-                    <div onclick="showPage('contact')" class="bg-teal-600 text-white rounded-xl p-8 text-center shadow-lg card-hover border border-teal-700 cursor-pointer">
-                        <i class="fa-solid fa-headset text-5xl mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">Help & Contact</h3>
-                        <p class="text-sm text-teal-100 mb-4">Get Support and Contact Details</p>
+
+                    <div onclick="switchPage('page-conditions')" class="bg-gradient-to-br from-red-500 to-red-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-triangle-exclamation text-5xl mb-4 text-red-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Strict Rules</h3>
+                        <p class="text-sm mb-4 text-red-100 font-medium">Read Terms & Conditions Before Applying</p>
+                        <button class="bg-white text-red-800 font-bold py-2 px-6 rounded-full text-sm">Read <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
+
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
-        <!-- 2. ABOUT US PAGE -->
-        <section id="about" class="page-section container mx-auto px-4 py-12">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-users mr-2"></i>About Us / हमारे बारे में / ଆମ ବିଷୟରେ</h2>
-                <div class="w-24 h-1 bg-blue-700 mx-auto mt-4"></div>
-            </div>
-            
-            <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                <div class="flex border-b border-gray-200 bg-gray-100">
-                    <button id="btn-or" onclick="showTab('or')" class="tab-btn active flex-1 py-4 font-bold text-lg transition">ଓଡ଼ିଆ</button>
-                    <button id="btn-hi" onclick="showTab('hi')" class="tab-btn flex-1 py-4 font-bold text-lg transition border-l border-gray-200">हिंदी</button>
-                    <button id="btn-en" onclick="showTab('en')" class="tab-btn flex-1 py-4 font-bold text-lg transition border-l border-gray-200">English</button>
-                </div>
-                <div class="p-8 text-center md:text-left text-lg">
-                    <div id="about-or" class="block">
-                        <p class="text-gray-700 leading-relaxed font-medium">ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ। ଆମେ ସମାଜର ଅବହେଳିତ ବର୍ଗଙ୍କ ସହ ଛିଡା ହେବାକୁ ପ୍ରତିଶ୍ରୁତିବଦ୍ଧ।</p>
-                    </div>
-                    <div id="about-hi" class="hidden">
-                        <p class="text-gray-700 leading-relaxed font-medium">प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों (बुजुर्गों, विधवाओं और दिव्यांगों) को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है। हम समाज के वंचित वर्गों के साथ खड़े होने के लिए प्रतिबद्ध हैं।</p>
-                    </div>
-                    <div id="about-en" class="hidden">
-                        <p class="text-gray-700 leading-relaxed font-medium">The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy (senior citizens, widows, and disabled). Pension is not just money; it is respect. We are committed to standing with the underprivileged sections of society.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. SCHEMES PAGE -->
-        <section id="schemes" class="page-section container mx-auto px-4 py-12">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i>Schemes, Age Limits & Pension Amount</h2>
-                <div class="w-24 h-1 bg-blue-700 mx-auto mt-4"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-600">
-                    <h3 class="text-xl font-bold text-blue-900 mb-2">Old Age Pension</h3>
-                    <p class="text-gray-600 mb-3 font-semibold">ବୃଦ୍ଧାବସ୍ଥା ପେନସନ୍</p>
-                    <div class="bg-gray-100 p-3 rounded mb-3">
-                        <p class="text-sm"><i class="fa-solid fa-user-clock text-blue-600 mr-2"></i> <b>Age:</b> 55 to 100 Years</p>
-                        <p class="text-sm mt-1"><i class="fa-solid fa-indian-rupee-sign text-green-600 mr-2"></i> <b>Amount:</b> ₹3000 / Year</p>
-                    </div>
-                    <button class="w-full bg-blue-100 text-blue-800 font-bold py-2 rounded hover:bg-blue-200 transition">Apply Now</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-purple-600">
-                    <h3 class="text-xl font-bold text-purple-900 mb-2">Widow Pension</h3>
-                    <p class="text-gray-600 mb-3 font-semibold">ବିଧବା ପେନସନ୍</p>
-                    <div class="bg-gray-100 p-3 rounded mb-3">
-                        <p class="text-sm"><i class="fa-solid fa-user-clock text-purple-600 mr-2"></i> <b>Age:</b> 30 to 55 Years</p>
-                        <p class="text-sm mt-1"><i class="fa-solid fa-indian-rupee-sign text-green-600 mr-2"></i> <b>Amount:</b> Applicable Rate</p>
-                    </div>
-                    <button class="w-full bg-purple-100 text-purple-800 font-bold py-2 rounded hover:bg-purple-200 transition">Apply Now</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-green-600">
-                    <h3 class="text-xl font-bold text-green-900 mb-2">Disability Pension</h3>
-                    <p class="text-gray-600 mb-3 font-semibold">ଭିନ୍ନକ୍ଷମ / ଦିବ୍ୟାଙ୍ଗ ପେନସନ୍</p>
-                    <div class="bg-gray-100 p-3 rounded mb-3">
-                        <p class="text-sm"><i class="fa-solid fa-user-clock text-green-600 mr-2"></i> <b>Age:</b> 10 to 100 Years</p>
-                        <p class="text-sm mt-1"><i class="fa-solid fa-indian-rupee-sign text-green-600 mr-2"></i> <b>Amount:</b> ₹3500 / Year</p>
-                    </div>
-                    <button class="w-full bg-green-100 text-green-800 font-bold py-2 rounded hover:bg-green-200 transition">Apply Now</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-pink-600">
-                    <h3 class="text-xl font-bold text-pink-900 mb-2">Unmarried Woman</h3>
-                    <p class="text-gray-600 mb-3 font-semibold">ଅବିବାହିତା ମହିଳା</p>
-                    <div class="bg-gray-100 p-3 rounded mb-3">
-                        <p class="text-sm"><i class="fa-solid fa-user-clock text-pink-600 mr-2"></i> <b>Age:</b> 30 to 55 Years</p>
-                    </div>
-                    <button class="w-full bg-pink-100 text-pink-800 font-bold py-2 rounded hover:bg-pink-200 transition">Apply Now</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-red-600">
-                    <h3 class="text-xl font-bold text-red-900 mb-2">Divorcee Women</h3>
-                    <p class="text-gray-600 mb-3 font-semibold">ଛାଡପତ୍ର ପାଇଥିବା ମହିଳା</p>
-                    <div class="bg-gray-100 p-3 rounded mb-3">
-                        <p class="text-sm"><i class="fa-solid fa-user-clock text-red-600 mr-2"></i> <b>Age:</b> 35 to 55 Years</p>
-                    </div>
-                    <button class="w-full bg-red-100 text-red-800 font-bold py-2 rounded hover:bg-red-200 transition">Apply Now</button>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-orange-600">
-                    <h3 class="text-xl font-bold text-orange-900 mb-2">Transgender</h3>
-                    <p class="text-gray-600 mb-3 font-semibold">କିନ୍ନର ପେନସନ୍</p>
-                    <div class="bg-gray-100 p-3 rounded mb-3">
-                        <p class="text-sm"><i class="fa-solid fa-user-clock text-orange-600 mr-2"></i> <b>Age:</b> 35 to 55 Years</p>
-                    </div>
-                    <button class="w-full bg-orange-100 text-orange-800 font-bold py-2 rounded hover:bg-orange-200 transition">Apply Now</button>
-                </div>
-            </div>
-            
-            <div class="max-w-6xl mx-auto mt-6 bg-yellow-50 border border-yellow-300 p-4 rounded text-sm text-yellow-900 shadow-sm font-semibold text-center">
-                <i class="fa-solid fa-bell text-yellow-600 mr-2"></i> ସମସ୍ତ ପେନସନ୍ ରାଶି ବାର୍ଷିକ ହିସାବରେ ଧାର୍ଯ୍ୟ କରାଯାଇଥିଲେ ମଧ୍ୟ, ତାହା ପ୍ରତି ମାସ ବ୍ୟାଙ୍କ ଆକାଉଣ୍ଟକୁ କ୍ରେଡିଟ୍ ହେବ। (Amount is yearly but credited monthly).
-            </div>
-        </section>
-
-        <!-- 4. CONDITIONS PAGE -->
-        <section id="conditions" class="page-section container mx-auto px-4 py-12">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex items-center justify-center mb-8 border-b-2 border-red-200 pb-4">
-                    <i class="fa-solid fa-triangle-exclamation text-red-600 text-4xl mr-3"></i>
-                    <h2 class="text-3xl font-bold text-red-900">Strict Terms & Conditions (ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ)</h2>
+        <!-- ================= ABOUT US PAGE ================= -->
+        <div id="page-about" class="page-section py-12 bg-white">
+            <div class="container mx-auto px-4 max-w-5xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900"><i class="fa-solid fa-circle-info mr-2 text-blue-600"></i> About Us / हमारे बारे में / ଆମ ବିଷୟରେ</h2>
+                    <div class="w-32 h-1.5 bg-blue-700 mx-auto mt-4 rounded"></div>
                 </div>
                 
-                <div class="bg-white border-2 border-red-200 rounded-xl p-8 shadow-lg relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-2 h-full bg-red-600"></div>
+                <div class="bg-gray-50 rounded-xl shadow-lg overflow-hidden border-2 border-gray-200">
+                    <div class="flex flex-col md:flex-row border-b-2 border-gray-200 bg-white">
+                        <button id="btn-or" onclick="showTab('or')" class="tab-btn active flex-1 py-4 font-bold text-xl transition border-b-4 border-transparent">ଓଡ଼ିଆ</button>
+                        <button id="btn-hi" onclick="showTab('hi')" class="tab-btn flex-1 py-4 font-bold text-xl transition border-l md:border-l-2 border-gray-200 border-b-4 border-transparent">हिंदी</button>
+                        <button id="btn-en" onclick="showTab('en')" class="tab-btn flex-1 py-4 font-bold text-xl transition border-l md:border-l-2 border-gray-200 border-b-4 border-transparent">English</button>
+                    </div>
+                    
+                    <div class="p-8 md:p-12 text-center md:text-left text-lg md:text-xl">
+                        <div id="about-or" class="block">
+                            <p class="text-gray-800 leading-relaxed font-semibold">ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ। ଆମେ ସମାଜର ଅବହେଳିତ ବର୍ଗଙ୍କ ସହ ଛିଡା ହେବାକୁ ପ୍ରତିଶ୍ରୁତିବଦ୍ଧ।</p>
+                        </div>
+                        <div id="about-hi" class="hidden">
+                            <p class="text-gray-800 leading-relaxed font-semibold">प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों (बुजुर्गों, विधवाओं और दिव्यांगों) को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है। हम समाज के वंचित वर्गों के साथ खड़े होने के लिए प्रतिबद्ध हैं।</p>
+                        </div>
+                        <div id="about-en" class="hidden">
+                            <p class="text-gray-800 leading-relaxed font-semibold">The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy (senior citizens, widows, and disabled). Pension is not just money; it is respect. We are committed to standing with the underprivileged sections of society.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SCHEMES PAGE ================= -->
+        <div id="page-schemes" class="page-section py-12 bg-gray-50">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900"><i class="fa-solid fa-list-check mr-2 text-blue-600"></i> Available Schemes & Limits</h2>
+                    <p class="text-gray-700 font-bold mt-3 text-lg">Scheme Details & Yearly Pension Amount</p>
+                    <div class="w-32 h-1.5 bg-blue-700 mx-auto mt-4 rounded"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-blue-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-blue-900 mb-1">Old Age Pension</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ବୃଦ୍ଧାବସ୍ଥା ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                                <span class="font-bold text-gray-700">Age Limit:</span>
+                                <span class="bg-blue-200 text-blue-900 font-bold px-3 py-1 rounded">55 to 100 Years</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200">
+                                <span class="font-bold text-green-800">Total Amount:</span>
+                                <span class="font-black text-green-700 text-lg">₹3000 / Year</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-green-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-green-900 mb-1">Disability Pension</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ଭିନ୍ନକ୍ଷମ ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                                <span class="font-bold text-gray-700">Age Limit:</span>
+                                <span class="bg-green-200 text-green-900 font-bold px-3 py-1 rounded">10 to 100 Years</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200">
+                                <span class="font-bold text-green-800">Total Amount:</span>
+                                <span class="font-black text-green-700 text-lg">₹3500 / Year</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-purple-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-purple-900 mb-1">Widow Pension</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ବିଧବା ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                                <span class="font-bold text-gray-700">Age Limit:</span>
+                                <span class="bg-purple-200 text-purple-900 font-bold px-3 py-1 rounded">30 to 55 Years</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-pink-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-pink-900 mb-1">Unmarried Woman</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ଅବିବାହିତା ମହିଳା</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                                <span class="font-bold text-gray-700">Age Limit:</span>
+                                <span class="bg-pink-200 text-pink-900 font-bold px-3 py-1 rounded">30 to 55 Years</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-red-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-red-900 mb-1">Divorcee Women</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">ଛାଡପତ୍ର ପାଇଥିବା ମହିଳା</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                                <span class="font-bold text-gray-700">Age Limit:</span>
+                                <span class="bg-red-200 text-red-900 font-bold px-3 py-1 rounded">35 to 55 Years</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-orange-600 hover:shadow-2xl transition">
+                        <h3 class="text-2xl font-black text-orange-900 mb-1">Transgender</h3>
+                        <p class="text-md font-bold text-gray-500 mb-4 border-b pb-2">କିନ୍ନର ପେନସନ୍</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                                <span class="font-bold text-gray-700">Age Limit:</span>
+                                <span class="bg-orange-200 text-orange-900 font-bold px-3 py-1 rounded">35 to 55 Years</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CONDITIONS PAGE (STRICT RULES) ================= -->
+        <div id="page-conditions" class="page-section py-12 bg-white">
+            <div class="container mx-auto px-4 max-w-5xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-red-700"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-600"></i> Strict Terms & Conditions</h2>
+                    <p class="text-red-900 font-bold mt-2 text-xl">ଦୟାକରି ଆବେଦନ କରିବା ପୂର୍ବରୁ ଏହି ନିୟମଗୁଡିକ ଭଲଭାବେ ପଢନ୍ତୁ</p>
+                    <div class="w-32 h-1.5 bg-red-600 mx-auto mt-4 rounded"></div>
+                </div>
+                
+                <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6 md:p-10 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-3 h-full bg-red-600"></div>
                     
                     <div class="space-y-6 text-gray-800 text-lg">
                         
-                        <!-- NEW: NO REFUND POLICY -->
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-ban text-red-600 mt-1 mr-4 text-2xl"></i>
+                        <!-- RULE 1: Non-Refundable Fee -->
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0">
+                                <i class="fa-solid fa-money-bill-transfer text-red-600 text-2xl"></i>
+                            </div>
                             <div>
-                                <h4 class="font-bold text-red-900 text-xl">1. No Refund Policy (ଟଙ୍କା ଫେରସ୍ତ ହେବ ନାହିଁ)</h4>
-                                <p class="text-base mt-2 font-medium">ଆବେଦନ ଫି କୌଣସି ପରିସ୍ଥିତିରେ ଫେରସ୍ତ ଦିଆଯିବ ନାହିଁ। ଯଦି ଡକ୍ୟୁମେଣ୍ଟ୍ ଭେରିଫିକେସନ୍ ସମୟରେ ତ୍ରୁଟି ବାହାରେ ବା ଆବେଦନ Reject ହୁଏ, ତେବେ Application Charge ଫେରସ୍ତ ମିଳିବ ନାହିଁ। ଆବେଦନ ଫି ସମସ୍ତ ଜାତି ଓ ବର୍ଗ (All Castes) ପାଇଁ ସମାନ ଭାବରେ ଲାଗୁ ହେବ।<br>
-                                <span class="text-sm text-gray-600 italic">The application charge is strictly non-refundable for all castes. If rejected during verification, money will not be returned.</span></p>
+                                <h4 class="font-black text-red-900 text-xl">Non-Refundable Application Fee (ଆବେଦନ ଫିସ୍ ଫେରସ୍ତ ଅଯୋଗ୍ୟ)</h4>
+                                <p class="font-semibold mt-2 text-gray-700">Application fee is mandatory for all castes/categories. If your application is <b class="text-red-600">rejected</b> during document verification, the fee will <b class="text-red-600 underline">NOT BE REFUNDED</b> under any circumstances. No legal claims will be entertained.</p>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ସବୁ ବର୍ଗ/ଜାତି ପାଇଁ ଆବେଦନ ଫିସ୍ ବାଧ୍ୟତାମୂଳକ। ଡକ୍ୟୁମେଣ୍ଟ ଯାଞ୍ଚ ସମୟରେ ଫର୍ମ ରିଜେକ୍ଟ ହେଲେ, କୌଣସି ପରିସ୍ଥିତିରେ ବି ଫିସ୍ ଫେରସ୍ତ ଦିଆଯିବ ନାହିଁ। ଏହାକୁ ନେଇ କୌଣସି ଆଇନଗତ ଦାବି ଗ୍ରହଣଯୋଗ୍ୟ ହେବନାହିଁ।</p>
                             </div>
                         </div>
 
-                        <!-- NEW: PAYMENT TIMELINE -->
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-clock text-red-600 mt-1 mr-4 text-2xl"></i>
+                        <!-- RULE 2: Monthly Payment & 3 Month Rule -->
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0">
+                                <i class="fa-solid fa-calendar-check text-red-600 text-2xl"></i>
+                            </div>
                             <div>
-                                <h4 class="font-bold text-red-900 text-xl">2. First Payment Timeline (ପ୍ରଥମ ପେନସନ୍ ସମୟ)</h4>
-                                <p class="text-base mt-2 font-medium">ଆବେଦନ କରିବାର ଶେଷ ତାରିଖ ସରିବାର ଠିକ୍ <b>୩ ମାସ ପରେ</b> ହିଁ ପ୍ରଥମ ପେନସନ୍ ଟଙ୍କା ଆକାଉଣ୍ଟକୁ କ୍ରେଡିଟ୍ ହେବ। ତା' ପୂର୍ବରୁ କୌଣସି ପ୍ରକାରର ଦାବି ଗ୍ରହଣଯୋଗ୍ୟ ହେବ ନାହିଁ।<br>
-                                <span class="text-sm text-gray-600 italic">First installment will be credited strictly after 3 months from the application end date.</span></p>
+                                <h4 class="font-black text-red-900 text-xl">Payment Credit & 3-Month Wait Rule (ପେମେଣ୍ଟ୍ ନିୟମ)</h4>
+                                <p class="font-semibold mt-2 text-gray-700">The total yearly amount (e.g. ₹3000 or ₹3500) will be credited in <b>monthly installments</b> to the bank account. The very first installment will be credited strictly <b>3 months after the application closing date</b>.</p>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ବାର୍ଷିକ ଟଙ୍କା ଏକାଥରକେ ନମିଳି ମାସିକ କିସ୍ତି ହିସାବରେ ପଠାଯିବ। ଆବେଦନ ତାରିଖ ସରିବାର ଠିକ୍ ୩ ମାସ ପରେ ଯାଇ ପ୍ରଥମ କିସ୍ତି ବ୍ୟାଙ୍କ ଆକାଉଣ୍ଟରେ କ୍ରେଡିଟ୍ ହେବ।</p>
                             </div>
                         </div>
 
-                        <!-- RENEWAL -->
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-arrows-rotate text-red-600 mt-1 mr-4 text-2xl"></i>
+                        <!-- RULE 3: Absolute Admin Rights -->
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0">
+                                <i class="fa-solid fa-gavel text-red-600 text-2xl"></i>
+                            </div>
                             <div>
-                                <h4 class="font-bold text-red-900 text-xl">3. Mandatory 3-Month Renewal (ରିନ୍ୟୁ ବାଧ୍ୟତାମୂଳକ)</h4>
-                                <p class="text-base mt-2 font-medium">ପ୍ରତ୍ୟେକ ହିତାଧିକାରୀଙ୍କୁ ପ୍ରତି ୩ ମାସରେ ଥରେ ନିଜର ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ ଅଟେ। ନଚେତ୍ ପେନସନ୍ ସ୍ୱୟଂଚାଳିତ ଭାବରେ ବନ୍ଦ ହୋଇଯିବ।<br>
-                                <span class="text-sm text-gray-600 italic">Beneficiaries must renew their pension every 3 months.</span></p>
+                                <h4 class="font-black text-red-900 text-xl">Absolute Admin Rights (ମ୍ୟାନେଜମେଣ୍ଟର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର)</h4>
+                                <p class="font-semibold mt-2 text-gray-700">This is a strictly private initiative. The Admin reserves the absolute right to reject any application or stop an ongoing pension at any time without any reason. <b>Admin is legally protected from any claims.</b></p>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ଏହା ଏକ ଘରୋଇ ପ୍ରୟାସ। ବିନା କାରଣରେ ପେନସନ୍ ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ସଂରକ୍ଷିତ। ଏଥିପାଇଁ Admin ଙ୍କ ଉପରେ କୌଣସି ଆଇନଗତ କାର୍ଯ୍ୟାନୁଷ୍ଠାନ କରାଯାଇପାରିବ ନାହିଁ।</p>
                             </div>
                         </div>
 
-                        <!-- ZERO INCOME -->
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-money-bill-wave text-red-600 mt-1 mr-4 text-2xl"></i>
-                            <div>
-                                <h4 class="font-bold text-red-900 text-xl">4. Zero Income Rule (ଶୂନ୍ୟ ଆୟ ନିୟମ)</h4>
-                                <p class="text-base mt-2 font-medium">ଆବେଦନକାରୀଙ୍କର ଅନ୍ୟ କୌଣସି ଆୟର ପନ୍ଥା (Zero alternative income) ନଥିବା ନିହାତି ଦରକାର।</p>
+                        <!-- RULE 4: Mandatory Renewal -->
+                        <div class="bg-white p-5 rounded-lg border border-red-200 shadow-sm flex flex-col md:flex-row items-start">
+                            <div class="bg-red-100 p-3 rounded-full mr-4 mb-3 md:mb-0">
+                                <i class="fa-solid fa-arrows-rotate text-red-600 text-2xl"></i>
                             </div>
-                        </div>
-
-                        <!-- ADMIN RIGHTS -->
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-gavel text-red-600 mt-1 mr-4 text-2xl"></i>
                             <div>
-                                <h4 class="font-bold text-red-900 text-xl">5. Absolute Admin Rights (ଆଡମିନ୍ ଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର)</h4>
-                                <p class="text-base mt-2 font-medium">ଏହା ଏକ ଘରୋଇ ଟ୍ରଷ୍ଟ। ବିନା କାରଣ ଦର୍ଶାଇ କାହାର ବି ପେନସନ୍ ବନ୍ଦ କରିବାର ଅଧିକାର ମ୍ୟାନେଜମେଣ୍ଟ ପାଖରେ ଅଛି। ଏଥିପାଇଁ ଆଡମିନ୍ ଙ୍କ ଉପରେ କୌଣସି ଆଇନଗତ କାର୍ଯ୍ୟାନୁଷ୍ଠାନ କରାଯାଇପାରିବ ନାହିଁ।<br>
-                                <span class="text-sm text-gray-600 italic">The Admin reserves the right to cancel any application. No legal action can be taken against the Admin.</span></p>
+                                <h4 class="font-black text-red-900 text-xl">Mandatory 3-Month Renewal (ରିନ୍ୟୁ ବାଧ୍ୟତାମୂଳକ)</h4>
+                                <p class="font-semibold mt-2 text-gray-700">Every beneficiary MUST renew their pension application every 3 months, failing which the pension will be permanently stopped.</p>
+                                <p class="font-bold text-red-800 mt-2 bg-red-50 p-2 border-l-4 border-red-500 text-base">ପ୍ରତି ୩ ମାସରେ ଥରେ ନିଜ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ ଅଟେ। ନଚେତ୍ ପେନସନ୍ ବନ୍ଦ ହୋଇଯିବ।</p>
                             </div>
                         </div>
 
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- 5. CONTACT US PAGE -->
-        <section id="contact" class="page-section container mx-auto px-4 py-16">
-            <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 p-8 md:p-12 text-center">
-                <div class="bg-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fa-solid fa-headset text-5xl text-blue-700"></i>
-                </div>
-                <h2 class="text-3xl font-bold text-blue-900 mb-4">Get in Touch (ଯୋଗାଯୋଗ କରନ୍ତୁ)</h2>
-                <p class="text-gray-600 mb-8 text-lg">For any queries regarding the pension schemes, application process, or document verification, please contact us at the details below.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                        <i class="fa-solid fa-phone text-3xl text-blue-600 mb-4"></i>
-                        <h3 class="font-bold text-xl text-gray-800 mb-2">Phone Number</h3>
-                        <p class="text-2xl font-extrabold text-blue-800">8910223342</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                        <i class="fa-solid fa-envelope text-3xl text-blue-600 mb-4"></i>
-                        <h3 class="font-bold text-xl text-gray-800 mb-2">Email Address</h3>
-                        <p class="text-xl font-bold text-blue-800">admin@kulusutar.in</p>
+        <!-- ================= CONTACT US PAGE ================= -->
+        <div id="page-contact" class="page-section py-12 bg-blue-50">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <i class="fa-solid fa-headset text-6xl text-blue-700 mb-6"></i>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-6">Contact & Support</h2>
+                <div class="bg-white p-10 rounded-xl shadow-xl border-t-8 border-blue-700">
+                    <p class="text-xl font-bold text-gray-700 mb-8">For any queries regarding the Private Social Security Pension Scheme, please reach out to us:</p>
+                    <div class="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12">
+                        <div class="flex items-center text-2xl font-black text-blue-900">
+                            <div class="bg-blue-100 p-4 rounded-full mr-4">
+                                <i class="fa-solid fa-phone text-blue-700"></i>
+                            </div>
+                            8910223342
+                        </div>
+                        <div class="flex items-center text-2xl font-black text-blue-900">
+                            <div class="bg-blue-100 p-4 rounded-full mr-4">
+                                <i class="fa-solid fa-envelope text-blue-700"></i>
+                            </div>
+                            admin@kulusutar.in
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
     </main>
 
-    <!-- Simple Footer -->
-    <footer class="bg-blue-900 text-center py-6 mt-auto border-t-4 border-blue-700">
-        <p class="text-blue-200 font-semibold">&copy; 2026 Private Social Security Pension Scheme | All Rights Reserved.</p>
-        <p class="text-blue-400 text-sm mt-1">This is a private initiative and not affiliated with any government scheme.</p>
+    <!-- Global Footer (Always visible) -->
+    <footer class="bg-blue-900 text-white py-6 border-t-4 border-blue-700 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="font-bold">&copy; 2026 Private Social Security Pension Scheme</p>
+            <p class="text-sm text-blue-300 mt-1">This is a 100% private initiative. Not affiliated with any government department.</p>
+        </div>
     </footer>
 
 </body>
