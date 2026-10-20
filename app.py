@@ -1,3 +1,10 @@
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+# Ehi variable bhitare amara sampurna website ra design (HTML/CSS) achi
+html_design = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +17,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .hero-bg {
-            /* A nice placeholder hero image */
             background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
@@ -28,7 +34,6 @@
     <header class="bg-white shadow-md border-b-4 border-blue-700">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <!-- Private Organization Logo Icon -->
                 <div class="text-blue-700 text-5xl">
                     <i class="fa-solid fa-hands-holding-circle"></i>
                 </div>
@@ -39,7 +44,6 @@
                 </div>
             </div>
             
-            <!-- Navigation Links -->
             <div class="hidden md:flex space-x-6">
                 <a href="#" class="text-blue-700 font-bold flex items-center"><i class="fa-solid fa-house mr-1"></i> Home</a>
                 <a href="#" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center"><i class="fa-solid fa-circle-info mr-1"></i> About Us</a>
@@ -66,7 +70,6 @@
     <section class="container mx-auto px-4 py-12 relative -mt-16 z-10">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             
-            <!-- Card 1: Admin Login -->
             <div class="bg-gradient-to-b from-blue-500 to-blue-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
                 <i class="fa-solid fa-building text-4xl mb-4"></i>
                 <h3 class="font-bold text-lg mb-2">Admin Login</h3>
@@ -74,7 +77,6 @@
                 <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </div>
 
-            <!-- Card 2: Pension Apply -->
             <div class="bg-gradient-to-b from-green-500 to-green-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
                 <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i>
                 <h3 class="font-bold text-lg mb-2">Pension Apply</h3>
@@ -82,7 +84,6 @@
                 <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </div>
 
-            <!-- Card 3: Application Status -->
             <div class="bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
                 <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i>
                 <h3 class="font-bold text-lg mb-2">Application Status</h3>
@@ -90,7 +91,6 @@
                 <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </div>
 
-            <!-- Card 4: Beneficiary Login -->
             <div class="bg-gradient-to-b from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
                 <i class="fa-solid fa-user text-4xl mb-4"></i>
                 <h3 class="font-bold text-lg mb-2">Beneficiary Login</h3>
@@ -98,7 +98,6 @@
                 <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </div>
 
-            <!-- Card 5: Scheme Details -->
             <div class="bg-gradient-to-b from-teal-400 to-teal-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
                 <i class="fa-solid fa-book-open text-4xl mb-4"></i>
                 <h3 class="font-bold text-lg mb-2">Scheme Details</h3>
@@ -106,7 +105,6 @@
                 <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </div>
 
-            <!-- Card 6: Help & Contact -->
             <div class="bg-gradient-to-b from-pink-500 to-pink-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
                 <i class="fa-solid fa-headset text-4xl mb-4"></i>
                 <h3 class="font-bold text-lg mb-2">Help & Contact</h3>
@@ -121,7 +119,6 @@
     <section class="container mx-auto px-4 py-8 mb-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <!-- About Section -->
             <div class="bg-blue-50 rounded-lg p-6 border border-blue-100 shadow-sm">
                 <div class="flex items-center mb-4">
                     <i class="fa-solid fa-users text-blue-700 text-2xl mr-3"></i>
@@ -133,7 +130,6 @@
                 <button class="bg-blue-700 text-white px-4 py-2 rounded text-sm hover:bg-blue-800">Read More <i class="fa-solid fa-chevron-right text-xs ml-1"></i></button>
             </div>
 
-            <!-- Quick Links -->
             <div class="bg-white rounded-lg p-6 border shadow-sm">
                 <div class="flex items-center mb-4 border-b pb-2">
                     <i class="fa-solid fa-link text-blue-700 text-2xl mr-3"></i>
@@ -147,7 +143,6 @@
                 </ul>
             </div>
 
-            <!-- Latest Updates -->
             <div class="bg-blue-50 rounded-lg p-6 border border-blue-100 shadow-sm">
                 <div class="flex items-center mb-4 border-b border-blue-200 pb-2">
                     <i class="fa-solid fa-bell text-blue-700 text-2xl mr-3"></i>
@@ -160,13 +155,6 @@
                             <div class="text-xs uppercase">Oct</div>
                         </div>
                         <p class="text-sm text-gray-700 mt-1">New Pension Application Process Now Online</p>
-                    </div>
-                    <div class="flex items-start">
-                        <div class="bg-blue-800 text-white text-center rounded p-1 min-w-[50px] mr-3">
-                            <div class="text-lg font-bold">05</div>
-                            <div class="text-xs uppercase">Oct</div>
-                        </div>
-                        <p class="text-sm text-gray-700 mt-1">Application Status Checking Facility Available</p>
                     </div>
                 </div>
             </div>
@@ -184,3 +172,8 @@
 
 </body>
 </html>
+"""
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    return html_design
