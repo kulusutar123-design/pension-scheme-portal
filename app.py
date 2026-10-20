@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. PUBLIC WEBSITE DESIGN (WITH FULL APPLICATION FORM)
+# 1. PUBLIC WEBSITE DESIGN (ALL 6 BOXES RESTORED)
 # ==========================================
 public_html_design = """
 <!DOCTYPE html>
@@ -94,7 +94,9 @@ public_html_design = """
                     </div>
                 </div>
             </section>
+            
             <section class="container mx-auto px-4 py-12 relative -mt-10 z-10">
+                <!-- ALL 6 BOXES RESTORED HERE -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     <!-- Admin Login -->
                     <div onclick="window.location.href='/admin'" class="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
@@ -117,11 +119,32 @@ public_html_design = """
                         <p class="text-sm mb-4 text-orange-100 font-medium">Track your Application Status</p>
                         <button class="bg-white text-orange-800 font-bold py-2 px-6 rounded-full text-sm">Check <i class="fa-solid fa-arrow-right ml-1"></i></button>
                     </div>
+                    <!-- Beneficiary Login (Restored) -->
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-users text-5xl mb-4 text-purple-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Beneficiary Login</h3>
+                        <p class="text-sm mb-4 text-purple-100 font-medium">Dashboard for Approved Beneficiaries</p>
+                        <button class="bg-white text-purple-800 font-bold py-2 px-6 rounded-full text-sm">Login <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+                    <!-- Scheme Details (Restored) -->
+                    <div onclick="switchPage('page-schemes')" class="bg-gradient-to-br from-teal-500 to-teal-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-hand-holding-dollar text-5xl mb-4 text-teal-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Scheme Details</h3>
+                        <p class="text-sm mb-4 text-teal-100 font-medium">View Payment Structure & Limits</p>
+                        <button class="bg-white text-teal-800 font-bold py-2 px-6 rounded-full text-sm">View <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+                    <!-- Strict Rules (Restored) -->
+                    <div onclick="switchPage('page-conditions')" class="bg-gradient-to-br from-red-500 to-red-700 text-white rounded-xl p-6 text-center shadow-xl card-hover border-2 border-white cursor-pointer">
+                        <i class="fa-solid fa-triangle-exclamation text-5xl mb-4 text-red-100"></i>
+                        <h3 class="font-bold text-2xl mb-2">Strict Rules</h3>
+                        <p class="text-sm mb-4 text-red-100 font-medium">Read Terms & Conditions Before Applying</p>
+                        <button class="bg-white text-red-800 font-bold py-2 px-6 rounded-full text-sm">Read <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
                 </div>
             </section>
         </div>
 
-        <!-- FULL APPLICATION FORM PAGE (NEWLY ADDED) -->
+        <!-- FULL APPLICATION FORM PAGE -->
         <div id="page-apply" class="page-section py-12 bg-gray-100">
             <div class="container mx-auto px-4 max-w-5xl">
                 <div class="bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-blue-700">
@@ -129,7 +152,6 @@ public_html_design = """
                         <h2 class="text-2xl font-black text-blue-900"><i class="fa-solid fa-file-invoice text-blue-600 mr-2"></i> Social Security Pension Scheme Form</h2>
                         <p class="text-sm text-gray-600 font-bold mt-1">Please fill out the form carefully. System verification will reject any mismatches.</p>
                     </div>
-                    
                     <form class="p-8 space-y-6">
                         <!-- Section 1: Basic & Identity -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6">
@@ -205,7 +227,7 @@ public_html_design = """
                             </div>
                         </div>
 
-                        <!-- Section 4: Bank Details (DBT / Manual Logic) -->
+                        <!-- Section 4: Bank Details -->
                         <div class="border-b pb-6 bg-blue-50 p-4 rounded border border-blue-200">
                             <h3 class="font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2"><i class="fa-solid fa-building-columns"></i> Bank Account Information</h3>
                             <div class="mb-4">
@@ -215,25 +237,11 @@ public_html_design = """
                                     <option value="no">No / I don't know (Enter Manual Details)</option>
                                 </select>
                             </div>
-
-                            <!-- Manual Bank Details (Hidden by default if 'Yes') -->
                             <div id="manual-bank-details" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 hidden bg-white p-4 rounded border shadow-sm">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Account Holder Name <span class="text-red-500">*</span></label>
-                                    <input type="text" placeholder="As per Bank Passbook" class="w-full p-3 border rounded bg-gray-50">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Account Number <span class="text-red-500">*</span></label>
-                                    <input type="text" placeholder="Enter Bank A/C No." class="w-full p-3 border rounded bg-gray-50">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Bank Name & Branch <span class="text-red-500">*</span></label>
-                                    <input type="text" placeholder="E.g., SBI, Link Road" class="w-full p-3 border rounded bg-gray-50">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Upload Passbook Front Page <span class="text-red-500">*</span></label>
-                                    <input type="file" accept="image/*,.pdf" class="w-full p-2 border rounded bg-gray-50 text-sm">
-                                </div>
+                                <div><label class="block text-sm font-bold text-gray-700 mb-1">Account Holder Name <span class="text-red-500">*</span></label><input type="text" placeholder="As per Bank Passbook" class="w-full p-3 border rounded bg-gray-50"></div>
+                                <div><label class="block text-sm font-bold text-gray-700 mb-1">Account Number <span class="text-red-500">*</span></label><input type="text" placeholder="Enter Bank A/C No." class="w-full p-3 border rounded bg-gray-50"></div>
+                                <div><label class="block text-sm font-bold text-gray-700 mb-1">Bank Name & Branch <span class="text-red-500">*</span></label><input type="text" placeholder="E.g., SBI, Link Road" class="w-full p-3 border rounded bg-gray-50"></div>
+                                <div><label class="block text-sm font-bold text-gray-700 mb-1">Upload Passbook Front Page <span class="text-red-500">*</span></label><input type="file" accept="image/*,.pdf" class="w-full p-2 border rounded bg-gray-50 text-sm"></div>
                             </div>
                         </div>
 
@@ -246,7 +254,6 @@ public_html_design = """
                                 <button type="reset" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600">Reset Form</button>
                             </div>
                         </div>
-
                     </form>
                 </div>
             </div>
@@ -441,11 +448,10 @@ admin_html_design = """
             
             <main id="view-vault" class="admin-page p-6"><h2 class="text-xl font-bold mb-4">Active Vault</h2></main>
 
-            <!-- PAYMENT MANAGEMENT & WALLET FUND (NEWLY ADDED) -->
+            <!-- PAYMENT MANAGEMENT & WALLET FUND -->
             <main id="view-payment" class="admin-page p-6">
                 <h2 class="text-2xl font-black mb-6 text-green-900 border-b-2 border-green-200 pb-2"><i class="fa-solid fa-wallet"></i> Admin Wallet & Fund Management</h2>
                 
-                <!-- WALLET BALANCE SECTION -->
                 <div class="bg-gradient-to-r from-gray-900 to-gray-800 p-8 rounded-xl shadow-2xl mb-8 flex flex-col md:flex-row justify-between items-center border-l-8 border-green-500">
                     <div class="text-white mb-4 md:mb-0">
                         <p class="text-gray-400 font-bold uppercase tracking-wider text-sm mb-1"><i class="fa-solid fa-building-columns mr-2"></i> System Nodal Account</p>
@@ -457,7 +463,6 @@ admin_html_design = """
                     </div>
                 </div>
 
-                <!-- API Setup Box -->
                 <div class="bg-white p-6 rounded-lg shadow border border-gray-200 mb-6">
                     <h3 class="font-bold text-lg text-gray-800 mb-3"><i class="fa-solid fa-key text-blue-500"></i> PayU Gateway API Configuration</h3>
                     <div class="flex flex-col md:flex-row gap-4">
