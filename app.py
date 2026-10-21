@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା - ସମ୍ପୂର୍ଣ୍ଣ ଡିଜାଇନ୍ ସହ)
+# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା - Purna Design Sahit)
 # ==========================================
 html_design = """
 <!DOCTYPE html>
@@ -151,7 +151,6 @@ html_design = """
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
                 <!-- Schemes List -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
@@ -329,7 +328,7 @@ admin_login_design = """
 
 
 # ==========================================
-# 3. ADMIN DASHBOARD DESIGN
+# 3. ADMIN DASHBOARD DESIGN (With JS Tabs for Sidebar)
 # ==========================================
 admin_design = """
 <!DOCTYPE html>
@@ -340,6 +339,38 @@ admin_design = """
     <title>Admin Dashboard - Private Pension Scheme</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Sidebar click kelyavar tab change karnyachi script
+        function switchTab(tabId, element) {
+            // Hide all content sections
+            let sections = document.querySelectorAll('.content-section');
+            for(let i=0; i<sections.length; i++) {
+                sections[i].classList.add('hidden');
+            }
+            // Show the selected section
+            document.getElementById('section-' + tabId).classList.remove('hidden');
+
+            // Reset all menu links to default color
+            let links = document.querySelectorAll('.menu-link');
+            for(let i=0; i<links.length; i++) {
+                links[i].classList.remove('bg-blue-700', 'text-white');
+                links[i].classList.add('text-slate-300', 'hover:bg-slate-800');
+            }
+            // Highlight the clicked menu link
+            element.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            element.classList.add('bg-blue-700', 'text-white');
+
+            // Update Header Title dynamically
+            let titles = {
+                'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
+                'newapps': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> New Applications',
+                'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
+                'renewals': '<i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> 3-Month Renewals',
+                'payments': '<i class="fa-solid fa-money-bill-transfer text-blue-600 mr-2"></i> Payment Records'
+            };
+            document.getElementById('header-title').innerHTML = titles[tabId];
+        }
+    </script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
 
@@ -352,70 +383,136 @@ admin_design = """
         
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
-                <li><a href="#" class="flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
-                <li><a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-file-signature w-6 mr-2"></i> New Apps <span class="ml-auto bg-red-500 px-2 rounded-full text-xs">3</span></a></li>
-                <li><a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-users w-6 mr-2"></i> Beneficiaries</a></li>
-                <li><a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals</a></li>
-                <li><a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payments</a></li>
+                <!-- Javascript function switchTab() add kela aahe -->
+                <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
+                <li><a href="#" onclick="switchTab('newapps', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> New Apps <span class="ml-auto bg-red-500 text-white px-2 rounded-full text-xs">3</span></a></li>
+                <li><a href="#" onclick="switchTab('beneficiaries', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-users w-6 mr-2"></i> Beneficiaries</a></li>
+                <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals</a></li>
+                <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payments</a></li>
             </ul>
         </nav>
         
         <div class="p-4 border-t border-slate-700">
-            <a href="/" class="flex items-center px-4 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout</a>
+            <a href="/" class="flex items-center px-4 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout</a>
         </div>
     </aside>
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Verification</h1>
+            <h1 id="header-title" class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm font-medium">Welcome, <strong>Super Admin</strong></span>
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
-                    <div><p class="text-sm text-gray-500">Total Applications</p><h3 class="text-2xl font-bold">1,245</h3></div>
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-file-lines"></i></div>
+            
+            <!-- SECTION 1: DASHBOARD (Default Open) -->
+            <div id="section-dashboard" class="content-section">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
+                        <div><p class="text-sm text-gray-500">Total Applications</p><h3 class="text-2xl font-bold">1,245</h3></div>
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-file-lines"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-green-500 shadow-sm flex justify-between items-center">
+                        <div><p class="text-sm text-gray-500">Active Pensioners</p><h3 class="text-2xl font-bold">850</h3></div>
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-check-circle"></i></div>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl border border-l-4 border-green-500 shadow-sm flex justify-between items-center">
-                    <div><p class="text-sm text-gray-500">Active Pensioners</p><h3 class="text-2xl font-bold">850</h3></div>
-                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-check-circle"></i></div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg">Pending Applications</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr>
+                                    <th class="py-3 px-6">ID</th>
+                                    <th class="py-3 px-6">Name</th>
+                                    <th class="py-3 px-6">Scheme</th>
+                                    <th class="py-3 px-6 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-6 font-medium text-blue-600">#APP-9082</td>
+                                    <td class="py-4 px-6 font-bold">Rama Chandra Das</td>
+                                    <td class="py-4 px-6"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Old Age Pension</span></td>
+                                    <td class="py-4 px-6 text-center space-x-2">
+                                        <button class="bg-green-100 text-green-700 px-3 py-1 rounded"><i class="fa-solid fa-check"></i> Approve</button>
+                                        <button class="bg-red-100 text-red-700 px-3 py-1 rounded"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Table -->
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
-                    <h2 class="font-bold text-lg">Pending Applications</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-100 text-gray-600 text-sm">
-                            <tr>
-                                <th class="py-3 px-6">ID</th>
-                                <th class="py-3 px-6">Name</th>
-                                <th class="py-3 px-6">Scheme</th>
-                                <th class="py-3 px-6 text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y">
-                            <tr class="hover:bg-gray-50">
-                                <td class="py-4 px-6 font-medium text-blue-600">#APP-9082</td>
-                                <td class="py-4 px-6 font-bold">Rama Chandra Das</td>
-                                <td class="py-4 px-6"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Old Age Pension</span></td>
-                                <td class="py-4 px-6 text-center space-x-2">
-                                    <button class="bg-green-100 text-green-700 px-3 py-1 rounded"><i class="fa-solid fa-check"></i> Approve</button>
-                                    <button class="bg-red-100 text-red-700 px-3 py-1 rounded"><i class="fa-solid fa-xmark"></i> Reject</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- SECTION 2: NEW APPS -->
+            <div id="section-newapps" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50">
+                        <h2 class="font-bold text-lg">Review New Applications</h2>
+                    </div>
+                    <div class="p-8 text-center text-gray-500">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-blue-300"></i>
+                        <p>No new applications found today.</p>
+                    </div>
                 </div>
             </div>
+
+            <!-- SECTION 3: BENEFICIARIES -->
+            <div id="section-beneficiaries" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50">
+                        <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr>
+                                    <th class="py-3 px-6">ID</th>
+                                    <th class="py-3 px-6">Name</th>
+                                    <th class="py-3 px-6">Status</th>
+                                    <th class="py-3 px-6 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-6 font-medium text-blue-600">#BEN-101</td>
+                                    <td class="py-4 px-6 font-bold">Harihar Nayak</td>
+                                    <td class="py-4 px-6"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
+                                    <td class="py-4 px-6 text-center">
+                                        <button class="bg-red-600 text-white px-3 py-1 rounded shadow hover:bg-red-700 transition"><i class="fa-solid fa-hand-paper"></i> Stop Pension</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: RENEWALS -->
+            <div id="section-renewals" class="content-section hidden">
+                 <div class="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
+                    <h2 class="font-bold text-lg text-red-800 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> Overdue Renewals</h2>
+                    <p class="text-sm text-red-600">The following beneficiaries have not renewed their pension in 3 months.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 5: PAYMENTS -->
+            <div id="section-payments" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border p-8 text-center text-gray-500">
+                    <i class="fa-solid fa-money-check-dollar text-4xl mb-3 text-green-300"></i>
+                    <p>Payment records will be displayed here.</p>
+                </div>
+            </div>
+
         </div>
     </main>
 </body>
