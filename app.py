@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା)
+# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା - ସମ୍ପୂର୍ଣ୍ଣ ଡିଜାଇନ୍ ସହ)
 # ==========================================
 html_design = """
 <!DOCTYPE html>
@@ -60,7 +60,7 @@ html_design = """
                     Support for Senior Citizens, Widows, Disabled & the Needy
                 </h2>
                 <p class="text-lg text-gray-700 font-medium mb-6">Providing financial independence and respect through our private pension initiative. Pension is not just money, it is respect.</p>
-                <a href="#schemes" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-blue-800 transition duration-300 flex items-center w-max">
+                <a href="#schemes" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-blue-800 hover:shadow-lg transition duration-300 flex items-center w-max">
                     View Schemes <i class="fa-solid fa-arrow-down ml-2"></i>
                 </a>
             </div>
@@ -116,7 +116,7 @@ html_design = """
         </div>
     </section>
 
-    <!-- ABOUT US SECTION -->
+    <!-- NEW SECTION: ABOUT US -->
     <section id="about" class="container mx-auto px-4 py-10">
         <div class="bg-white rounded-xl p-8 shadow-md border-t-4 border-blue-700">
             <div class="text-center mb-8">
@@ -127,7 +127,7 @@ html_design = """
                 <!-- Odia -->
                 <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
                     <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3>
-                    <p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ।"</p>
+                    <p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ।"</p>
                 </div>
                 <!-- English -->
                 <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
@@ -139,6 +139,101 @@ html_design = """
                     <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3>
                     <p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है।"</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: SCHEMES & RULES -->
+    <section id="schemes" class="bg-gray-100 py-12 border-t border-b border-gray-200">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i> ଯୋଜନା ଏବଂ ସର୍ତ୍ତାବଳୀ (Schemes & Conditions)</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Schemes List -->
+                <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
+                    <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span>
+                            <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ବିଧବା (Widow)</span>
+                            <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span>
+                            <span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span>
+                            <span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-pink-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ଛାଡପତ୍ର ପାଇଥିବା (Divorcee)</span>
+                            <span class="text-sm bg-pink-100 text-pink-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-teal-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">କିନ୍ନର (Transgender)</span>
+                            <span class="text-sm bg-teal-100 text-teal-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="text-xs text-gray-500 italic mt-2">* ଅନ୍ୟାନ୍ୟ ଯୋଜନା: କୁଷ୍ଠରୋଗ ଆରୋଗ୍ୟ, ଏଡସ୍/ଏଚଆଇଭି ଆକ୍ରାନ୍ତ (ବିଧବା/ଭିନ୍ନକ୍ଷମ)</li>
+                    </ul>
+                </div>
+
+                <!-- Strict Rules -->
+                <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
+                    <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
+                    <div class="space-y-4 text-sm text-gray-800">
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ। ନଚେତ୍ ଆପେ ଆପେ ବନ୍ଦ ହୋଇଯିବ।</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର। ଭୁଲ୍ ତଥ୍ୟ ଦେଲେ ପେନସନ୍ ତୁରନ୍ତ ବାତିଲ୍ ହେବ।</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
+                    <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-folder-open mr-2"></i> ଦରକାରୀ କାଗଜପତ୍ର (Documents)</h3>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆଧାର କାର୍ଡ (Aadhaar Card)</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବୟସ ପ୍ରମାଣପତ୍ର (Age Proof)</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (Passport Size Photo)</li>
+                        <li class="flex items-start mt-2 bg-yellow-50 p-2 rounded text-xs border border-yellow-200">
+                            <i class="fa-solid fa-circle-info text-yellow-600 mt-1 mr-2"></i>
+                            ଯୋଜନା ଅନୁସାରେ ସ୍ୱତନ୍ତ୍ର ପ୍ରମାଣପତ୍ର (ଉଦାହରଣ: ଭିନ୍ନକ୍ଷମ ପ୍ରମାଣପତ୍ର, ସ୍ୱାମୀଙ୍କ ମୃତ୍ୟୁ ପ୍ରମାଣପତ୍ର ଇତ୍ୟାଦି)।
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: CONTACT US -->
+    <section id="contact" class="container mx-auto px-4 py-12">
+        <div class="bg-blue-900 text-white rounded-xl p-8 shadow-xl text-center max-w-3xl mx-auto">
+            <h2 class="text-3xl font-bold mb-4"><i class="fa-solid fa-envelope-open-text mr-2"></i> ଯୋଗାଯୋଗ (Contact Us)</h2>
+            <p class="mb-6 text-blue-200">For any inquiries, application support, or grievances, please reach out to us at our official email address.</p>
+            <div class="inline-block bg-white text-blue-900 px-6 py-4 rounded-lg font-bold text-xl shadow-inner">
+                <i class="fa-solid fa-envelope mr-2"></i> admin@kulusutar.in
             </div>
         </div>
     </section>
