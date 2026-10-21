@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. PUBLIC WEBSITE (FULL FORM & PAYMENT)
+# 1. PUBLIC WEBSITE DESIGN (COMPLETE & SECURE - NO DATA DELETED)
 # ==========================================
 public_html_design = """
 <!DOCTYPE html>
@@ -153,7 +153,7 @@ public_html_design = """
             </section>
         </div>
 
-        <!-- FULL APPLICATION FORM PAGE WITH DYNAMIC QR CODE -->
+        <!-- FULL APPLICATION FORM PAGE -->
         <div id="page-apply" class="page-section py-12 bg-gray-100">
             <div class="container mx-auto px-4 max-w-5xl">
                 <div class="bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 border-blue-700">
@@ -239,7 +239,7 @@ public_html_design = """
             </div>
         </div>
 
-        <!-- SCHEMES -->
+        <!-- SCHEMES (ALL 6 CARDS) -->
         <div id="page-schemes" class="page-section py-12 bg-gray-50">
             <div class="container mx-auto px-4 max-w-7xl">
                 <div class="text-center mb-10">
