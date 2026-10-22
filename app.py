@@ -289,7 +289,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (WITH UPDATED INCOME & AADHAAR BANK BRANCH FIX)
+# 5. FULL USER DASHBOARD (UPDATED INCOME FETCH)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -403,35 +403,59 @@ user_dashboard_design = """
         }
 
         // ===============================================
-        // UPDATED INCOME CERTIFICATE ADVANCED FETCH
+        // UPDATED INCOME CERTIFICATE AUTO FETCH LOGIC
         // ===============================================
         function verifyIncome() {
             let cert = document.getElementById('income_cert_no').value;
             let year = document.getElementById('income_year').value;
-            let fullName = document.getElementById('full_name').value;
-            let fatherName = document.getElementById('father_name').value;
-            let motherName = document.getElementById('mother_name').value;
-            let distName = document.getElementById('district').value;
-            let blockName = document.getElementById('block').value || "Select Block First";
 
             if(cert && year !== "Select") {
-                if(!fullName) { alert("Please enter your Full Name at the top first."); return; }
+                // Show fetching alert
+                alert(`Fetching Income Details from Database for Certificate ${cert} (${year})...`);
                 
-                alert('Fetching Income Details from Database...');
+                // MOCK DATABASE DATA (Simulating Auto-Fetch from State DB)
+                let fetchedName = "Jyoti Prakash Sutar";
+                let fetchedFather = "Jaganath Sutar";
+                let fetchedMother = "Basanti Sutar";
+                let fetchedDistrict = "Cuttack";
+                let fetchedAuthority = "Revenue Officers not below the rank of Tahasildar / Additional Tahasildar";
+                let fetchedDate = "2025-05-12";
+                let fetchedIncomeAmount = "Rs. 45,000/-";
+
+                // Update data slightly if year changes for realistic feel
+                if (year === "2025-26") {
+                    fetchedDate = "2025-11-20";
+                    fetchedIncomeAmount = "Rs. 48,000/-";
+                } else if (year === "2026-27") {
+                    fetchedDate = "2026-02-15";
+                    fetchedIncomeAmount = "Rs. 50,000/-";
+                }
+
+                // 1. Auto-Populate Income Certificate Bottom Fields
+                document.getElementById('inc_issued_to').value = fetchedName;
+                document.getElementById('inc_father').value = fetchedFather;
+                document.getElementById('inc_mother').value = fetchedMother;
+                document.getElementById('inc_district').value = fetchedDistrict;
+                document.getElementById('inc_authority').value = fetchedAuthority;
+                document.getElementById('inc_date').value = fetchedDate;
+                document.getElementById('inc_amount').value = fetchedIncomeAmount;
+                document.getElementById('inc_relation').value = "Self";
+
+                // 2. Auto-Populate Main Application Top Fields Automatically
+                document.getElementById('full_name').value = fetchedName;
+                document.getElementById('father_name').value = fetchedFather;
+                document.getElementById('mother_name').value = fetchedMother;
                 
-                // Show Data
-                document.getElementById('inc_issued_to').value = fullName;
-                document.getElementById('inc_father').value = fatherName || "--";
-                document.getElementById('inc_mother').value = motherName || "--";
-                document.getElementById('inc_district').value = distName || "--";
-                document.getElementById('inc_authority').value = "Revenue Officers not below the rank of Tahasildar";
-                
-                // Demo Issue Date (Today)
-                document.getElementById('inc_date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('inc_amount').value = "Rs. 45,000/-"; 
-                
+                // Set state/district smoothly
+                document.getElementById("state").value = "Odisha";
+                populateDistricts();
+                setTimeout(() => {
+                    document.getElementById("district").value = fetchedDistrict;
+                    populateBlocks();
+                }, 100);
+
             } else {
-                alert("Please select Issuing Year and enter Certificate No.");
+                alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
             }
         }
         
