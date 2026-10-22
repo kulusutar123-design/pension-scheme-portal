@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. HOME PAGE DESIGN
+# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା - Purna Design)
 # ==========================================
 html_design = """
 <!DOCTYPE html>
@@ -29,6 +29,8 @@ html_design = """
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
+
+    <!-- Top Header / Navbar -->
     <header class="bg-white shadow-md border-b-4 border-blue-700 sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
@@ -40,6 +42,7 @@ html_design = """
                     <p class="text-sm font-semibold text-gray-600">A Private Initiative for the Needy</p>
                 </div>
             </div>
+            
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="#home" class="text-blue-700 font-bold flex items-center border-b-2 border-blue-700 pb-1"><i class="fa-solid fa-house mr-1"></i> Home</a>
                 <a href="#about" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center transition duration-300"><i class="fa-solid fa-circle-info mr-1"></i> About Us</a>
@@ -49,10 +52,13 @@ html_design = """
         </div>
     </header>
 
+    <!-- Hero Section -->
     <section id="home" class="hero-bg py-16 px-4 border-b">
         <div class="container mx-auto">
             <div class="max-w-2xl bg-white/95 p-8 rounded-xl shadow-xl border-l-8 border-blue-600 backdrop-blur-sm">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 leading-tight">Support for Senior Citizens, Widows, Disabled & the Needy</h2>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 leading-tight">
+                    Support for Senior Citizens, Widows, Disabled & the Needy
+                </h2>
                 <p class="text-lg text-gray-700 font-medium mb-6">Providing financial independence and respect through our private pension initiative. Pension is not just money, it is respect.</p>
                 <a href="#schemes" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-blue-800 hover:shadow-lg transition duration-300 flex items-center w-max">
                     View Schemes <i class="fa-solid fa-arrow-down ml-2"></i>
@@ -61,26 +67,52 @@ html_design = """
         </div>
     </section>
 
+    <!-- 6 Action Cards Section -->
     <section class="container mx-auto px-4 py-12 relative -mt-10 md:-mt-16 z-10">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+            
             <a href="/admin/login" class="block bg-gradient-to-b from-blue-500 to-blue-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-building text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Admin Login</h3><p class="text-sm mb-4 text-blue-100">Official login for Administration</p>
+                <i class="fa-solid fa-building text-4xl mb-4"></i>
+                <h3 class="font-bold text-lg mb-2">Admin Login</h3>
+                <p class="text-sm mb-4 text-blue-100">Official login for Administration</p>
+                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </a>
+
             <a href="/user/register" class="block bg-gradient-to-b from-green-500 to-green-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Pension Apply</h3><p class="text-sm mb-4 text-green-100">Apply for New Pension</p>
+                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i>
+                <h3 class="font-bold text-lg mb-2">Pension Apply</h3>
+                <p class="text-sm mb-4 text-green-100">Apply for New Pension</p>
+                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </a>
+
             <a href="/status/check" class="block bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Check Status</h3><p class="text-sm mb-4 text-orange-100">Check Your Application Status</p>
+                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i>
+                <h3 class="font-bold text-lg mb-2">Check Status</h3>
+                <p class="text-sm mb-4 text-orange-100">Check Your Application Status</p>
+                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </a>
+
             <a href="/user/login" class="block bg-gradient-to-b from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-user text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Beneficiary</h3><p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p>
+                <i class="fa-solid fa-user text-4xl mb-4"></i>
+                <h3 class="font-bold text-lg mb-2">Beneficiary</h3>
+                <p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p>
+                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </a>
+
             <a href="#schemes" class="block bg-gradient-to-b from-teal-400 to-teal-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-book-open text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Schemes</h3><p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p>
+                <i class="fa-solid fa-book-open text-4xl mb-4"></i>
+                <h3 class="font-bold text-lg mb-2">Schemes</h3>
+                <p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p>
+                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </a>
+
             <a href="#contact" class="block bg-gradient-to-b from-pink-500 to-pink-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-headset text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Help Desk</h3><p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p>
+                <i class="fa-solid fa-headset text-4xl mb-4"></i>
+                <h3 class="font-bold text-lg mb-2">Help Desk</h3>
+                <p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p>
+                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
             </a>
+
         </div>
     </section>
 
@@ -90,10 +122,23 @@ html_design = """
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-circle-info mr-2"></i> ଆମ ବିଷୟରେ (About Us)</h2>
             </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା।"</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy."</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है।"</p></div>
+                <!-- Odia -->
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3>
+                    <p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ।"</p>
+                </div>
+                <!-- English -->
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3>
+                    <p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy. Pension is not just money; it is respect."</p>
+                </div>
+                <!-- Hindi -->
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3>
+                    <p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है।"</p>
+                </div>
             </div>
         </div>
     </section>
@@ -104,32 +149,79 @@ html_design = """
             <div class="text-center mb-10">
                 <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i> ଯୋଜନା ଏବଂ ସର୍ତ୍ତାବଳୀ (Schemes & Conditions)</h2>
             </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Schemes List -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
                     <ul class="space-y-4">
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm"><span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm"><span class="font-semibold text-gray-800">ବିଧବା (Widow)</span><span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm"><span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span><span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span>
+                            <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ବିଧବା (Widow)</span>
+                            <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span>
+                            <span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span>
+                            <span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-pink-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">ଛାଡପତ୍ର ପାଇଥିବା (Divorcee)</span>
+                            <span class="text-sm bg-pink-100 text-pink-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-teal-500 shadow-sm">
+                            <span class="font-semibold text-gray-800">କିନ୍ନର (Transgender)</span>
+                            <span class="text-sm bg-teal-100 text-teal-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span>
+                        </li>
+                        <li class="text-xs text-gray-500 italic mt-2">* ଅନ୍ୟାନ୍ୟ ଯୋଜନା: କୁଷ୍ଠରୋଗ ଆରୋଗ୍ୟ, ଏଡସ୍/ଏଚଆଇଭି ଆକ୍ରାନ୍ତ (ବିଧବା/ଭିନ୍ନକ୍ଷମ)</li>
                     </ul>
                 </div>
+
+                <!-- Strict Rules -->
                 <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
                     <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
                     <div class="space-y-4 text-sm text-gray-800">
-                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p></div>
-                        <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ କରିବା ବାଧ୍ୟତାମୂଳକ।</p></div>
-                        <div class="flex items-start"><i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର।</p></div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ। ନଚେତ୍ ଆପେ ଆପେ ବନ୍ଦ ହୋଇଯିବ।</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i>
+                            <p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର। ଭୁଲ୍ ତଥ୍ୟ ଦେଲେ ପେନସନ୍ ତୁରନ୍ତ ବାତିଲ୍ ହେବ।</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Documents -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
-                    <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-folder-open mr-2"></i> ଦରକାରୀ କାଗଜପତ୍ର</h3>
+                    <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-folder-open mr-2"></i> ଦରକାରୀ କାଗଜପତ୍ର (Documents)</h3>
                     <ul class="space-y-3 text-sm text-gray-700">
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆଧାର କାର୍ଡ (Aadhaar Card)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବୟସ ପ୍ରମାଣପତ୍ର (Age Proof)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (Passport Size Photo)</li>
+                        <li class="flex items-start mt-2 bg-yellow-50 p-2 rounded text-xs border border-yellow-200">
+                            <i class="fa-solid fa-circle-info text-yellow-600 mt-1 mr-2"></i>
+                            ଯୋଜନା ଅନୁସାରେ ସ୍ୱତନ୍ତ୍ର ପ୍ରମାଣପତ୍ର (ଉଦାହରଣ: ଭିନ୍ନକ୍ଷମ ପ୍ରମାଣପତ୍ର, ସ୍ୱାମୀଙ୍କ ମୃତ୍ୟୁ ପ୍ରମାଣପତ୍ର ଇତ୍ୟାଦି)।
+                        </li>
                     </ul>
                 </div>
+
             </div>
         </div>
     </section>
@@ -138,11 +230,20 @@ html_design = """
     <section id="contact" class="container mx-auto px-4 py-12">
         <div class="bg-blue-900 text-white rounded-xl p-8 shadow-xl text-center max-w-3xl mx-auto">
             <h2 class="text-3xl font-bold mb-4"><i class="fa-solid fa-envelope-open-text mr-2"></i> ଯୋଗାଯୋଗ (Contact Us)</h2>
+            <p class="mb-6 text-blue-200">For any inquiries, application support, or grievances, please reach out to us at our official email address.</p>
             <div class="inline-block bg-white text-blue-900 px-6 py-4 rounded-lg font-bold text-xl shadow-inner">
                 <i class="fa-solid fa-envelope mr-2"></i> admin@kulusutar.in
             </div>
         </div>
     </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white py-8 border-t-4 border-blue-600">
+        <div class="container mx-auto px-4 flex justify-between items-center text-sm">
+            <p class="text-gray-300">&copy; 2026 Private Social Security Pension Scheme</p>
+        </div>
+    </footer>
+
 </body>
 </html>
 """
@@ -298,7 +399,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. USER DASHBOARD (WITH DYNAMIC DROPDOWN FIX)
+# 5. USER DASHBOARD (WITH DYNAMIC DROPDOWN)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -391,7 +492,6 @@ user_dashboard_design = """
             }
         }
 
-        // OTHER FUNCTIONS REMAIN INTACT
         function switchUserTab(tabId) {
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
@@ -488,7 +588,7 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS DROPDOWNS (DYNAMIC FIX APPLIED HERE) -->
+                <!-- ADDRESS DROPDOWNS -->
                 <div class="grid grid-cols-4 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-xs font-semibold">State</label>
@@ -518,7 +618,7 @@ user_dashboard_design = """
                 </div>
                 <div><label class="block text-sm font-semibold">Full Address (Village/City, Post, PIN)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
-                <!-- Income, Bank & Documents section kept exactly as before -->
+                <!-- Income, Bank & Documents -->
                 <div class="grid grid-cols-2 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold">Income Certificate No & Year</label>
