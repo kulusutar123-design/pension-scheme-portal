@@ -237,7 +237,7 @@ status_check_design = """
 """
 
 # ==========================================
-# 3. USER REGISTRATION PAGE
+# 3. USER REGISTRATION PAGE (UPDATED WITH ALL STATES & LANGUAGE)
 # ==========================================
 user_register_design = """
 <!DOCTYPE html>
@@ -248,6 +248,38 @@ user_register_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
+        const stateLanguages = {
+            "Andhra Pradesh": "Telugu", "Arunachal Pradesh": "English", "Assam": "Assamese",
+            "Bihar": "Hindi", "Chhattisgarh": "Hindi", "Goa": "Konkani", "Gujarat": "Gujarati",
+            "Haryana": "Hindi", "Himachal Pradesh": "Hindi", "Jharkhand": "Hindi",
+            "Karnataka": "Kannada", "Kerala": "Malayalam", "Madhya Pradesh": "Hindi",
+            "Maharashtra": "Marathi", "Manipur": "Manipuri", "Meghalaya": "English",
+            "Mizoram": "Mizo", "Nagaland": "English", "Odisha": "Odia", "Punjab": "Punjabi",
+            "Rajasthan": "Hindi", "Sikkim": "English", "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu", "Tripura": "Bengali", "Uttar Pradesh": "Hindi",
+            "Uttarakhand": "Hindi", "West Bengal": "Bengali", "Andaman and Nicobar Islands": "Hindi",
+            "Chandigarh": "English", "Dadra & Nagar Haveli & Daman & Diu": "Gujarati",
+            "Delhi": "Hindi", "Jammu and Kashmir": "Urdu", "Ladakh": "Urdu",
+            "Lakshadweep": "Malayalam", "Puducherry": "Tamil"
+        };
+
+        function updateLanguageOptions() {
+            let state = document.getElementById('state_select').value;
+            let langSelect = document.getElementById('language_select');
+            langSelect.innerHTML = '<option value="">Select Language</option>';
+
+            if(state && stateLanguages[state]) {
+                let localLang = stateLanguages[state];
+                let langs = new Set([localLang, "English", "Hindi"]); // Avoids duplicates
+                langs.forEach(l => {
+                    langSelect.innerHTML += `<option value="${l}">${l}</option>`;
+                });
+                document.getElementById('dynamic_heading').innerText = `User Registration (${localLang} / English / Hindi)`;
+            } else {
+                document.getElementById('dynamic_heading').innerText = `User Registration (ନୂଆ ଆବେଦନକାରୀ)`;
+            }
+        }
+
         let currentOTP = "";
         function generateOTP() {
             currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
@@ -271,13 +303,56 @@ user_register_design = """
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     <div class="w-full max-w-xl bg-white p-8 rounded-2xl shadow-xl border-t-4 border-green-600 mt-10">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">User Registration (ନୂଆ ଆବେଦନକାରୀ)</h2>
+        <h2 id="dynamic_heading" class="text-2xl font-bold text-center text-gray-800 mb-6">User Registration (ନୂଆ ଆବେଦନକାରୀ)</h2>
         <form action="/user/login" method="GET" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
-                    <select class="w-full px-4 py-2 border rounded-lg" required>
-                        <option value="">Select State</option><option>Odisha</option><option>Andhra Pradesh</option><option>West Bengal</option>
+                    <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
+                        <option value="">Select State</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                        <option value="Chandigarh">Chandigarh</option>
+                        <option value="Dadra & Nagar Haveli & Daman & Diu">Dadra & Nagar Haveli & Daman & Diu</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        <option value="Ladakh">Ladakh</option>
+                        <option value="Lakshadweep">Lakshadweep</option>
+                        <option value="Puducherry">Puducherry</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Language</label>
+                    <select id="language_select" class="w-full px-4 py-2 border rounded-lg bg-blue-50" required>
+                        <option value="">Select Language</option>
                     </select>
                 </div>
                 <div>
@@ -285,6 +360,7 @@ user_register_design = """
                     <input type="text" class="w-full px-4 py-2 border rounded-lg" required>
                 </div>
             </div>
+
             <div class="flex gap-4">
                 <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Mobile No</label><input type="text" class="w-full px-4 py-2 border rounded-lg" required></div>
                 <div class="w-1/2">
@@ -345,7 +421,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED WITH NEW FEATURES)
+# 5. FULL USER DASHBOARD
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
