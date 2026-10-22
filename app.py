@@ -1,7 +1,63 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Allow CORS for API requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ==========================================
+# 0. BACKEND DATABASE (DUMMY DATA)
+# ==========================================
+# Eithi tu asali database (MySQL/SQLite) connect kariparibu. Ebe pain eita gote demo database.
+income_database = {
+    "E-INC/2025/628385": {
+        "name": "AMARA JENA",
+        "father": "Jaganath Sutar",
+        "mother": "Basanti Sutar",
+        "district": "Cuttack",
+        "authority": "Revenue Officers not below the rank of Tahasildar / Additional Tahasildar",
+        "date": "2025-11-20",
+        "amount": "Rs. 48,000/-"
+    },
+    "E-INC/2025/111222": {
+        "name": "Ramesh Chandra Das",
+        "father": "Harihar Das",
+        "mother": "Sita Das",
+        "district": "Bhubaneswar",
+        "authority": "Tahasildar, Bhubaneswar",
+        "date": "2025-08-15",
+        "amount": "Rs. 35,000/-"
+    },
+    "E-INC/2026/999888": {
+        "name": "Smita Mohanty",
+        "father": "Prashant Mohanty",
+        "mother": "Lata Mohanty",
+        "district": "Puri",
+        "authority": "Additional Tahasildar, Puri",
+        "date": "2026-01-10",
+        "amount": "Rs. 25,000/-"
+    }
+}
+
+# ==========================================
+# API ROUTE FOR AUTO-FETCH
+# ==========================================
+@app.get("/api/get_income")
+async def get_income_data(cert_no: str):
+    # Ehi API cert_no check kariba au database ru thik data return kariba
+    if cert_no in income_database:
+        return income_database[cert_no]
+    else:
+        return {"error": "Certificate Not Found"}
+
 
 # ==========================================
 # 1. HOME PAGE DESIGN
@@ -289,7 +345,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED INCOME FETCH)
+# 5. FULL USER DASHBOARD (WITH REAL API FETCH & MANUAL ENTRY ENABLED)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -382,9 +438,6 @@ user_dashboard_design = """
             } else { specialBox.classList.add('hidden'); }
         }
 
-        // ===============================================
-        // UPDATED AADHAAR VERIFY (BANK + BRANCH DISPLAY)
-        // ===============================================
         function verifyAadhaar() {
             let fullName = document.getElementById('full_name').value;
             let aadhaarInput = document.getElementById('aadhaar_input').value;
@@ -397,63 +450,57 @@ user_dashboard_design = """
             document.getElementById('aadhaar_success_box').classList.remove('hidden');
             document.getElementById('aadhaar_status').classList.add('hidden');
             
-            // Show Bank Name AND Branch dynamically
             let district = document.getElementById('district').value || "YOUR DISTRICT";
             document.getElementById('fetched_bank').innerText = `ODISHA GRAMEEN BANK | Branch: ${district.toUpperCase()} MAIN BRANCH`;
         }
 
         // ===============================================
-        // UPDATED INCOME CERTIFICATE AUTO FETCH LOGIC
+        // UPDATED API FETCH LOGIC FOR DYNAMIC DATA
         // ===============================================
-        function verifyIncome() {
+        async function verifyIncome() {
             let cert = document.getElementById('income_cert_no').value;
             let year = document.getElementById('income_year').value;
 
             if(cert && year !== "Select") {
-                // Show fetching alert
-                alert(`Fetching Income Details from Database for Certificate ${cert} (${year})...`);
-                
-                // MOCK DATABASE DATA (Simulating Auto-Fetch from State DB)
-                let fetchedName = "Jyoti Prakash Sutar";
-                let fetchedFather = "Jaganath Sutar";
-                let fetchedMother = "Basanti Sutar";
-                let fetchedDistrict = "Cuttack";
-                let fetchedAuthority = "Revenue Officers not below the rank of Tahasildar / Additional Tahasildar";
-                let fetchedDate = "2025-05-12";
-                let fetchedIncomeAmount = "Rs. 45,000/-";
+                try {
+                    // Fetch request sent to backend API
+                    let response = await fetch(`/api/get_income?cert_no=${cert}`);
+                    let data = await response.json();
 
-                // Update data slightly if year changes for realistic feel
-                if (year === "2025-26") {
-                    fetchedDate = "2025-11-20";
-                    fetchedIncomeAmount = "Rs. 48,000/-";
-                } else if (year === "2026-27") {
-                    fetchedDate = "2026-02-15";
-                    fetchedIncomeAmount = "Rs. 50,000/-";
+                    if(data.error) {
+                        alert("Invalid Certificate Number or Data Not Found in Database!");
+                        return;
+                    }
+
+                    alert(`Fetching Income Details from Database for Certificate ${cert}...`);
+                    
+                    // Populate Bottom Fields dynamically from API response
+                    document.getElementById('inc_issued_to').value = data.name;
+                    document.getElementById('inc_father').value = data.father;
+                    document.getElementById('inc_mother').value = data.mother;
+                    document.getElementById('inc_district').value = data.district;
+                    document.getElementById('inc_authority').value = data.authority;
+                    document.getElementById('inc_date').value = data.date;
+                    document.getElementById('inc_amount').value = data.amount;
+                    document.getElementById('inc_relation').value = "Self";
+
+                    // Populate Top Fields dynamically
+                    document.getElementById('full_name').value = data.name;
+                    document.getElementById('father_name').value = data.father;
+                    document.getElementById('mother_name').value = data.mother;
+                    
+                    // Update dropdowns dynamically
+                    document.getElementById("state").value = "Odisha";
+                    populateDistricts();
+                    setTimeout(() => {
+                        document.getElementById("district").value = data.district;
+                        populateBlocks();
+                    }, 100);
+
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                    alert("System Error: Unable to fetch data from Server.");
                 }
-
-                // 1. Auto-Populate Income Certificate Bottom Fields
-                document.getElementById('inc_issued_to').value = fetchedName;
-                document.getElementById('inc_father').value = fetchedFather;
-                document.getElementById('inc_mother').value = fetchedMother;
-                document.getElementById('inc_district').value = fetchedDistrict;
-                document.getElementById('inc_authority').value = fetchedAuthority;
-                document.getElementById('inc_date').value = fetchedDate;
-                document.getElementById('inc_amount').value = fetchedIncomeAmount;
-                document.getElementById('inc_relation').value = "Self";
-
-                // 2. Auto-Populate Main Application Top Fields Automatically
-                document.getElementById('full_name').value = fetchedName;
-                document.getElementById('father_name').value = fetchedFather;
-                document.getElementById('mother_name').value = fetchedMother;
-                
-                // Set state/district smoothly
-                document.getElementById("state").value = "Odisha";
-                populateDistricts();
-                setTimeout(() => {
-                    document.getElementById("district").value = fetchedDistrict;
-                    populateBlocks();
-                }, 100);
-
             } else {
                 alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
             }
@@ -558,38 +605,40 @@ user_dashboard_design = """
                             <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-6 py-2 rounded hover:bg-green-700 shadow"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fetch Data</button>
                         </div>
                         
-                        <!-- Fetched Readonly Fields -->
+                        <!-- Manual Entry Fields (Readonly removed) -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
-                            <input type="text" id="inc_issued_to" class="w-full border-b border-gray-300 bg-transparent outline-none p-1 font-bold text-gray-800" readonly>
+                            <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">Applicant Father</label>
-                            <input type="text" id="inc_father" class="w-full border-b border-gray-300 bg-transparent outline-none p-1 font-bold text-gray-800" readonly>
+                            <input type="text" id="inc_father" placeholder="Enter Father Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">Applicant Mother</label>
-                            <input type="text" id="inc_mother" class="w-full border-b border-gray-300 bg-transparent outline-none p-1 font-bold text-gray-800" readonly>
+                            <input type="text" id="inc_mother" placeholder="Enter Mother Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">Issuing District</label>
-                            <input type="text" id="inc_district" class="w-full border-b border-gray-300 bg-transparent outline-none p-1 font-bold text-gray-800" readonly>
+                            <input type="text" id="inc_district" placeholder="Enter District" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                         </div>
                         <div class="col-span-2">
                             <label class="block text-xs font-semibold text-gray-500">Issuing Authority</label>
-                            <input type="text" id="inc_authority" class="w-full border-b border-gray-300 bg-transparent outline-none p-1 font-bold text-gray-800" readonly>
+                            <input type="text" id="inc_authority" placeholder="Enter Authority" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">Issue Date</label>
-                            <input type="date" id="inc_date" class="w-full border border-gray-300 rounded p-1 font-bold text-gray-800 bg-transparent" readonly>
+                            <input type="date" id="inc_date" class="w-full border border-gray-300 rounded p-2 font-bold text-gray-800 bg-white">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">Relationship</label>
-                            <input type="text" id="inc_relation" value="Self" class="w-full border-b border-gray-300 bg-transparent outline-none p-1 font-bold text-gray-800" readonly>
+                            <select id="inc_relation" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                                <option>Select</option><option>Self</option><option>Daughter</option><option>Son</option><option>Wife</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">Annual Income Detected</label>
-                            <input type="text" id="inc_amount" class="w-full border-b border-red-300 bg-transparent outline-none p-1 font-bold text-red-600 text-lg" readonly>
+                            <input type="text" id="inc_amount" placeholder="e.g. Rs. 48,000/-" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-red-600 text-lg">
                         </div>
                     </div>
                 </div>
