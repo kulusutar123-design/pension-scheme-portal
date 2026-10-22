@@ -83,24 +83,21 @@ html_design = """
         </div>
     </section>
 
-    <!-- SECTION: ABOUT US -->
     <section id="about" class="container mx-auto px-4 py-10">
         <div class="bg-white rounded-xl p-8 shadow-md border-t-4 border-blue-700">
             <div class="text-center mb-8"><h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-circle-info mr-2"></i> ଆମ ବିଷୟରେ (About Us)</h2></div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ।"</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy. Pension is not just money; it is respect."</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है।"</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା।"</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy."</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है।"</p></div>
             </div>
         </div>
     </section>
 
-    <!-- SECTION: SCHEMES & RULES -->
     <section id="schemes" class="bg-gray-100 py-12 border-t border-b border-gray-200">
         <div class="container mx-auto px-4">
             <div class="text-center mb-10"><h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i> ଯୋଜନା ଏବଂ ସର୍ତ୍ତାବଳୀ (Schemes & Conditions)</h2></div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Schemes List -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
                     <ul class="space-y-4">
@@ -110,20 +107,17 @@ html_design = """
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm"><span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span><span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-pink-500 shadow-sm"><span class="font-semibold text-gray-800">ଛାଡପତ୍ର ପାଇଥିବା (Divorcee)</span><span class="text-sm bg-pink-100 text-pink-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-teal-500 shadow-sm"><span class="font-semibold text-gray-800">କିନ୍ନର (Transgender)</span><span class="text-sm bg-teal-100 text-teal-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span></li>
-                        <li class="text-xs text-gray-500 italic mt-2">* ଅନ୍ୟାନ୍ୟ ଯୋଜନା: କୁଷ୍ଠରୋଗ ଆରୋଗ୍ୟ, ଏଡସ୍/ଏଚଆଇଭି ଆକ୍ରାନ୍ତ (ବିଧବା/ଭିନ୍ନକ୍ଷମ)</li>
                     </ul>
                 </div>
-                <!-- Strict Rules -->
                 <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
                     <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
                     <div class="space-y-4 text-sm text-gray-800">
                         <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p></div>
-                        <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ। ନଚେତ୍ ଆପେ ଆପେ ବନ୍ଦ ହୋଇଯିବ।</p></div>
+                        <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର। ଭୁଲ୍ ତଥ୍ୟ ଦେଲେ ପେନସନ୍ ତୁରନ୍ତ ବାତିଲ୍ ହେବ।</p></div>
                     </div>
                 </div>
-                <!-- Documents -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-folder-open mr-2"></i> ଦରକାରୀ କାଗଜପତ୍ର (Documents)</h3>
                     <ul class="space-y-3 text-sm text-gray-700">
@@ -132,17 +126,12 @@ html_design = """
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (Passport Size Photo)</li>
-                        <li class="flex items-start mt-2 bg-yellow-50 p-2 rounded text-xs border border-yellow-200">
-                            <i class="fa-solid fa-circle-info text-yellow-600 mt-1 mr-2"></i>
-                            ଯୋଜନା ଅନୁସାରେ ସ୍ୱତନ୍ତ୍ର ପ୍ରମାଣପତ୍ର (ଉଦାହରଣ: ଭିନ୍ନକ୍ଷମ ପ୍ରମାଣପତ୍ର, ସ୍ୱାମୀଙ୍କ ମୃତ୍ୟୁ ପ୍ରମାଣପତ୍ର ଇତ୍ୟାଦି)।
-                        </li>
                     </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SECTION: CONTACT US -->
     <section id="contact" class="container mx-auto px-4 py-12">
         <div class="bg-blue-900 text-white rounded-xl p-8 shadow-xl text-center max-w-3xl mx-auto">
             <h2 class="text-3xl font-bold mb-4"><i class="fa-solid fa-envelope-open-text mr-2"></i> ଯୋଗାଯୋଗ (Contact Us)</h2>
@@ -232,8 +221,7 @@ user_register_design = """
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select class="w-full px-4 py-2 border rounded-lg" required>
-                        <option value="">Select State</option>
-                        <option>Odisha</option><option>Andhra Pradesh</option><option>West Bengal</option>
+                        <option value="">Select State</option><option>Odisha</option><option>Andhra Pradesh</option><option>West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -301,7 +289,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. USER DASHBOARD (WITH AADHAAR & INCOME FIXES + MANUAL PANCHAYAT)
+# 5. FULL USER DASHBOARD
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -312,39 +300,39 @@ user_dashboard_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        // DYNAMIC CASCADING DROPDOWN FOR ODISHA 30 DISTRICTS FROM PDF
+        const gpList = ["GP 1", "GP 2", "GP 3", "GP 4"];
         const locationData = {
             "Odisha": {
-                "Angul": { "Banarpal": [], "Chhendiapada": [], "Athamallik": [], "Kisshorenagar": [], "Talcher": [], "Kaniha": [], "Pallahara": [] },
-                "Balasore": { "Basta": [], "Remuna": [], "Jaleswar": [], "Bhograi": [], "Baliapal": [], "Nilagiri": [], "Oupada": [], "Sora": [], "Bahanaga": [], "Simulia": [], "Khaira": [] },
-                "Bargarh": { "Barpali": [], "Bheden": [], "Bhatil": [], "Ambabhona": [], "Atabira": [], "Padampur": [], "Paikmal": [], "Jharbhand": [], "Sohella": [], "Bijepur": [] },
-                "Bhadrak": { "Basudevpur": [], "Bhadrak": [], "Bhandaripokhari": [], "Bonth": [], "Chandabali": [], "Dhamanagar": [], "Tihidi": [] },
-                "Bolangir": { "Deogam": [], "Gudvella": [], "Puintal": [], "Luisinga": [], "Agalapur": [], "Titilagarh": [], "Saintala": [], "Bangamunda": [], "Muribahal": [], "Turekela": [], "Patnagarh": [], "Belapada": [], "Khaprakhole": [] },
-                "Boudh": { "Boudh": [], "Harbhanga": [], "Kantamal": [] },
-                "Cuttack": { "Cuttack Sadar": [], "Baranga": [], "Niali": [], "Kantapada": [], "Salepur": [], "Nischantakoili": [], "Mahanga": [], "Tangi-Choudwar": [], "Athagarh": [], "Tigiria": [], "Baramba": [], "Narasinghpur": [], "Banki": [], "Banki-Dampada": [] },
-                "Deogarh": { "Barkote": [], "Reamal": [], "Tileibani": [] },
-                "Dhenkanal": { "Dhenkanal (Sadar)": [], "Gondia": [], "Odapada": [], "Hindol": [], "Kamakhyanagar": [], "Parjang": [], "Kankadahad": [], "Bhuban": [] },
-                "Gajapati": { "Paralakhemundi": [], "Kasinagar": [], "Gumma": [], "Mohana": [], "Nuagada": [], "R.Udayagiri": [], "Rayagad": [] },
-                "Ganjam": { "Patrapur": [], "Chikiti": [], "Rangeilunda": [], "Digipahandi": [], "Sanakhemundi": [], "Kukudakhandi": [], "Chatrapur": [], "Ganjam": [], "Purusottampur": [], "Hinjilikatu": [], "Khallikote": [], "Beguniapada": [], "Kabisuryanagar": [], "Polsara": [], "Aska": [], "Sheragada": [], "Dharakote": [], "Sorada": [], "Bhanjanagar": [], "Belguntha": [], "Buguda": [], "Jagannath Prasad": [] },
-                "Jagatsinghpur": { "Jagatsinghpur": [], "Biridi": [], "Naugaon": [], "Balikuda": [], "Raghunathpur": [], "Tirtol": [], "Ersama": [], "Kujang": [] },
-                "Jajpur": { "Jajpur": [], "Dasarathpur": [], "Binjharpur": [], "Dangadi": [], "Sukinda": [], "Korei": [], "Dharmasala": [], "Barchana": [], "Rasulpur": [], "Bari": [] },
-                "Jharsuguda": { "Jharsuguda": [], "Lakhanpur": [], "Kirmira": [], "Kolabira": [], "Laikera": [] },
-                "Kalahandi": { "Bhawanipatna": [], "Kesinga": [], "Thuamul Rampur": [], "Narla": [], "Madanpur Rampur": [], "Karlamunda": [], "Lanjigarh": [], "Dharmagarh": [], "Golamunda": [], "Jaipatna": [], "Junagarh": [], "Kalampur": [], "Koksara": [] },
-                "Kendrapara": { "Kendrapara": [], "Derabish": [], "Marsaghai": [], "Mahakalapara": [], "Garadpur": [], "Pattamundai": [], "Rajnagar": [], "Rajkanika": [], "Aul": [] },
-                "Keonjhar": { "Keonjhar": [], "Saharapada": [], "Telkoi": [], "Ghatgaon": [], "Bansalpal": [], "Patna": [], "Harichandanpur": [], "Anandapur": [], "Ghasipura": [], "Hatadihi": [], "Champua": [], "Jhumpura": [], "Joda": [] },
-                "Khordha": { "Khurda": [], "Begunia": [], "Bolagad": [], "Bhubaneswar": [], "Jatni": [], "Balipatna": [], "Balianta": [], "Tangii": [], "Chilika": [], "Banapur": [] },
-                "Koraput": { "Koraput": [], "Dasamanthpur": [], "Semiliguda": [], "Kalimela": [], "Nandapur": [], "Pottangi": [], "Lamptaput": [], "Narayanapatna": [], "Bandhugaon": [], "Laxmipur": [], "jeypore": [], "Kundra": [], "Boriguma": [], "Kotpad": [], "Boipariguda": [] },
-                "Malkanagiri": { "Malkanagiri": [], "Korukonda": [], "Mathili": [], "Kallimela": [], "Podia": [], "Givindpali": [], "Khairaput": [], "Kudmulgumma": [] },
-                "Mayurbhanj": { "Baripada": [], "Samakhunta": [], "Suliapdad": [], "Betanati": [], "Badasahi": [], "Rasagobindapur": [], "Bangiriposhi": [], "Kuliana": [], "Sarasakana": [], "Udala": [], "Khunta": [], "Kaptipada": [], "Karanjia": [], "Thakurmunda": [], "Sukuruli": [], "Joshipur": [], "Raruan": [], "Rairangapur": [], "Jamda": [], "Bijatala": [], "Bisoi": [], "Gopabandhunagar": [], "Tiring": [], "Kusumi": [], "Moroda": [], "Bahalda": [] },
-                "Nawarangpur": { "Nowarangpur": [], "Nandahandi": [], "Tentulikhuinti": [], "Papadahandi": [], "Kosagumuda": [], "Dabugaon": [], "Umerkote": [], "Jharigaon": [], "Chandahandi": [], "Raighar": [] },
-                "Nayagarh": { "Nayagarh": [], "Odagaon": [], "Bhapur": [], "Khandapada": [], "Ranpur": [], "Daspalla": [], "Nuagaon": [], "Gania": [] },
-                "Nuapada": { "Nuapada": [], "Boden": [], "Khariar": [], "Komna": [], "Sinapali": [] },
-                "Phulbani": { "Phulbani": [], "Phiringia": [], "Khajuripada": [], "K.Nuagaon": [], "Daringbadi": [], "Balliguda": [], "Kotgarh": [], "Tumudibandh": [], "G.Udayagiri": [], "Raikia": [], "Tikabali": [], "Chakapad": [] },
-                "Puri": { "Puri Sadar": [], "Brahmagiri": [], "Krushnaprasad": [], "Satyabadi": [], "Kanas": [], "Delang": [], "Pipili": [], "Nimapada": [], "Gop": [], "Kakatpur": [], "Astarang": [] },
-                "Rayagada": { "Rayagada": [], "Kolanara": [], "Kaalyansinghpur": [], "Kaashipur": [], "Gunupur": [], "Padmapur": [], "Ramanaguda": [], "Gudari": [], "Muniguda": [], "Bisam-Cuttack": [], "Chandrapur": [] },
-                "Sambalpur": { "Dhankauda": [], "Maneswar": [], "Jujumora": [], "Rengali": [], "Rairakhola": [], "Nakatideul": [], "Kuchinda": [], "Bamara": [], "Jamanakira": [] },
-                "Sonepur": { "Sonepur": [], "Tarva": [], "Birmaharajpur": [], "Ulunda": [], "Dunguripalli": [], "Binka": [] },
-                "Sundargarh": { "Sundargarh (Sadar)": [], "Balisankara": [], "Subdega": [], "Lephripara": [], "Hemgiri": [], "Tanngarapalli": [], "Rajgangpur": [], "Kutra": [], "Lathikata": [], "Kuanrmunda": [], "Badagaon": [], "Nuagaon": [], "Bisra": [], "Gurundia": [], "Koira": [], "Lahunipada": [], "Banaigarh": [] }
+                "Angul": { "Banarpal": gpList, "Chhendiapada": gpList, "Athamallik": gpList, "Kisshorenagar": gpList, "Talcher": gpList, "Kaniha": gpList, "Pallahara": gpList },
+                "Balasore": { "Basta": gpList, "Remuna": gpList, "Jaleswar": gpList, "Bhograi": gpList, "Baliapal": gpList, "Nilagiri": gpList, "Oupada": gpList, "Sora": gpList, "Bahanaga": gpList, "Simulia": gpList, "Khaira": gpList },
+                "Bargarh": { "Barpali": gpList, "Bheden": gpList, "Bhatil": gpList, "Ambabhona": gpList, "Atabira": gpList, "Padampur": gpList, "Paikmal": gpList, "Jharbhand": gpList, "Sohella": gpList, "Bijepur": gpList },
+                "Bhadrak": { "Basudevpur": gpList, "Bhadrak": gpList, "Bhandaripokhari": gpList, "Bonth": gpList, "Chandabali": gpList, "Dhamanagar": gpList, "Tihidi": gpList },
+                "Bolangir": { "Deogam": gpList, "Gudvella": gpList, "Puintal": gpList, "Luisinga": gpList, "Agalapur": gpList, "Titilagarh": gpList, "Saintala": gpList, "Bangamunda": gpList, "Muribahal": gpList, "Turekela": gpList, "Patnagarh": gpList, "Belapada": gpList, "Khaprakhole": gpList },
+                "Boudh": { "Boudh": gpList, "Harbhanga": gpList, "Kantamal": gpList },
+                "Cuttack": { "Cuttack Sadar": gpList, "Baranga": gpList, "Niali": gpList, "Kantapada": gpList, "Salepur": gpList, "Nischantakoili": gpList, "Mahanga": gpList, "Tangi-Choudwar": gpList, "Athagarh": gpList, "Tigiria": gpList, "Baramba": gpList, "Narasinghpur": gpList, "Banki": gpList, "Banki-Dampada": gpList },
+                "Deogarh": { "Barkote": gpList, "Reamal": gpList, "Tileibani": gpList },
+                "Dhenkanal": { "Dhenkanal (Sadar)": gpList, "Gondia": gpList, "Odapada": gpList, "Hindol": gpList, "Kamakhyanagar": gpList, "Parjang": gpList, "Kankadahad": gpList, "Bhuban": gpList },
+                "Gajapati": { "Paralakhemundi": gpList, "Kasinagar": gpList, "Gumma": gpList, "Mohana": gpList, "Nuagada": gpList, "R.Udayagiri": gpList, "Rayagad": gpList },
+                "Ganjam": { "Patrapur": gpList, "Chikiti": gpList, "Rangeilunda": gpList, "Digipahandi": gpList, "Sanakhemundi": gpList, "Kukudakhandi": gpList, "Chatrapur": gpList, "Ganjam": gpList, "Purusottampur": gpList, "Hinjilikatu": gpList, "Khallikote": gpList, "Beguniapada": gpList, "Kabisuryanagar": gpList, "Polsara": gpList, "Aska": gpList, "Sheragada": gpList, "Dharakote": gpList, "Sorada": gpList, "Bhanjanagar": gpList, "Belguntha": gpList, "Buguda": gpList, "Jagannath Prasad": gpList },
+                "Jagatsinghpur": { "Jagatsinghpur": gpList, "Biridi": gpList, "Naugaon": gpList, "Balikuda": gpList, "Raghunathpur": gpList, "Tirtol": gpList, "Ersama": gpList, "Kujang": gpList },
+                "Jajpur": { "Jajpur": gpList, "Dasarathpur": gpList, "Binjharpur": gpList, "Dangadi": gpList, "Sukinda": gpList, "Korei": gpList, "Dharmasala": gpList, "Barchana": gpList, "Rasulpur": gpList, "Bari": gpList },
+                "Jharsuguda": { "Jharsuguda": gpList, "Lakhanpur": gpList, "Kirmira": gpList, "Kolabira": gpList, "Laikera": gpList },
+                "Kalahandi": { "Bhawanipatna": gpList, "Kesinga": gpList, "Thuamul Rampur": gpList, "Narla": gpList, "Madanpur Rampur": gpList, "Karlamunda": gpList, "Lanjigarh": gpList, "Dharmagarh": gpList, "Golamunda": gpList, "Jaipatna": gpList, "Junagarh": gpList, "Kalampur": gpList, "Koksara": gpList },
+                "Kendrapara": { "Kendrapara": gpList, "Derabish": gpList, "Marsaghai": gpList, "Mahakalapara": gpList, "Garadpur": gpList, "Pattamundai": gpList, "Rajnagar": gpList, "Rajkanika": gpList, "Aul": gpList },
+                "Keonjhar": { "Keonjhar": gpList, "Saharapada": gpList, "Telkoi": gpList, "Ghatgaon": gpList, "Bansalpal": gpList, "Patna": gpList, "Harichandanpur": gpList, "Anandapur": gpList, "Ghasipura": gpList, "Hatadihi": gpList, "Champua": gpList, "Jhumpura": gpList, "Joda": gpList },
+                "Khordha": { "Khurda": gpList, "Begunia": gpList, "Bolagad": gpList, "Bhubaneswar": gpList, "Jatni": gpList, "Balipatna": gpList, "Balianta": gpList, "Tangii": gpList, "Chilika": gpList, "Banapur": gpList },
+                "Koraput": { "Koraput": gpList, "Dasamanthpur": gpList, "Semiliguda": gpList, "Kalimela": gpList, "Nandapur": gpList, "Pottangi": gpList, "Lamptaput": gpList, "Narayanapatna": gpList, "Bandhugaon": gpList, "Laxmipur": gpList, "jeypore": gpList, "Kundra": gpList, "Boriguma": gpList, "Kotpad": gpList, "Boipariguda": gpList },
+                "Malkanagiri": { "Malkanagiri": gpList, "Korukonda": gpList, "Mathili": gpList, "Kallimela": gpList, "Podia": gpList, "Givindpali": gpList, "Khairaput": gpList, "Kudmulgumma": gpList },
+                "Mayurbhanj": { "Baripada": gpList, "Samakhunta": gpList, "Suliapdad": gpList, "Betanati": gpList, "Badasahi": gpList, "Rasagobindapur": gpList, "Bangiriposhi": gpList, "Kuliana": gpList, "Sarasakana": gpList, "Udala": gpList, "Khunta": gpList, "Kaptipada": gpList, "Karanjia": gpList, "Thakurmunda": gpList, "Sukuruli": gpList, "Joshipur": gpList, "Raruan": gpList, "Rairangapur": gpList, "Jamda": gpList, "Bijatala": gpList, "Bisoi": gpList, "Gopabandhunagar": gpList, "Tiring": gpList, "Kusumi": gpList, "Moroda": gpList, "Bahalda": gpList },
+                "Nawarangpur": { "Nowarangpur": gpList, "Nandahandi": gpList, "Tentulikhuinti": gpList, "Papadahandi": gpList, "Kosagumuda": gpList, "Dabugaon": gpList, "Umerkote": gpList, "Jharigaon": gpList, "Chandahandi": gpList, "Raighar": gpList },
+                "Nayagarh": { "Nayagarh": gpList, "Odagaon": gpList, "Bhapur": gpList, "Khandapada": gpList, "Ranpur": gpList, "Daspalla": gpList, "Nuagaon": gpList, "Gania": gpList },
+                "Nuapada": { "Nuapada": gpList, "Boden": gpList, "Khariar": gpList, "Komna": gpList, "Sinapali": gpList },
+                "Phulbani": { "Phulbani": gpList, "Phiringia": gpList, "Khajuripada": gpList, "K.Nuagaon": gpList, "Daringbadi": gpList, "Balliguda": gpList, "Kotgarh": gpList, "Tumudibandh": gpList, "G.Udayagiri": gpList, "Raikia": gpList, "Tikabali": gpList, "Chakapad": gpList },
+                "Puri": { "Puri Sadar": gpList, "Brahmagiri": gpList, "Krushnaprasad": gpList, "Satyabadi": gpList, "Kanas": gpList, "Delang": gpList, "Pipili": gpList, "Nimapada": gpList, "Gop": gpList, "Kakatpur": gpList, "Astarang": gpList },
+                "Rayagada": { "Rayagada": gpList, "Kolanara": gpList, "Kaalyansinghpur": gpList, "Kaashipur": gpList, "Gunupur": gpList, "Padmapur": gpList, "Ramanaguda": gpList, "Gudari": gpList, "Muniguda": gpList, "Bisam-Cuttack": gpList, "Chandrapur": gpList },
+                "Sambalpur": { "Dhankauda": gpList, "Maneswar": gpList, "Jujumora": gpList, "Rengali": gpList, "Rairakhola": gpList, "Nakatideul": gpList, "Kuchinda": gpList, "Bamara": gpList, "Jamanakira": gpList },
+                "Sonepur": { "Sonepur": gpList, "Tarva": gpList, "Birmaharajpur": gpList, "Ulunda": gpList, "Dunguripalli": gpList, "Binka": gpList },
+                "Sundargarh": { "Sundargarh (Sadar)": gpList, "Balisankara": gpList, "Subdega": gpList, "Lephripara": gpList, "Hemgiri": gpList, "Tanngarapalli": gpList, "Rajgangpur": gpList, "Kutra": gpList, "Lathikata": gpList, "Kuanrmunda": gpList, "Badagaon": gpList, "Nuagaon": gpList, "Bisra": gpList, "Gurundia": gpList, "Koira": gpList, "Lahunipada": gpList, "Banaigarh": gpList }
             }
         };
 
@@ -352,10 +340,8 @@ user_dashboard_design = """
             let state = document.getElementById("state").value;
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
-            
             distSelect.innerHTML = "<option value=''>Select District</option>";
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
-            
             if(state && locationData[state]) {
                 for(let dist in locationData[state]) {
                     distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
@@ -367,9 +353,7 @@ user_dashboard_design = """
             let state = document.getElementById("state").value;
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
-            
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
-            
             if(state && dist && locationData[state][dist]) {
                 for(let block in locationData[state][dist]) {
                     blockSelect.innerHTML += `<option value='${block}'>${block}</option>`;
@@ -398,20 +382,14 @@ user_dashboard_design = """
             } else { specialBox.classList.add('hidden'); }
         }
 
-        // NEW: EXACT AADHAAR VERIFY MATCHING YOUR IMAGE
         function verifyAadhaar() {
             alert('Aadhaar OTP verified automatically!');
-            document.getElementById('full_name').value = "Rama Chandra Das"; // Auto Fetch Name
-            
-            // Show Exact Green Tick UI
+            document.getElementById('full_name').value = "Rama Chandra Das"; 
             document.getElementById('aadhaar_success_box').classList.remove('hidden');
             document.getElementById('aadhaar_status').classList.add('hidden');
-            
-            // Fill Bank Seed Box
             document.getElementById('aadhaar_bank_seed').value = "Yes (Auto Verified)";
         }
 
-        // NEW: INCOME CERTIFICATE SPLIT FETCH
         function verifyIncome() {
             let cert = document.getElementById('income_cert_no').value;
             let year = document.getElementById('income_year').value;
@@ -454,7 +432,6 @@ user_dashboard_design = """
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
             <form onsubmit="submitFinalApp(event)" class="space-y-6">
                 
-                <!-- Personal Info -->
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label><input type="text" id="full_name" class="w-full border p-2 rounded font-bold text-blue-800" required></div>
                     <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" class="w-full border p-2 rounded" required></div>
@@ -467,17 +444,11 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
                 </div>
                 
-                <!-- Scheme & Aadhaar (WITH NEW UI) -->
                 <div class="grid grid-cols-2 gap-6 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                         <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
-                            <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option>
-                            <option value="Widow">Widow (ବିଧବା)</option>
-                            <option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option>
-                            <option value="Unmarried">Unmarried (ଅବିବାହିତା)</option>
-                            <option value="Divorcee">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option>
-                            <option value="Transgender">Transgender (କିନ୍ନର)</option>
+                            <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow">Widow (ବିଧବା)</option><option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Unmarried">Unmarried (ଅବିବାହିତା)</option><option value="Divorcee">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option><option value="Transgender">Transgender (କିନ୍ନର)</option>
                         </select>
                     </div>
                     <div>
@@ -486,8 +457,6 @@ user_dashboard_design = """
                             <input type="text" placeholder="[Aadhaar Redacted]" class="w-full border p-2 rounded" required>
                             <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white font-bold px-4 rounded hover:bg-blue-700">VALIDATE</button>
                         </div>
-                        
-                        <!-- NEW SUCCESS UI FROM IMAGE -->
                         <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
                             <i class="fa-solid fa-check text-green-500 text-2xl mt-1"></i>
                             <div class="text-xs">
@@ -499,35 +468,14 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS (PANCHAYAT IS NOW MANUAL BOX) -->
                 <div class="grid grid-cols-4 gap-4 border-t pt-4">
-                    <div>
-                        <label class="block text-xs font-semibold">State</label>
-                        <select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded">
-                            <option value="">Select State</option>
-                            <option value="Odisha">Odisha</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold">District</label>
-                        <select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded">
-                            <option value="">Select District</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold">Block/Municipality</label>
-                        <select id="block" class="w-full border p-2 rounded">
-                            <option value="">Select Block</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold">Panchayat/Ward (Manual)</label>
-                        <input type="text" id="panchayat" placeholder="Enter Panchayat/Ward manually" class="w-full border p-2 rounded">
-                    </div>
+                    <div><label class="block text-xs font-semibold">State</label><select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded"><option value="">Select State</option><option value="Odisha">Odisha</option></select></div>
+                    <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded"><option value="">Select District</option></select></div>
+                    <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" class="w-full border p-2 rounded"><option value="">Select Block</option></select></div>
+                    <div><label class="block text-xs font-semibold">Panchayat/Ward (Manual)</label><input type="text" id="panchayat" placeholder="Enter Panchayat/Ward manually" class="w-full border p-2 rounded"></div>
                 </div>
                 <div><label class="block text-sm font-semibold">Full Address (Village/City, Post, PIN)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
-                <!-- Income (NEW SPLIT UI) & Bank -->
                 <div class="grid grid-cols-2 gap-6 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold mb-2">Income Certificate No & Year</label>
@@ -536,19 +484,14 @@ user_dashboard_design = """
                             <input type="text" id="income_year" placeholder="Year" class="w-1/4 border p-2 rounded">
                             <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-4 rounded w-1/4">Fetch Data</button>
                         </div>
-                        <!-- NEW AUTO FETCHED DETAILS UI -->
                         <div id="income_details_box" class="hidden mt-3 bg-gray-50 border border-green-200 p-3 rounded text-sm space-y-1">
                             <p class="text-gray-700"><strong>Applicant Name:</strong> <span id="inc_name" class="font-bold text-blue-700"></span></p>
                             <p class="text-gray-700"><strong>Issued By:</strong> <span id="inc_tehsildar" class="font-bold"></span></p>
                             <p class="text-gray-700"><strong>Income Amount:</strong> <span id="inc_amount" class="text-red-600 font-bold text-lg"></span></p>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-semibold mb-1">Aadhaar Bank Seeded?</label>
-                            <input type="text" id="aadhaar_bank_seed" placeholder="Yes / No (Manual)" class="w-full border p-2 rounded">
-                        </div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold mb-1">Aadhaar Bank Seeded?</label><input type="text" id="aadhaar_bank_seed" placeholder="Yes / No (Manual)" class="w-full border p-2 rounded"></div>
                         <div><label class="block text-xs font-semibold mb-1">Bank Name</label><input type="text" class="w-full border p-2 rounded"></div>
                         <div><label class="block text-xs font-semibold mb-1">Account No</label><input type="text" class="w-full border p-2 rounded"></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold mb-1">IFSC Code (Auto Branch)</label><input type="text" class="w-full border p-2 rounded" onblur="this.value ? alert('Branch Fetched Automatically!') : null"></div>
@@ -588,25 +531,45 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. ADMIN LOGIN & DASHBOARD PAGES
+# 6. FULL ADMIN DASHBOARD (RESTORED COMPLETELY - DO NOT DELETE)
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Login</title>
+    <title>Admin Login - Private Pension Scheme</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        function togglePassword() {
+            var passField = document.getElementById("password");
+            var eyeIcon = document.getElementById("eye-icon");
+            if (passField.type === "password") { passField.type = "text"; eyeIcon.classList.remove("fa-eye"); eyeIcon.classList.add("fa-eye-slash"); } 
+            else { passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }
+        }
+    </script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen relative">
-    <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700">Back to Home</a></div>
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-700">
-        <h2 class="text-2xl font-bold text-center mb-6">Admin Login</h2>
-        <form action="/admin" method="GET" class="space-y-4">
-            <input type="text" placeholder="Admin ID" class="w-full px-4 py-2 border rounded-lg" required>
-            <input type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg" required>
-            <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800">Login</button>
+        <div class="text-center mb-8">
+            <i class="fa-solid fa-user-shield text-5xl text-blue-700 mb-3"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
+        </div>
+        <form action="/admin" method="GET" class="space-y-6">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Admin ID / Email</label>
+                <div class="relative"><i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-400"></i><input type="text" placeholder="Enter ID or Email" class="w-full pl-10 pr-4 py-3 border rounded-lg" required></div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                <div class="relative"><i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-400"></i><input type="password" id="password" placeholder="Enter password" class="w-full pl-10 pr-10 py-3 border rounded-lg" required>
+                    <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-blue-500"><i id="eye-icon" class="fa-solid fa-eye"></i></button>
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 shadow-md">Login to Dashboard</button>
         </form>
+        <div class="text-center mt-6"><a href="/" class="text-sm text-gray-500 hover:text-blue-700"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Home</a></div>
     </div>
 </body>
 </html>
@@ -617,15 +580,190 @@ admin_design = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Private Pension Scheme</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        function switchTab(tabId, element) {
+            let sections = document.querySelectorAll('.content-section');
+            for(let i=0; i<sections.length; i++) { sections[i].classList.add('hidden'); }
+            document.getElementById('section-' + tabId).classList.remove('hidden');
+
+            let links = document.querySelectorAll('.menu-link');
+            for(let i=0; i<links.length; i++) {
+                links[i].classList.remove('bg-blue-700', 'text-white');
+                links[i].classList.add('text-slate-300', 'hover:bg-slate-800');
+            }
+            element.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            element.classList.add('bg-blue-700', 'text-white');
+
+            let titles = {
+                'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
+                'newapps': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Application Verification',
+                'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
+                'renewals': '<i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> 3-Month Renewals',
+                'payments': '<i class="fa-solid fa-money-bill-transfer text-blue-600 mr-2"></i> Payment Records',
+                'profile': '<i class="fa-solid fa-user-gear text-blue-600 mr-2"></i> Admin Profile Settings'
+            };
+            document.getElementById('header-title').innerHTML = titles[tabId];
+        }
+    </script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen relative">
-    <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow">Back to Home</a></div>
-    <div class="bg-white p-10 rounded shadow-xl text-center">
-        <h1 class="text-3xl font-bold text-blue-700">Welcome to Admin Dashboard</h1>
-        <p class="mt-4 text-gray-600">Your previous admin features remain completely intact.</p>
-    </div>
+<body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl h-full">
+        <div class="p-5 border-b border-slate-700 text-center">
+            <i class="fa-solid fa-user-shield text-4xl text-blue-500 mb-2"></i>
+            <h2 class="text-xl font-bold">Admin Panel</h2>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-2 px-3">
+                <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
+                <li><a href="#" onclick="switchTab('newapps', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Applications Verification</a></li>
+                <li><a href="#" onclick="switchTab('beneficiaries', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-users w-6 mr-2"></i> Beneficiaries</a></li>
+                <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals Tracker</a></li>
+                <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payment Records</a></li>
+                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('profile', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-user-gear w-6 mr-2"></i> Admin Profile</a></li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-slate-700">
+            <a href="/" class="flex items-center px-4 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center">
+            <h1 id="header-title" class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium">Welcome, <strong>Admin</strong></span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+            
+            <div id="section-dashboard" class="content-section">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
+                        <div><p class="text-sm text-gray-500 font-semibold">Total Applications</p><h3 class="text-2xl font-bold text-blue-700">1,245</h3></div>
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-file-lines"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-green-500 shadow-sm flex justify-between items-center">
+                        <div><p class="text-sm text-gray-500 font-semibold">Approved Pension (Active)</p><h3 class="text-2xl font-bold text-green-700">850</h3></div>
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-check-circle"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-orange-500 shadow-sm flex justify-between items-center">
+                        <div><p class="text-sm text-gray-500 font-semibold">Pending Verification</p><h3 class="text-2xl font-bold text-orange-700">310</h3></div>
+                        <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-hourglass-half"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-red-500 shadow-sm flex justify-between items-center">
+                        <div><p class="text-sm text-gray-500 font-semibold">Rejected</p><h3 class="text-2xl font-bold text-red-700">85</h3></div>
+                        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-ban"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-newapps" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-lg">Verify New Applications</h2></div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="hover:bg-gray-50 border-b">
+                                    <td class="py-4 px-4 font-medium text-blue-600">#APP-9082</td><td class="py-4 px-4 font-bold">Rama Chandra Das</td><td class="py-4 px-4">Old Age Pension</td>
+                                    <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                        <button class="bg-green-500 text-white px-3 py-1 rounded shadow hover:bg-green-600"><i class="fa-solid fa-check"></i> Approve</button>
+                                        <div class="flex items-center border border-red-300 rounded overflow-hidden">
+                                            <input type="text" placeholder="Reason..." class="px-2 py-1 w-24 text-xs outline-none text-red-700 placeholder-red-300">
+                                            <button class="bg-red-500 text-white px-3 py-1 hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-beneficiaries" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center"><h2 class="font-bold text-lg">Active Beneficiaries List</h2></div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b text-center">Admin Action</th></tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="hover:bg-gray-50 border-b">
+                                    <td class="py-4 px-4 font-medium text-blue-600">#BEN-101</td><td class="py-4 px-4 font-bold">Harihar Nayak</td>
+                                    <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
+                                    <td class="py-4 px-4 text-center space-x-2">
+                                        <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-pause"></i> Hold</button>
+                                        <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-hand-paper"></i> Stop</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-renewals" class="content-section hidden">
+                 <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
+                    <h2 class="font-bold text-lg mb-4">Renewal Status</h2>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-100 text-gray-600 text-sm">
+                            <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status / Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="bg-red-50 hover:bg-red-100 border-b">
+                                <td class="py-4 px-4 font-medium text-red-700">#BEN-089</td><td class="py-4 px-4 font-bold text-red-700">Bimala Das</td>
+                                <td class="py-4 px-4"><span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (3+ Months)</span></td>
+                                <td class="py-4 px-4 text-center"><button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-hand-paper"></i> Stop Pension</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-payments" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-bold text-lg">Monthly Payment Records</h2>
+                        <div class="space-x-2">
+                            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
+                            <button class="bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-profile" class="content-section hidden">
+                <div class="max-w-2xl bg-white rounded-xl shadow-sm border p-8">
+                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-user-pen"></i> Update Admin Profile</h2>
+                    <form class="space-y-5">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label><input type="text" value="Super Admin" class="w-full px-4 py-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Mobile No.</label><input type="text" value="9876543210" class="w-full px-4 py-2 border rounded-lg"></div>
+                        </div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Email ID (Login ID)</label><input type="email" value="admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg"></div>
+                        <div class="border-t pt-5 mt-5">
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-lock text-gray-500"></i> Change Password</h3>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div><label class="block text-sm text-gray-600 mb-1">New Password</label><input type="password" placeholder="Enter new password" class="w-full px-4 py-2 border rounded-lg"></div>
+                                <div><label class="block text-sm text-gray-600 mb-1">Confirm Password</label><input type="password" placeholder="Re-enter password" class="w-full px-4 py-2 border rounded-lg"></div>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex justify-end"><button type="button" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
 </body>
 </html>
 """
