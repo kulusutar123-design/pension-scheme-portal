@@ -132,6 +132,10 @@ html_design = """
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (Passport Size Photo)</li>
+                        <li class="flex items-start mt-2 bg-yellow-50 p-2 rounded text-xs border border-yellow-200">
+                            <i class="fa-solid fa-circle-info text-yellow-600 mt-1 mr-2"></i>
+                            ଯୋଜନା ଅନୁସାରେ ସ୍ୱତନ୍ତ୍ର ପ୍ରମାଣପତ୍ର (ଉଦାହରଣ: ଭିନ୍ନକ୍ଷମ ପ୍ରମାଣପତ୍ର, ସ୍ୱାମୀଙ୍କ ମୃତ୍ୟୁ ପ୍ରମାଣପତ୍ର ଇତ୍ୟାଦି)।
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -265,7 +269,7 @@ user_register_design = """
 """
 
 # ==========================================
-# 4. USER LOGIN PAGE (BENEFICIARY)
+# 4. USER LOGIN PAGE
 # ==========================================
 user_login_design = """
 <!DOCTYPE html>
@@ -297,7 +301,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. USER DASHBOARD (WITH MASSIVE DYNAMIC DROPDOWN FOR ODISHA 30 DISTS)
+# 5. USER DASHBOARD (WITH AADHAAR & INCOME FIXES + MANUAL PANCHAYAT)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -309,39 +313,38 @@ user_dashboard_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         // DYNAMIC CASCADING DROPDOWN FOR ODISHA 30 DISTRICTS FROM PDF
-        const gpList = ["GP 1", "GP 2", "GP 3", "GP 4"];
         const locationData = {
             "Odisha": {
-                "Angul": { "Banarpal": gpList, "Chhendiapada": gpList, "Athamallik": gpList, "Kisshorenagar": gpList, "Talcher": gpList, "Kaniha": gpList, "Pallahara": gpList },
-                "Balasore": { "Basta": gpList, "Remuna": gpList, "Jaleswar": gpList, "Bhograi": gpList, "Baliapal": gpList, "Nilagiri": gpList, "Oupada": gpList, "Sora": gpList, "Bahanaga": gpList, "Simulia": gpList, "Khaira": gpList },
-                "Bargarh": { "Barpali": gpList, "Bheden": gpList, "Bhatil": gpList, "Ambabhona": gpList, "Atabira": gpList, "Padampur": gpList, "Paikmal": gpList, "Jharbhand": gpList, "Sohella": gpList, "Bijepur": gpList },
-                "Bhadrak": { "Basudevpur": gpList, "Bhadrak": gpList, "Bhandaripokhari": gpList, "Bonth": gpList, "Chandabali": gpList, "Dhamanagar": gpList, "Tihidi": gpList },
-                "Bolangir": { "Deogam": gpList, "Gudvella": gpList, "Puintal": gpList, "Luisinga": gpList, "Agalapur": gpList, "Titilagarh": gpList, "Saintala": gpList, "Bangamunda": gpList, "Muribahal": gpList, "Turekela": gpList, "Patnagarh": gpList, "Belapada": gpList, "Khaprakhole": gpList },
-                "Boudh": { "Boudh": gpList, "Harbhanga": gpList, "Kantamal": gpList },
-                "Cuttack": { "Cuttack Sadar": gpList, "Baranga": gpList, "Niali": gpList, "Kantapada": gpList, "Salepur": gpList, "Nischantakoili": gpList, "Mahanga": gpList, "Tangi-Choudwar": gpList, "Athagarh": gpList, "Tigiria": gpList, "Baramba": gpList, "Narasinghpur": gpList, "Banki": gpList, "Banki-Dampada": gpList },
-                "Deogarh": { "Barkote": gpList, "Reamal": gpList, "Tileibani": gpList },
-                "Dhenkanal": { "Dhenkanal (Sadar)": gpList, "Gondia": gpList, "Odapada": gpList, "Hindol": gpList, "Kamakhyanagar": gpList, "Parjang": gpList, "Kankadahad": gpList, "Bhuban": gpList },
-                "Gajapati": { "Paralakhemundi": gpList, "Kasinagar": gpList, "Gumma": gpList, "Mohana": gpList, "Nuagada": gpList, "R.Udayagiri": gpList, "Rayagad": gpList },
-                "Ganjam": { "Patrapur": gpList, "Chikiti": gpList, "Rangeilunda": gpList, "Digipahandi": gpList, "Sanakhemundi": gpList, "Kukudakhandi": gpList, "Chatrapur": gpList, "Ganjam": gpList, "Purusottampur": gpList, "Hinjilikatu": gpList, "Khallikote": gpList, "Beguniapada": gpList, "Kabisuryanagar": gpList, "Polsara": gpList, "Aska": gpList, "Sheragada": gpList, "Dharakote": gpList, "Sorada": gpList, "Bhanjanagar": gpList, "Belguntha": gpList, "Buguda": gpList, "Jagannath Prasad": gpList },
-                "Jagatsinghpur": { "Jagatsinghpur": gpList, "Biridi": gpList, "Naugaon": gpList, "Balikuda": gpList, "Raghunathpur": gpList, "Tirtol": gpList, "Ersama": gpList, "Kujang": gpList },
-                "Jajpur": { "Jajpur": gpList, "Dasarathpur": gpList, "Binjharpur": gpList, "Dangadi": gpList, "Sukinda": gpList, "Korei": gpList, "Dharmasala": gpList, "Barchana": gpList, "Rasulpur": gpList, "Bari": gpList },
-                "Jharsuguda": { "Jharsuguda": gpList, "Lakhanpur": gpList, "Kirmira": gpList, "Kolabira": gpList, "Laikera": gpList },
-                "Kalahandi": { "Bhawanipatna": gpList, "Kesinga": gpList, "Thuamul Rampur": gpList, "Narla": gpList, "Madanpur Rampur": gpList, "Karlamunda": gpList, "Lanjigarh": gpList, "Dharmagarh": gpList, "Golamunda": gpList, "Jaipatna": gpList, "Junagarh": gpList, "Kalampur": gpList, "Koksara": gpList },
-                "Kendrapara": { "Kendrapara": gpList, "Derabish": gpList, "Marsaghai": gpList, "Mahakalapara": gpList, "Garadpur": gpList, "Pattamundai": gpList, "Rajnagar": gpList, "Rajkanika": gpList, "Aul": gpList },
-                "Keonjhar": { "Keonjhar": gpList, "Saharapada": gpList, "Telkoi": gpList, "Ghatgaon": gpList, "Bansalpal": gpList, "Patna": gpList, "Harichandanpur": gpList, "Anandapur": gpList, "Ghasipura": gpList, "Hatadihi": gpList, "Champua": gpList, "Jhumpura": gpList, "Joda": gpList },
-                "Khordha": { "Khurda": gpList, "Begunia": gpList, "Bolagad": gpList, "Bhubaneswar": gpList, "Jatni": gpList, "Balipatna": gpList, "Balianta": gpList, "Tangii": gpList, "Chilika": gpList, "Banapur": gpList },
-                "Koraput": { "Koraput": gpList, "Dasamanthpur": gpList, "Semiliguda": gpList, "Kalimela": gpList, "Nandapur": gpList, "Pottangi": gpList, "Lamptaput": gpList, "Narayanapatna": gpList, "Bandhugaon": gpList, "Laxmipur": gpList, "jeypore": gpList, "Kundra": gpList, "Boriguma": gpList, "Kotpad": gpList, "Boipariguda": gpList },
-                "Malkanagiri": { "Malkanagiri": gpList, "Korukonda": gpList, "Mathili": gpList, "Kallimela": gpList, "Podia": gpList, "Givindpali": gpList, "Khairaput": gpList, "Kudmulgumma": gpList },
-                "Mayurbhanj": { "Baripada": gpList, "Samakhunta": gpList, "Suliapdad": gpList, "Betanati": gpList, "Badasahi": gpList, "Rasagobindapur": gpList, "Bangiriposhi": gpList, "Kuliana": gpList, "Sarasakana": gpList, "Udala": gpList, "Khunta": gpList, "Kaptipada": gpList, "Karanjia": gpList, "Thakurmunda": gpList, "Sukuruli": gpList, "Joshipur": gpList, "Raruan": gpList, "Rairangapur": gpList, "Jamda": gpList, "Bijatala": gpList, "Bisoi": gpList, "Gopabandhunagar": gpList, "Tiring": gpList, "Kusumi": gpList, "Moroda": gpList, "Bahalda": gpList },
-                "Nawarangpur": { "Nowarangpur": gpList, "Nandahandi": gpList, "Tentulikhuinti": gpList, "Papadahandi": gpList, "Kosagumuda": gpList, "Dabugaon": gpList, "Umerkote": gpList, "Jharigaon": gpList, "Chandahandi": gpList, "Raighar": gpList },
-                "Nayagarh": { "Nayagarh": gpList, "Odagaon": gpList, "Bhapur": gpList, "Khandapada": gpList, "Ranpur": gpList, "Daspalla": gpList, "Nuagaon": gpList, "Gania": gpList },
-                "Nuapada": { "Nuapada": gpList, "Boden": gpList, "Khariar": gpList, "Komna": gpList, "Sinapali": gpList },
-                "Phulbani": { "Phulbani": gpList, "Phiringia": gpList, "Khajuripada": gpList, "K.Nuagaon": gpList, "Daringbadi": gpList, "Balliguda": gpList, "Kotgarh": gpList, "Tumudibandh": gpList, "G.Udayagiri": gpList, "Raikia": gpList, "Tikabali": gpList, "Chakapad": gpList },
-                "Puri": { "Puri Sadar": gpList, "Brahmagiri": gpList, "Krushnaprasad": gpList, "Satyabadi": gpList, "Kanas": gpList, "Delang": gpList, "Pipili": gpList, "Nimapada": gpList, "Gop": gpList, "Kakatpur": gpList, "Astarang": gpList },
-                "Rayagada": { "Rayagada": gpList, "Kolanara": gpList, "Kaalyansinghpur": gpList, "Kaashipur": gpList, "Gunupur": gpList, "Padmapur": gpList, "Ramanaguda": gpList, "Gudari": gpList, "Muniguda": gpList, "Bisam-Cuttack": gpList, "Chandrapur": gpList },
-                "Sambalpur": { "Dhankauda": gpList, "Maneswar": gpList, "Jujumora": gpList, "Rengali": gpList, "Rairakhola": gpList, "Nakatideul": gpList, "Kuchinda": gpList, "Bamara": gpList, "Jamanakira": gpList },
-                "Sonepur": { "Sonepur": gpList, "Tarva": gpList, "Birmaharajpur": gpList, "Ulunda": gpList, "Dunguripalli": gpList, "Binka": gpList },
-                "Sundargarh": { "Sundargarh (Sadar)": gpList, "Balisankara": gpList, "Subdega": gpList, "Lephripara": gpList, "Hemgiri": gpList, "Tanngarapalli": gpList, "Rajgangpur": gpList, "Kutra": gpList, "Lathikata": gpList, "Kuanrmunda": gpList, "Badagaon": gpList, "Nuagaon": gpList, "Bisra": gpList, "Gurundia": gpList, "Koira": gpList, "Lahunipada": gpList, "Banaigarh": gpList }
+                "Angul": { "Banarpal": [], "Chhendiapada": [], "Athamallik": [], "Kisshorenagar": [], "Talcher": [], "Kaniha": [], "Pallahara": [] },
+                "Balasore": { "Basta": [], "Remuna": [], "Jaleswar": [], "Bhograi": [], "Baliapal": [], "Nilagiri": [], "Oupada": [], "Sora": [], "Bahanaga": [], "Simulia": [], "Khaira": [] },
+                "Bargarh": { "Barpali": [], "Bheden": [], "Bhatil": [], "Ambabhona": [], "Atabira": [], "Padampur": [], "Paikmal": [], "Jharbhand": [], "Sohella": [], "Bijepur": [] },
+                "Bhadrak": { "Basudevpur": [], "Bhadrak": [], "Bhandaripokhari": [], "Bonth": [], "Chandabali": [], "Dhamanagar": [], "Tihidi": [] },
+                "Bolangir": { "Deogam": [], "Gudvella": [], "Puintal": [], "Luisinga": [], "Agalapur": [], "Titilagarh": [], "Saintala": [], "Bangamunda": [], "Muribahal": [], "Turekela": [], "Patnagarh": [], "Belapada": [], "Khaprakhole": [] },
+                "Boudh": { "Boudh": [], "Harbhanga": [], "Kantamal": [] },
+                "Cuttack": { "Cuttack Sadar": [], "Baranga": [], "Niali": [], "Kantapada": [], "Salepur": [], "Nischantakoili": [], "Mahanga": [], "Tangi-Choudwar": [], "Athagarh": [], "Tigiria": [], "Baramba": [], "Narasinghpur": [], "Banki": [], "Banki-Dampada": [] },
+                "Deogarh": { "Barkote": [], "Reamal": [], "Tileibani": [] },
+                "Dhenkanal": { "Dhenkanal (Sadar)": [], "Gondia": [], "Odapada": [], "Hindol": [], "Kamakhyanagar": [], "Parjang": [], "Kankadahad": [], "Bhuban": [] },
+                "Gajapati": { "Paralakhemundi": [], "Kasinagar": [], "Gumma": [], "Mohana": [], "Nuagada": [], "R.Udayagiri": [], "Rayagad": [] },
+                "Ganjam": { "Patrapur": [], "Chikiti": [], "Rangeilunda": [], "Digipahandi": [], "Sanakhemundi": [], "Kukudakhandi": [], "Chatrapur": [], "Ganjam": [], "Purusottampur": [], "Hinjilikatu": [], "Khallikote": [], "Beguniapada": [], "Kabisuryanagar": [], "Polsara": [], "Aska": [], "Sheragada": [], "Dharakote": [], "Sorada": [], "Bhanjanagar": [], "Belguntha": [], "Buguda": [], "Jagannath Prasad": [] },
+                "Jagatsinghpur": { "Jagatsinghpur": [], "Biridi": [], "Naugaon": [], "Balikuda": [], "Raghunathpur": [], "Tirtol": [], "Ersama": [], "Kujang": [] },
+                "Jajpur": { "Jajpur": [], "Dasarathpur": [], "Binjharpur": [], "Dangadi": [], "Sukinda": [], "Korei": [], "Dharmasala": [], "Barchana": [], "Rasulpur": [], "Bari": [] },
+                "Jharsuguda": { "Jharsuguda": [], "Lakhanpur": [], "Kirmira": [], "Kolabira": [], "Laikera": [] },
+                "Kalahandi": { "Bhawanipatna": [], "Kesinga": [], "Thuamul Rampur": [], "Narla": [], "Madanpur Rampur": [], "Karlamunda": [], "Lanjigarh": [], "Dharmagarh": [], "Golamunda": [], "Jaipatna": [], "Junagarh": [], "Kalampur": [], "Koksara": [] },
+                "Kendrapara": { "Kendrapara": [], "Derabish": [], "Marsaghai": [], "Mahakalapara": [], "Garadpur": [], "Pattamundai": [], "Rajnagar": [], "Rajkanika": [], "Aul": [] },
+                "Keonjhar": { "Keonjhar": [], "Saharapada": [], "Telkoi": [], "Ghatgaon": [], "Bansalpal": [], "Patna": [], "Harichandanpur": [], "Anandapur": [], "Ghasipura": [], "Hatadihi": [], "Champua": [], "Jhumpura": [], "Joda": [] },
+                "Khordha": { "Khurda": [], "Begunia": [], "Bolagad": [], "Bhubaneswar": [], "Jatni": [], "Balipatna": [], "Balianta": [], "Tangii": [], "Chilika": [], "Banapur": [] },
+                "Koraput": { "Koraput": [], "Dasamanthpur": [], "Semiliguda": [], "Kalimela": [], "Nandapur": [], "Pottangi": [], "Lamptaput": [], "Narayanapatna": [], "Bandhugaon": [], "Laxmipur": [], "jeypore": [], "Kundra": [], "Boriguma": [], "Kotpad": [], "Boipariguda": [] },
+                "Malkanagiri": { "Malkanagiri": [], "Korukonda": [], "Mathili": [], "Kallimela": [], "Podia": [], "Givindpali": [], "Khairaput": [], "Kudmulgumma": [] },
+                "Mayurbhanj": { "Baripada": [], "Samakhunta": [], "Suliapdad": [], "Betanati": [], "Badasahi": [], "Rasagobindapur": [], "Bangiriposhi": [], "Kuliana": [], "Sarasakana": [], "Udala": [], "Khunta": [], "Kaptipada": [], "Karanjia": [], "Thakurmunda": [], "Sukuruli": [], "Joshipur": [], "Raruan": [], "Rairangapur": [], "Jamda": [], "Bijatala": [], "Bisoi": [], "Gopabandhunagar": [], "Tiring": [], "Kusumi": [], "Moroda": [], "Bahalda": [] },
+                "Nawarangpur": { "Nowarangpur": [], "Nandahandi": [], "Tentulikhuinti": [], "Papadahandi": [], "Kosagumuda": [], "Dabugaon": [], "Umerkote": [], "Jharigaon": [], "Chandahandi": [], "Raighar": [] },
+                "Nayagarh": { "Nayagarh": [], "Odagaon": [], "Bhapur": [], "Khandapada": [], "Ranpur": [], "Daspalla": [], "Nuagaon": [], "Gania": [] },
+                "Nuapada": { "Nuapada": [], "Boden": [], "Khariar": [], "Komna": [], "Sinapali": [] },
+                "Phulbani": { "Phulbani": [], "Phiringia": [], "Khajuripada": [], "K.Nuagaon": [], "Daringbadi": [], "Balliguda": [], "Kotgarh": [], "Tumudibandh": [], "G.Udayagiri": [], "Raikia": [], "Tikabali": [], "Chakapad": [] },
+                "Puri": { "Puri Sadar": [], "Brahmagiri": [], "Krushnaprasad": [], "Satyabadi": [], "Kanas": [], "Delang": [], "Pipili": [], "Nimapada": [], "Gop": [], "Kakatpur": [], "Astarang": [] },
+                "Rayagada": { "Rayagada": [], "Kolanara": [], "Kaalyansinghpur": [], "Kaashipur": [], "Gunupur": [], "Padmapur": [], "Ramanaguda": [], "Gudari": [], "Muniguda": [], "Bisam-Cuttack": [], "Chandrapur": [] },
+                "Sambalpur": { "Dhankauda": [], "Maneswar": [], "Jujumora": [], "Rengali": [], "Rairakhola": [], "Nakatideul": [], "Kuchinda": [], "Bamara": [], "Jamanakira": [] },
+                "Sonepur": { "Sonepur": [], "Tarva": [], "Birmaharajpur": [], "Ulunda": [], "Dunguripalli": [], "Binka": [] },
+                "Sundargarh": { "Sundargarh (Sadar)": [], "Balisankara": [], "Subdega": [], "Lephripara": [], "Hemgiri": [], "Tanngarapalli": [], "Rajgangpur": [], "Kutra": [], "Lathikata": [], "Kuanrmunda": [], "Badagaon": [], "Nuagaon": [], "Bisra": [], "Gurundia": [], "Koira": [], "Lahunipada": [], "Banaigarh": [] }
             }
         };
 
@@ -349,11 +352,9 @@ user_dashboard_design = """
             let state = document.getElementById("state").value;
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
-            let panchayatSelect = document.getElementById("panchayat");
             
             distSelect.innerHTML = "<option value=''>Select District</option>";
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
-            panchayatSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
             
             if(state && locationData[state]) {
                 for(let dist in locationData[state]) {
@@ -366,30 +367,13 @@ user_dashboard_design = """
             let state = document.getElementById("state").value;
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
-            let panchayatSelect = document.getElementById("panchayat");
             
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
-            panchayatSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
             
             if(state && dist && locationData[state][dist]) {
                 for(let block in locationData[state][dist]) {
                     blockSelect.innerHTML += `<option value='${block}'>${block}</option>`;
                 }
-            }
-        }
-
-        function populatePanchayats() {
-            let state = document.getElementById("state").value;
-            let dist = document.getElementById("district").value;
-            let block = document.getElementById("block").value;
-            let panchayatSelect = document.getElementById("panchayat");
-            
-            panchayatSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
-            
-            if(state && dist && block && locationData[state][dist][block]) {
-                locationData[state][dist][block].forEach(panchayat => {
-                    panchayatSelect.innerHTML += `<option value='${panchayat}'>${panchayat}</option>`;
-                });
             }
         }
 
@@ -414,20 +398,31 @@ user_dashboard_design = """
             } else { specialBox.classList.add('hidden'); }
         }
 
+        // NEW: EXACT AADHAAR VERIFY MATCHING YOUR IMAGE
         function verifyAadhaar() {
-            alert('Real OTP sent to Aadhaar linked Mobile Number!');
-            setTimeout(() => {
-                alert('Aadhaar Verified! Fetching details...');
-                document.getElementById('aadhaar_status').innerHTML = "<span class='text-green-600 font-bold'><i class='fa-solid fa-check'></i> Verified & Linked with Bank</span>";
-                document.getElementById('aadhaar_bank_seed').value = "Yes (Auto Verified)";
-            }, 1000);
+            alert('Aadhaar OTP verified automatically!');
+            document.getElementById('full_name').value = "Rama Chandra Das"; // Auto Fetch Name
+            
+            // Show Exact Green Tick UI
+            document.getElementById('aadhaar_success_box').classList.remove('hidden');
+            document.getElementById('aadhaar_status').classList.add('hidden');
+            
+            // Fill Bank Seed Box
+            document.getElementById('aadhaar_bank_seed').value = "Yes (Auto Verified)";
         }
 
+        // NEW: INCOME CERTIFICATE SPLIT FETCH
         function verifyIncome() {
-            let cert = document.getElementById('income_cert').value;
-            if(cert) {
-                alert('Verifying Income Certificate...');
-                document.getElementById('income_val').value = "0 - 50000";
+            let cert = document.getElementById('income_cert_no').value;
+            let year = document.getElementById('income_year').value;
+            if(cert && year) {
+                alert('Fetching Income Details from Tehsildar Database...');
+                document.getElementById('income_details_box').classList.remove('hidden');
+                document.getElementById('inc_name').innerText = document.getElementById('full_name').value || "Rama Chandra Das";
+                document.getElementById('inc_tehsildar').innerText = "Tehsildar, " + (document.getElementById("block").value || "Dhamanagar");
+                document.getElementById('inc_amount').innerText = "0 - 50000";
+            } else {
+                alert("Please enter both Certificate No and Year.");
             }
         }
         
@@ -461,7 +456,7 @@ user_dashboard_design = """
                 
                 <!-- Personal Info -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label><input type="text" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label><input type="text" id="full_name" class="w-full border p-2 rounded font-bold text-blue-800" required></div>
                     <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" class="w-full border p-2 rounded" required></div>
                     <div>
@@ -472,10 +467,10 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
                 </div>
                 
-                <!-- Scheme (ALL 6 SCHEMES INCLUDED) & Aadhaar -->
-                <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                <!-- Scheme & Aadhaar (WITH NEW UI) -->
+                <div class="grid grid-cols-2 gap-6 border-t pt-4">
                     <div>
-                        <label class="block text-sm font-semibold">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
+                        <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                         <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
                             <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option>
                             <option value="Widow">Widow (ବିଧବା)</option>
@@ -486,16 +481,25 @@ user_dashboard_design = """
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
+                        <label class="block text-sm font-semibold mb-2">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
                         <div class="flex gap-2">
-                            <input type="text" placeholder="XXXX-XXXX-XXXX" class="w-full border p-2 rounded">
-                            <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white px-4 rounded">Verify OTP</button>
+                            <input type="text" placeholder="[Aadhaar Redacted]" class="w-full border p-2 rounded" required>
+                            <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white font-bold px-4 rounded hover:bg-blue-700">VALIDATE</button>
+                        </div>
+                        
+                        <!-- NEW SUCCESS UI FROM IMAGE -->
+                        <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
+                            <i class="fa-solid fa-check text-green-500 text-2xl mt-1"></i>
+                            <div class="text-xs">
+                                <p class="font-semibold text-gray-800 text-sm">Applicant's Aadhaar is seeded with his/her Bank Account and status is Active.</p>
+                                <p class="text-gray-600 mt-1">Bank Name: <strong class="text-black">ODISHA GRAMEEN BANK</strong> | Last Sync Date: <strong>9th Jul 2025</strong></p>
+                            </div>
                         </div>
                         <p id="aadhaar_status" class="text-xs mt-1 text-gray-500">Manual Entry allowed if not linked</p>
                     </div>
                 </div>
 
-                <!-- DYNAMIC ADDRESS DROPDOWNS -->
+                <!-- ADDRESS (PANCHAYAT IS NOW MANUAL BOX) -->
                 <div class="grid grid-cols-4 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-xs font-semibold">State</label>
@@ -512,34 +516,42 @@ user_dashboard_design = """
                     </div>
                     <div>
                         <label class="block text-xs font-semibold">Block/Municipality</label>
-                        <select id="block" onchange="populatePanchayats()" class="w-full border p-2 rounded">
+                        <select id="block" class="w-full border p-2 rounded">
                             <option value="">Select Block</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold">Panchayat/Ward</label>
-                        <select id="panchayat" class="w-full border p-2 rounded">
-                            <option value="">Select Panchayat</option>
-                        </select>
+                        <label class="block text-xs font-semibold">Panchayat/Ward (Manual)</label>
+                        <input type="text" id="panchayat" placeholder="Enter Panchayat/Ward manually" class="w-full border p-2 rounded">
                     </div>
                 </div>
                 <div><label class="block text-sm font-semibold">Full Address (Village/City, Post, PIN)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
-                <!-- Income, Bank & Documents -->
-                <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                <!-- Income (NEW SPLIT UI) & Bank -->
+                <div class="grid grid-cols-2 gap-6 border-t pt-4">
                     <div>
-                        <label class="block text-sm font-semibold">Income Certificate No & Year</label>
+                        <label class="block text-sm font-semibold mb-2">Income Certificate No & Year</label>
                         <div class="flex gap-2">
-                            <input type="text" id="income_cert" placeholder="Issuing Year / Cert No" class="w-full border p-2 rounded">
-                            <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white px-4 rounded">Fetch Data</button>
+                            <input type="text" id="income_cert_no" placeholder="Cert No (e.g. E-INC/...)" class="w-1/2 border p-2 rounded">
+                            <input type="text" id="income_year" placeholder="Year" class="w-1/4 border p-2 rounded">
+                            <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-4 rounded w-1/4">Fetch Data</button>
                         </div>
-                        <input type="text" id="income_val" placeholder="Income value (must be 0-50000)" readonly class="w-full border p-2 rounded mt-2 bg-gray-100 text-red-600 font-bold">
+                        <!-- NEW AUTO FETCHED DETAILS UI -->
+                        <div id="income_details_box" class="hidden mt-3 bg-gray-50 border border-green-200 p-3 rounded text-sm space-y-1">
+                            <p class="text-gray-700"><strong>Applicant Name:</strong> <span id="inc_name" class="font-bold text-blue-700"></span></p>
+                            <p class="text-gray-700"><strong>Issued By:</strong> <span id="inc_tehsildar" class="font-bold"></span></p>
+                            <p class="text-gray-700"><strong>Income Amount:</strong> <span id="inc_amount" class="text-red-600 font-bold text-lg"></span></p>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="col-span-2"><label class="block text-xs font-semibold">Aadhaar Bank Seeded?</label><input type="text" id="aadhaar_bank_seed" placeholder="Yes / No (Manual)" class="w-full border p-1 rounded"></div>
-                        <div><label class="block text-xs">Bank Name</label><input type="text" class="w-full border p-1 rounded"></div>
-                        <div><label class="block text-xs">Account No</label><input type="text" class="w-full border p-1 rounded"></div>
-                        <div class="col-span-2"><label class="block text-xs">IFSC Code (Auto Branch)</label><input type="text" class="w-full border p-1 rounded" onblur="this.value ? alert('Branch Fetched Automatically!') : null"></div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold mb-1">Aadhaar Bank Seeded?</label>
+                            <input type="text" id="aadhaar_bank_seed" placeholder="Yes / No (Manual)" class="w-full border p-2 rounded">
+                        </div>
+                        <div><label class="block text-xs font-semibold mb-1">Bank Name</label><input type="text" class="w-full border p-2 rounded"></div>
+                        <div><label class="block text-xs font-semibold mb-1">Account No</label><input type="text" class="w-full border p-2 rounded"></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold mb-1">IFSC Code (Auto Branch)</label><input type="text" class="w-full border p-2 rounded" onblur="this.value ? alert('Branch Fetched Automatically!') : null"></div>
                     </div>
                 </div>
 
