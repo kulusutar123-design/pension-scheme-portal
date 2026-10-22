@@ -345,7 +345,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (WITH REAL API FETCH & MANUAL ENTRY ENABLED)
+# 5. FULL USER DASHBOARD (UPDATED WITH NEW FEATURES)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -438,6 +438,26 @@ user_dashboard_design = """
             } else { specialBox.classList.add('hidden'); }
         }
 
+        // ===============================================
+        // DYNAMIC AGE PROOF (PAN / VOTER / RATION)
+        // ===============================================
+        function updateAgeProof() {
+            let docType = document.getElementById("age_proof_type").value;
+            let docNumBox = document.getElementById("age_proof_number");
+            let docFileBox = document.getElementById("age_proof_file_container");
+            if(docType) {
+                docNumBox.classList.remove("hidden");
+                docNumBox.placeholder = "Enter " + docType + " Number";
+                docFileBox.classList.remove("hidden");
+            } else {
+                docNumBox.classList.add("hidden");
+                docFileBox.classList.add("hidden");
+            }
+        }
+
+        // ===============================================
+        // AADHAAR VERIFY
+        // ===============================================
         function verifyAadhaar() {
             let fullName = document.getElementById('full_name').value;
             let aadhaarInput = document.getElementById('aadhaar_input').value;
@@ -446,16 +466,34 @@ user_dashboard_design = """
             if(!aadhaarInput) { alert("Please enter Aadhaar Number."); return; }
             
             alert('Aadhaar OTP verified automatically!');
-            
             document.getElementById('aadhaar_success_box').classList.remove('hidden');
             document.getElementById('aadhaar_status').classList.add('hidden');
-            
-            let district = document.getElementById('district').value || "YOUR DISTRICT";
-            document.getElementById('fetched_bank').innerText = `ODISHA GRAMEEN BANK | Branch: ${district.toUpperCase()} MAIN BRANCH`;
         }
 
         // ===============================================
-        // UPDATED API FETCH LOGIC FOR DYNAMIC DATA
+        // REAL BANK IFSC API FETCH
+        // ===============================================
+        async function fetchIFSC() {
+            let ifsc = document.getElementById("ifsc_code").value.trim().toUpperCase();
+            if(!ifsc) { alert("Please enter IFSC Code first."); return; }
+            try {
+                let res = await fetch(`https://ifsc.razorpay.com/${ifsc}`);
+                if(res.ok) {
+                    let data = await res.json();
+                    document.getElementById("bank_name_display").innerText = data.BANK;
+                    document.getElementById("branch_name_display").innerText = data.BRANCH;
+                } else {
+                    alert("Invalid IFSC Code");
+                    document.getElementById("bank_name_display").innerText = "--";
+                    document.getElementById("branch_name_display").innerText = "--";
+                }
+            } catch (e) {
+                alert("Error fetching IFSC details.");
+            }
+        }
+
+        // ===============================================
+        // INCOME FETCH LOGIC
         // ===============================================
         async function verifyIncome() {
             let cert = document.getElementById('income_cert_no').value;
@@ -463,7 +501,6 @@ user_dashboard_design = """
 
             if(cert && year !== "Select") {
                 try {
-                    // Fetch request sent to backend API
                     let response = await fetch(`/api/get_income?cert_no=${cert}`);
                     let data = await response.json();
 
@@ -474,7 +511,6 @@ user_dashboard_design = """
 
                     alert(`Fetching Income Details from Database for Certificate ${cert}...`);
                     
-                    // Populate Bottom Fields dynamically from API response
                     document.getElementById('inc_issued_to').value = data.name;
                     document.getElementById('inc_father').value = data.father;
                     document.getElementById('inc_mother').value = data.mother;
@@ -484,12 +520,10 @@ user_dashboard_design = """
                     document.getElementById('inc_amount').value = data.amount;
                     document.getElementById('inc_relation').value = "Self";
 
-                    // Populate Top Fields dynamically
                     document.getElementById('full_name').value = data.name;
                     document.getElementById('father_name').value = data.father;
                     document.getElementById('mother_name').value = data.mother;
                     
-                    // Update dropdowns dynamically
                     document.getElementById("state").value = "Odisha";
                     populateDistricts();
                     setTimeout(() => {
@@ -534,9 +568,16 @@ user_dashboard_design = """
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
             <form onsubmit="submitFinalApp(event)" class="space-y-6">
                 
-                <!-- Personal Info -->
+                <!-- Personal Info (Updated Profile Photo Location) -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label><input type="text" id="full_name" class="w-full border p-2 rounded font-bold text-blue-800" required></div>
+                    <div>
+                        <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
+                        <input type="text" id="full_name" class="w-full border p-2 rounded font-bold text-blue-800" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
+                        <input type="file" class="w-full border p-1 rounded text-sm bg-gray-50" accept="image/*" required>
+                    </div>
                     <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border p-2 rounded" required></div>
                     <div>
@@ -547,13 +588,17 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
                 </div>
                 
-                <!-- Scheme & Aadhaar -->
+                <!-- Scheme & Aadhaar (Updated PDF Upload Location) -->
                 <div class="grid grid-cols-2 gap-6 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                         <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
                             <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow">Widow (ବିଧବା)</option><option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Unmarried">Unmarried (ଅବିବାହିତା)</option><option value="Divorcee">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option><option value="Transgender">Transgender (କିନ୍ନର)</option>
                         </select>
+                        <div id="special_cert_box" class="hidden mt-4 bg-yellow-50 p-2 rounded border border-yellow-300">
+                            <label class="font-bold text-yellow-800 text-sm">Special Certificate (Widow/Disability PDF):</label>
+                            <input type="file" class="border p-1 mt-1 w-full bg-white text-sm" accept=".pdf">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-2">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
@@ -564,27 +609,53 @@ user_dashboard_design = """
                         <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
                             <i class="fa-solid fa-check text-green-500 text-2xl mt-1"></i>
                             <div class="text-xs">
-                                <p class="font-semibold text-gray-800 text-sm">Applicant's Aadhaar is seeded with his/her Bank Account and status is Active.</p>
-                                <p class="text-gray-600 mt-1">Bank Name: <strong class="text-black" id="fetched_bank">BANK NAME | BRANCH</strong> | Last Sync Date: <strong>Auto Fetched</strong></p>
+                                <p class="font-semibold text-gray-800 text-sm">Aadhaar Verified Successfully.</p>
                             </div>
                         </div>
-                        <p id="aadhaar_status" class="text-xs mt-1 text-gray-500">Manual Entry allowed if not linked</p>
+                        <p id="aadhaar_status" class="text-xs mt-1 text-gray-500 mb-2">Manual Entry allowed if not linked</p>
+                        
+                        <label class="block text-sm font-semibold text-blue-600 mb-1">Upload Aadhaar PDF <i class="fa-solid fa-file-pdf"></i></label>
+                        <input type="file" class="w-full border p-1 rounded text-sm bg-gray-50" accept=".pdf" required>
                     </div>
                 </div>
 
-                <!-- ADDRESS -->
-                <div class="grid grid-cols-4 gap-4 border-t pt-4">
+                <!-- ADDRESS (Updated Postal PIN) -->
+                <div class="grid grid-cols-5 gap-4 border-t pt-4">
                     <div><label class="block text-xs font-semibold">State</label><select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded"><option value="">Select State</option><option value="Odisha">Odisha</option></select></div>
                     <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded"><option value="">Select District</option></select></div>
                     <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" class="w-full border p-2 rounded"><option value="">Select Block</option></select></div>
-                    <div><label class="block text-xs font-semibold">Panchayat/Ward (Manual)</label><input type="text" id="panchayat" placeholder="Enter Panchayat/Ward manually" class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-xs font-semibold">Panchayat/Ward</label><input type="text" id="panchayat" placeholder="Panchayat/Ward" class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-xs font-semibold">Postal PIN <span class="text-red-500">*</span></label><input type="text" placeholder="e.g. 751001" class="w-full border p-2 rounded" required></div>
                 </div>
-                <div><label class="block text-sm font-semibold">Full Address (Village/City, Post, PIN)</label><textarea class="w-full border p-2 rounded"></textarea></div>
+                <div><label class="block text-sm font-semibold">Full Address (Village/City, Post)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
                 <!-- ========================================== -->
-                <!-- NEW COMPREHENSIVE INCOME CERTIFICATE BLOCK -->
+                <!-- NEW DYNAMIC AGE PROOF SECTION -->
                 <!-- ========================================== -->
-                <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6">
+                <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
+                    <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <select id="age_proof_type" onchange="updateAgeProof()" class="w-full border p-2 rounded bg-white" required>
+                                <option value="">Select Document...</option>
+                                <option value="PAN Card">PAN Card</option>
+                                <option value="Voter Card">Voter Card</option>
+                                <option value="Ration Card">Ration Card</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="text" id="age_proof_number" class="w-full border p-2 rounded hidden bg-white font-bold" placeholder="Document Number" required>
+                        </div>
+                        <div id="age_proof_file_container" class="hidden">
+                            <input type="file" class="w-full border p-1 rounded bg-white text-sm" accept=".pdf, image/*" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- INCOME CERTIFICATE BLOCK (Updated Upload) -->
+                <!-- ========================================== -->
+                <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
                     <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
                     <div class="grid grid-cols-3 gap-4">
                         <div>
@@ -605,7 +676,7 @@ user_dashboard_design = """
                             <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-6 py-2 rounded hover:bg-green-700 shadow"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fetch Data</button>
                         </div>
                         
-                        <!-- Manual Entry Fields (Readonly removed) -->
+                        <!-- Manual Entry Fields -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
                             <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
@@ -641,24 +712,83 @@ user_dashboard_design = """
                             <input type="text" id="inc_amount" placeholder="e.g. Rs. 48,000/-" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-red-600 text-lg">
                         </div>
                     </div>
+                    
+                    <div class="mt-4 border-t border-blue-200 pt-4">
+                        <label class="block text-sm font-semibold text-blue-700 mb-1"><i class="fa-solid fa-file-pdf"></i> Upload Income Certificate (PDF) <span class="text-red-500">*</span></label>
+                        <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf" required>
+                    </div>
                 </div>
 
-                <div class="border-t pt-4">
-                    <label class="block text-sm font-semibold mb-2">Upload Documents (PDF/JPG)</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                        <div><label class="font-bold">Photo</label><input type="file" class="border p-1 w-full"></div>
-                        <div><label class="font-bold">Aadhaar</label><input type="file" class="border p-1 w-full"></div>
-                        <div><label class="font-bold">Age Proof</label><input type="file" class="border p-1 w-full"></div>
-                        <div><label class="font-bold">Bank Passbook</label><input type="file" class="border p-1 w-full"></div>
-                        <div><label class="font-bold text-green-700">Income Cert. (PDF)</label><input type="file" class="border p-1 w-full"></div>
-                        
-                        <div id="special_cert_box" class="hidden col-span-3 bg-yellow-50 p-2 rounded border border-yellow-300">
-                            <label class="font-bold text-yellow-800">Special Certificate (Widow/Disability):</label>
-                            <input type="file" class="border p-1 mt-1 w-full">
+                <!-- ========================================== -->
+                <!-- NEW BANK INFORMATION SECTION (EXACT DESIGN) -->
+                <!-- ========================================== -->
+                <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
+                    
+                    <div class="bg-red-50 border border-red-200 p-4 rounded text-red-600 text-sm mb-6 space-y-2 italic shadow-sm">
+                        <p class="font-bold">Note:</p>
+                        <p>1. Kindly provide correct and active bank account number and IFSC code. Be very careful while furnishing bank-account information as for any wrong entry, Government will not be responsible for mis-credit of Scholarship amount. Applicant will be held responsible in case of diversion of public money on this ground.</p>
+                        <p>2. Please note that your Aadhaar Number will be used for crediting scholarship amount in the bank account linked/ seeded to your Aadhaar number in fast-track mode. To link/ seed your bank account with your Aadhaar, please visit you bank branch and submit a "bank consent form for receiving DBT".</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-6">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">IFSC Code <span class="text-red-500">*</span></label>
+                            <div class="flex">
+                                <input type="text" id="ifsc_code" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent uppercase" placeholder="IFSC Code" required>
+                                <button type="button" onclick="fetchIFSC()" class="bg-blue-500 text-white px-4 py-2 text-sm font-bold shadow hover:bg-blue-600 transition whitespace-nowrap">FIND IFSC</button>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500">Bank Name: <span id="bank_name_display" class="font-bold text-gray-800 text-base">--</span></p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500">Branch Name: <span id="branch_name_display" class="font-bold text-gray-800 text-base">--</span></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Account Holder Name</label>
+                            <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Account Number <span class="text-red-500">*</span></label>
+                            <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Re-type Account No. <span class="text-red-500">*</span></label>
+                            <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                        <div>
+                            <p class="text-sm text-gray-600 italic mb-2">Whether account number seeded with the Aadhaar number?</p>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="yes" class="w-4 h-4 text-blue-600"> Yes</label>
+                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="no" class="w-4 h-4 text-blue-600" checked> No</label>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 italic mb-2">Upload front page of passbook where the Account number and IFSC code given above is clearly visible <span class="text-red-500">*</span></p>
+                            <div class="flex border rounded overflow-hidden">
+                                <div class="px-3 py-2 bg-gray-50 text-gray-500 border-r w-full truncate">Upload Passbook Front Page</div>
+                                <input type="file" class="hidden" id="passbook_upload" accept=".pdf" required>
+                                <button type="button" onclick="document.getElementById('passbook_upload').click()" class="px-4 py-2 bg-white text-blue-600 font-bold hover:bg-gray-100">Browse</button>
+                            </div>
+                            <div class="flex justify-between items-center mt-2">
+                                <p class="text-red-600 text-xs">Note: Upload .pdf file upto 1MB file size.</p>
+                                <i class="fa-regular fa-file-pdf text-red-500 text-xl"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-purple-800">Submit Application & Make Payment</button>
+
+                <div class="mt-8 flex justify-center gap-4">
+                    <button type="button" class="bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded shadow hover:bg-gray-400">BACK</button>
+                    <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE</button>
+                </div>
             </form>
         </div>
 
