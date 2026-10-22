@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା)
+# 1. HOME PAGE DESIGN
 # ==========================================
 html_design = """
 <!DOCTYPE html>
@@ -64,22 +64,22 @@ html_design = """
     <section class="container mx-auto px-4 py-12 relative -mt-10 md:-mt-16 z-10">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
             <a href="/admin/login" class="block bg-gradient-to-b from-blue-500 to-blue-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-building text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Admin Login</h3><p class="text-sm mb-4 text-blue-100">Official login for Administration</p><i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-building text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Admin Login</h3><p class="text-sm mb-4 text-blue-100">Official login for Administration</p>
             </a>
             <a href="/user/register" class="block bg-gradient-to-b from-green-500 to-green-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Pension Apply</h3><p class="text-sm mb-4 text-green-100">Apply for New Pension</p><i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Pension Apply</h3><p class="text-sm mb-4 text-green-100">Apply for New Pension</p>
             </a>
             <a href="/status/check" class="block bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Check Status</h3><p class="text-sm mb-4 text-orange-100">Check Your Application Status</p><i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Check Status</h3><p class="text-sm mb-4 text-orange-100">Check Your Application Status</p>
             </a>
             <a href="/user/login" class="block bg-gradient-to-b from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-user text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Beneficiary</h3><p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p><i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-user text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Beneficiary</h3><p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p>
             </a>
             <a href="#schemes" class="block bg-gradient-to-b from-teal-400 to-teal-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-book-open text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Schemes</h3><p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p><i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-book-open text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Schemes</h3><p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p>
             </a>
             <a href="#contact" class="block bg-gradient-to-b from-pink-500 to-pink-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-headset text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Help Desk</h3><p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p><i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-headset text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Help Desk</h3><p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p>
             </a>
         </div>
     </section>
@@ -111,7 +111,6 @@ html_design = """
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm"><span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm"><span class="font-semibold text-gray-800">ବିଧବା (Widow)</span><span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm"><span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span><span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm"><span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span><span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
                     </ul>
                 </div>
                 <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
@@ -129,7 +128,6 @@ html_design = """
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବୟସ ପ୍ରମାଣପତ୍ର (Age Proof)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ</li>
                     </ul>
                 </div>
             </div>
@@ -145,18 +143,12 @@ html_design = """
             </div>
         </div>
     </section>
-
-    <footer class="bg-slate-900 text-white py-8 border-t-4 border-blue-600">
-        <div class="container mx-auto px-4 flex justify-between items-center text-sm">
-            <p class="text-gray-300">&copy; 2026 Private Social Security Pension Scheme</p>
-        </div>
-    </footer>
 </body>
 </html>
 """
 
 # ==========================================
-# 2. STATUS CHECK PAGE (ONLY APP NO)
+# 2. STATUS CHECK PAGE
 # ==========================================
 status_check_design = """
 <!DOCTYPE html>
@@ -174,27 +166,19 @@ status_check_design = """
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
-    <div class="absolute top-4 left-4">
-        <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a>
-    </div>
-
+    <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-orange-500">
         <div class="text-center mb-6">
             <i class="fa-solid fa-magnifying-glass text-4xl text-orange-500 mb-3"></i>
             <h2 class="text-2xl font-bold text-gray-800">Check Status</h2>
-            <p class="text-sm text-gray-500">Enter your Application Number only</p>
         </div>
-        
         <form onsubmit="showStatus(event)" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Application Number</label>
                 <input type="text" placeholder="e.g. APP-XXXXXX" class="w-full px-4 py-3 border rounded-lg focus:ring-orange-500" required>
             </div>
-            <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600">
-                Check Status
-            </button>
+            <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600">Check Status</button>
         </form>
-
         <div id="statusResult" class="hidden mt-6 bg-gray-50 border p-4 rounded-lg">
             <h3 class="font-bold text-gray-800 mb-2">Current Status:</h3>
             <p class="text-orange-600 font-bold"><i class="fa-solid fa-hourglass-half"></i> Pending Admin Verification</p>
@@ -237,20 +221,16 @@ user_register_design = """
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
-    <div class="absolute top-4 left-4">
-        <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a>
-    </div>
-
+    <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     <div class="w-full max-w-xl bg-white p-8 rounded-2xl shadow-xl border-t-4 border-green-600 mt-10">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">User Registration (ନୂଆ ଆବେଦନକାରୀ)</h2>
-        <!-- FIX: Set action to explicitly point to the registered FastAPI route -->
         <form action="/user/login" method="GET" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
-                        <option>Andhra Pradesh</option><option>Odisha</option><option>West Bengal</option>
+                        <option>Andhra Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Gujarat</option><option>Jharkhand</option><option>Odisha</option><option>West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -258,44 +238,24 @@ user_register_design = """
                     <input type="text" class="w-full px-4 py-2 border rounded-lg" required>
                 </div>
             </div>
-
             <div class="flex gap-4">
-                <div class="w-1/2">
-                    <label class="block text-sm font-semibold text-gray-700">Mobile No</label>
-                    <input type="text" class="w-full px-4 py-2 border rounded-lg" required>
-                </div>
+                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Mobile No</label><input type="text" class="w-full px-4 py-2 border rounded-lg" required></div>
                 <div class="w-1/2">
                     <label class="block text-sm font-semibold text-gray-700">Email ID</label>
-                    <div class="flex">
-                        <input type="email" class="w-full px-4 py-2 border rounded-l-lg" required>
-                        <button type="button" class="bg-blue-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="generateOTP()">Get OTP</button>
-                    </div>
+                    <div class="flex"><input type="email" class="w-full px-4 py-2 border rounded-l-lg" required><button type="button" class="bg-blue-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="generateOTP()">Get OTP</button></div>
                 </div>
             </div>
-
             <div id="otpDisplay" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
-
             <div>
                 <label class="block text-sm font-semibold text-gray-700">Enter OTP</label>
-                <div class="flex">
-                    <input type="text" id="otpInput" class="w-full px-4 py-2 border rounded-l-lg" required>
-                    <button type="button" class="bg-green-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="verifyOTP()">Verify</button>
-                </div>
+                <div class="flex"><input type="text" id="otpInput" class="w-full px-4 py-2 border rounded-l-lg" required><button type="button" class="bg-green-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="verifyOTP()">Verify</button></div>
                 <p id="otpSuccess" class="hidden text-green-600 text-xs font-bold mt-1"><i class="fa-solid fa-check-circle"></i> OTP Verified</p>
                 <p id="otpError" class="hidden text-red-600 text-xs font-bold mt-1"><i class="fa-solid fa-xmark-circle"></i> Invalid OTP</p>
             </div>
-
             <div class="flex gap-4">
-                <div class="w-1/2">
-                    <label class="block text-sm font-semibold text-gray-700">Set Password</label>
-                    <input type="password" class="w-full px-4 py-2 border rounded-lg" required>
-                </div>
-                <div class="w-1/2">
-                    <label class="block text-sm font-semibold text-gray-700">Confirm Password</label>
-                    <input type="password" class="w-full px-4 py-2 border rounded-lg" required>
-                </div>
+                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Set Password</label><input type="password" class="w-full px-4 py-2 border rounded-lg" required></div>
+                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Confirm Password</label><input type="password" class="w-full px-4 py-2 border rounded-lg" required></div>
             </div>
-
             <button type="submit" id="submitBtn" disabled class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition" onclick="alert('Registration Successful! Your Application No is: APP-2026101.')">
                 Register & Generate App No
             </button>
@@ -318,13 +278,9 @@ user_login_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
-    <div class="absolute top-4 left-4">
-        <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a>
-    </div>
-
+    <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Beneficiary Login (ଲଗଇନ୍)</h2>
-        <!-- FIX: Set action to explicitly point to the registered FastAPI route -->
         <form action="/user/dashboard" method="GET" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700">Application Number</label>
@@ -334,12 +290,7 @@ user_login_design = """
                 <label class="block text-sm font-semibold text-gray-700">Password</label>
                 <input type="password" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
             </div>
-            <div class="text-right">
-                <a href="#" class="text-sm text-blue-600 hover:underline">Forgot Password?</a>
-            </div>
-            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700">
-                Login
-            </button>
+            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700">Login</button>
         </form>
     </div>
 </body>
@@ -347,7 +298,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. USER DASHBOARD (WITH ALL YOUR DEMANDED FORM FIELDS)
+# 5. USER DASHBOARD (WITH DYNAMIC DROPDOWN FIX)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -358,6 +309,89 @@ user_dashboard_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
+        // DYNAMIC CASCADING DROPDOWN DATA FOR ODISHA
+        const locationData = {
+            "Odisha": {
+                "Angul": {"Angul Block": ["Panchayat A1", "Panchayat A2"], "Athmallik": ["Panchayat B1"]},
+                "Balasore": {"Baleshwar Sadar": ["GP 1", "GP 2"], "Jaleswar": ["GP 3"]},
+                "Cuttack": {
+                    "Cuttack Sadar": ["Paramahansa", "Bhairpur", "Kalarabank"],
+                    "Dasarathpur": ["Udaypur", "Nandipur"],
+                    "Niali": ["Niali GP", "Eranch"],
+                    "Salepur": ["Kishorenagar", "Salepur GP"],
+                    "Cuttack Municipal Corporation": ["Ward 1", "Ward 2", "Ward 3"]
+                },
+                "Jajpur": {
+                    "Dasarathpur": ["Udaypur", "Rambag", "Kalyanpur"],
+                    "Jajpur": ["Jajpur Town", "Panikoili"],
+                    "Korei": ["Korei GP"],
+                    "Vyasanagar Municipality": ["Ward 1", "Ward 10"]
+                },
+                "Khordha": {
+                    "Bhubaneswar (BMC)": ["Ward 1", "Ward 2"],
+                    "Jatni": ["Jatni Town", "Khurda Road"]
+                },
+                "Puri": {"Puri Sadar": ["GP 1"], "Pipili": ["GP 2"]},
+                "Bhadrak": {"Bhadrak Block": ["GP 1"]}, "Bolangir": {"Bolangir": ["GP1"]}, "Boudh": {"Boudh": ["GP1"]},
+                "Deogarh": {"Deogarh": ["GP1"]}, "Dhenkanal": {"Dhenkanal": ["GP1"]}, "Gajapati": {"Paralakhemundi": ["GP1"]},
+                "Ganjam": {"Brahmapur": ["GP1"]}, "Jagatsinghpur": {"Jagatsinghpur": ["GP1"]}, "Jharsuguda": {"Jharsuguda": ["GP1"]},
+                "Kalahandi": {"Bhawanipatna": ["GP1"]}, "Kandhamal": {"Phulbani": ["GP1"]}, "Kendrapara": {"Kendrapara": ["GP1"]},
+                "Kendujhar": {"Kendujhar": ["GP1"]}, "Koraput": {"Koraput": ["GP1"]}, "Malkangiri": {"Malkangiri": ["GP1"]},
+                "Mayurbhanj": {"Baripada": ["GP1"]}, "Nabarangpur": {"Nabarangpur": ["GP1"]}, "Nayagarh": {"Nayagarh": ["GP1"]},
+                "Nuapada": {"Nuapada": ["GP1"]}, "Rayagada": {"Rayagada": ["GP1"]}, "Sambalpur": {"Sambalpur": ["GP1"]},
+                "Subarnapur": {"Sonepur": ["GP1"]}, "Sundargarh": {"Rourkela": ["GP1"]}
+            }
+        };
+
+        function populateDistricts() {
+            let state = document.getElementById("state").value;
+            let distSelect = document.getElementById("district");
+            let blockSelect = document.getElementById("block");
+            let panchayatSelect = document.getElementById("panchayat");
+            
+            distSelect.innerHTML = "<option value=''>Select District</option>";
+            blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
+            panchayatSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+            
+            if(state && locationData[state]) {
+                for(let dist in locationData[state]) {
+                    distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
+                }
+            }
+        }
+
+        function populateBlocks() {
+            let state = document.getElementById("state").value;
+            let dist = document.getElementById("district").value;
+            let blockSelect = document.getElementById("block");
+            let panchayatSelect = document.getElementById("panchayat");
+            
+            blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
+            panchayatSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+            
+            if(state && dist && locationData[state][dist]) {
+                for(let block in locationData[state][dist]) {
+                    blockSelect.innerHTML += `<option value='${block}'>${block}</option>`;
+                }
+            }
+        }
+
+        function populatePanchayats() {
+            let state = document.getElementById("state").value;
+            let dist = document.getElementById("district").value;
+            let block = document.getElementById("block").value;
+            let panchayatSelect = document.getElementById("panchayat");
+            
+            panchayatSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+            
+            if(state && dist && block && locationData[state][dist][block]) {
+                locationData[state][dist][block].forEach(panchayat => {
+                    panchayatSelect.innerHTML += `<option value='${panchayat}'>${panchayat}</option>`;
+                });
+            }
+        }
+
+        // OTHER FUNCTIONS REMAIN INTACT
         function switchUserTab(tabId) {
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
@@ -368,9 +402,7 @@ user_dashboard_design = """
             let age = new Date().getFullYear() - dob.getFullYear();
             document.getElementById('age').value = age;
             let scheme = document.getElementById('scheme').value;
-            if(scheme === 'Old Age' && age < 55) {
-                alert('System Error: Age must be 55 or above for Old Age Pension.');
-            }
+            if(scheme === 'Old Age' && age < 55) { alert('System Error: Age must be 55 or above for Old Age Pension.'); }
         }
 
         function checkSchemeCondition() {
@@ -378,9 +410,7 @@ user_dashboard_design = """
             let specialBox = document.getElementById('special_cert_box');
             if(scheme === 'Widow' || scheme === 'Disability' || scheme === 'Divorcee' || scheme === 'Transgender') {
                 specialBox.classList.remove('hidden');
-            } else {
-                specialBox.classList.add('hidden');
-            }
+            } else { specialBox.classList.add('hidden'); }
         }
 
         function verifyAadhaar() {
@@ -412,9 +442,7 @@ user_dashboard_design = """
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden">
     <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full">
-        <div class="p-5 border-b border-slate-700 text-center">
-            <h2 class="text-xl font-bold">User Portal</h2>
-        </div>
+        <div class="p-5 border-b border-slate-700 text-center"><h2 class="text-xl font-bold">User Portal</h2></div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
                 <li><a href="#" onclick="switchUserTab('apply')" class="flex items-center px-4 py-3 bg-purple-600 text-white rounded-lg"><i class="fa-solid fa-pen-to-square w-6 mr-2"></i> Apply Pension</a></li>
@@ -426,8 +454,6 @@ user_dashboard_design = """
     </aside>
 
     <main class="flex-1 overflow-y-auto p-6">
-        
-        <!-- PENSION APPLY FORM -->
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow">
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
             <form onsubmit="submitFinalApp(event)" class="space-y-6">
@@ -438,9 +464,7 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" class="w-full border p-2 rounded" required></div>
                     <div>
                         <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
-                        <select class="w-full border p-2 rounded">
-                            <option>Male</option><option>Female</option><option>Transgender</option>
-                        </select>
+                        <select class="w-full border p-2 rounded"><option>Male</option><option>Female</option><option>Transgender</option></select>
                     </div>
                     <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
@@ -451,11 +475,7 @@ user_dashboard_design = """
                     <div>
                         <label class="block text-sm font-semibold">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                         <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
-                            <option>Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option>
-                            <option value="Widow">Widow (ବିଧବା)</option>
-                            <option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option>
-                            <option value="Divorcee">Divorcee</option>
-                            <option value="Transgender">Transgender</option>
+                            <option>Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow">Widow (ବିଧବା)</option><option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Divorcee">Divorcee</option><option value="Transgender">Transgender</option>
                         </select>
                     </div>
                     <div>
@@ -468,16 +488,37 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- Address Dropdowns -->
+                <!-- ADDRESS DROPDOWNS (DYNAMIC FIX APPLIED HERE) -->
                 <div class="grid grid-cols-4 gap-4 border-t pt-4">
-                    <div><label class="block text-xs font-semibold">State</label><select class="w-full border p-2 rounded"><option>Odisha</option></select></div>
-                    <div><label class="block text-xs font-semibold">District</label><select class="w-full border p-2 rounded"><option>Cuttack</option><option>Jajpur</option></select></div>
-                    <div><label class="block text-xs font-semibold">Block</label><select class="w-full border p-2 rounded"><option>Dasarathpur</option></select></div>
-                    <div><label class="block text-xs font-semibold">Panchayat</label><select class="w-full border p-2 rounded"><option>Udaypur</option></select></div>
+                    <div>
+                        <label class="block text-xs font-semibold">State</label>
+                        <select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded">
+                            <option value="">Select State</option>
+                            <option value="Odisha">Odisha</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold">District</label>
+                        <select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded">
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold">Block/Municipality</label>
+                        <select id="block" onchange="populatePanchayats()" class="w-full border p-2 rounded">
+                            <option value="">Select Block</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold">Panchayat/Ward</label>
+                        <select id="panchayat" class="w-full border p-2 rounded">
+                            <option value="">Select Panchayat</option>
+                        </select>
+                    </div>
                 </div>
                 <div><label class="block text-sm font-semibold">Full Address (Village/City, Post, PIN)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
-                <!-- Income & Bank Details -->
+                <!-- Income, Bank & Documents section kept exactly as before -->
                 <div class="grid grid-cols-2 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold">Income Certificate No & Year</label>
@@ -488,31 +529,24 @@ user_dashboard_design = """
                         <input type="text" id="income_val" placeholder="Income value (must be 0-50000)" readonly class="w-full border p-2 rounded mt-2 bg-gray-100 text-red-600 font-bold">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-semibold">Aadhaar Bank Seeded?</label>
-                            <input type="text" id="aadhaar_bank_seed" placeholder="Yes / No (Manual)" class="w-full border p-1 rounded">
-                        </div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold">Aadhaar Bank Seeded?</label><input type="text" id="aadhaar_bank_seed" placeholder="Yes / No (Manual)" class="w-full border p-1 rounded"></div>
                         <div><label class="block text-xs">Bank Name</label><input type="text" class="w-full border p-1 rounded"></div>
                         <div><label class="block text-xs">Account No</label><input type="text" class="w-full border p-1 rounded"></div>
                         <div class="col-span-2"><label class="block text-xs">IFSC Code (Auto Branch)</label><input type="text" class="w-full border p-1 rounded" onblur="this.value ? alert('Branch Fetched Automatically!') : null"></div>
                     </div>
                 </div>
 
-                <!-- Document Upload -->
                 <div class="border-t pt-4">
                     <label class="block text-sm font-semibold mb-2">Upload Documents (PDF/JPG)</label>
                     <div class="grid grid-cols-3 gap-2 text-xs">
-                        <input type="file" class="border p-1" title="Photo">
-                        <input type="file" class="border p-1" title="Aadhaar">
-                        <input type="file" class="border p-1" title="Age Proof">
-                        <input type="file" class="border p-1" title="Bank Passbook">
+                        <input type="file" class="border p-1" title="Photo"><input type="file" class="border p-1" title="Aadhaar">
+                        <input type="file" class="border p-1" title="Age Proof"><input type="file" class="border p-1" title="Bank Passbook">
                         <div id="special_cert_box" class="hidden col-span-2 bg-yellow-50 p-2 rounded border border-yellow-300">
                             <label class="font-bold text-yellow-800">Special Certificate (Widow/Disability):</label>
                             <input type="file" class="border p-1 mt-1 w-full" title="Special Cert">
                         </div>
                     </div>
                 </div>
-
                 <button type="submit" class="w-full bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-purple-800">Submit Application & Make Payment</button>
             </form>
         </div>
@@ -521,7 +555,7 @@ user_dashboard_design = """
             <h2 class="text-2xl font-bold mb-4">Application Status & Print</h2>
             <div class="bg-gray-50 border p-4 rounded mb-4">
                 <p><strong>App No:</strong> APP-2026101</p>
-                <p><strong>Status:</strong> <span class="text-orange-600 font-bold">Pending Admin Verification (System Verified)</span></p>
+                <p><strong>Status:</strong> <span class="text-orange-600 font-bold">Pending Admin Verification</span></p>
             </div>
         </div>
         
@@ -529,14 +563,13 @@ user_dashboard_design = """
             <h2 class="text-2xl font-bold mb-4 text-orange-600">3-Month Renewal</h2>
             <button onclick="alert('Data Fetched! Proceeding to Payment...');" class="bg-orange-600 text-white px-6 py-2 rounded font-bold">Renew Pension</button>
         </div>
-
     </main>
 </body>
 </html>
 """
 
 # ==========================================
-# 6. ADMIN LOGIN PAGE
+# 6. ADMIN LOGIN & DASHBOARD PAGES
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -550,7 +583,6 @@ admin_login_design = """
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700">Back to Home</a></div>
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-700">
         <h2 class="text-2xl font-bold text-center mb-6">Admin Login</h2>
-        <!-- FIX: Set action to explicitly point to the registered FastAPI route -->
         <form action="/admin" method="GET" class="space-y-4">
             <input type="text" placeholder="Admin ID" class="w-full px-4 py-2 border rounded-lg" required>
             <input type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg" required>
@@ -561,9 +593,6 @@ admin_login_design = """
 </html>
 """
 
-# ==========================================
-# ADMIN DASHBOARD 
-# ==========================================
 admin_design = """
 <!DOCTYPE html>
 <html lang="en">
@@ -583,7 +612,7 @@ admin_design = """
 """
 
 # ==========================================
-# 7. EXPLICIT ROUTES DEFINITION (ଏହା ଦ୍ୱାରା Not Found ଏରର୍ ଆଉ ଆସିବ ନାହିଁ)
+# 7. EXPLICIT ROUTES DEFINITION 
 # ==========================================
 
 @app.get("/", response_class=HTMLResponse)
