@@ -151,7 +151,7 @@ html_design = """
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Schemes List -->
+                <!-- Schemes List (ALL 6 ADDED BACK) -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
                     <ul class="space-y-4">
@@ -399,7 +399,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. USER DASHBOARD (WITH DYNAMIC DROPDOWN)
+# 5. USER DASHBOARD (WITH MASSIVE DYNAMIC DROPDOWN FOR ODISHA)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -410,37 +410,179 @@ user_dashboard_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        // DYNAMIC CASCADING DROPDOWN DATA FOR ODISHA
+        // MASSIVE DYNAMIC CASCADING DROPDOWN DATA FOR ODISHA (ALL 30 DISTRICTS)
         const locationData = {
             "Odisha": {
-                "Angul": {"Angul Block": ["Panchayat A1", "Panchayat A2"], "Athmallik": ["Panchayat B1"]},
-                "Balasore": {"Baleshwar Sadar": ["GP 1", "GP 2"], "Jaleswar": ["GP 3"]},
+                "Angul": {
+                    "Angul": ["Angarabandha", "Badakera", "Balanga", "Bantala", "Baragounia"],
+                    "Athmallik": ["Athmallik NAC Ward 1", "Athmallik NAC Ward 2", "Kiantakata"],
+                    "Banarpal": ["Banarpal", "Banda", "Bonda"],
+                    "Chhendipada": ["Chhendipada", "Kusasingha"],
+                    "Angul Municipality": ["Ward 1", "Ward 2", "Ward 3", "Ward 4"]
+                },
+                "Balasore": {
+                    "Baleshwar Sadar": ["Sartha", "Sindhia", "Srirampur"],
+                    "Jaleswar": ["Jaleswar Municipality Ward 1", "Jaleswar Municipality Ward 2", "Sugo"],
+                    "Nilagiri": ["Nilagiri NAC Ward 1", "Ajodhya"],
+                    "Soro": ["Soro Municipality Ward 1", "Anantapur"]
+                },
+                "Bargarh": {
+                    "Bargarh": ["Bargarh Municipality Ward 1", "Bargarh Municipality Ward 2", "Bardol"],
+                    "Attabira": ["Attabira NAC", "Bheden"],
+                    "Padampur": ["Padampur NAC", "Rajborasambar"]
+                },
+                "Bhadrak": {
+                    "Bhadrak": ["Bhadrak Municipality Ward 1", "Bhadrak Municipality Ward 2", "Rahanja"],
+                    "Basudevpur": ["Basudevpur Municipality", "Lunga"],
+                    "Chandabali": ["Chandabali NAC", "Dhamra"]
+                },
+                "Bolangir": {
+                    "Bolangir": ["Bolangir Municipality Ward 1", "Bolangir Municipality Ward 2", "Kusmel"],
+                    "Titilagarh": ["Titilagarh Municipality", "Sihini"],
+                    "Patnagarh": ["Patnagarh NAC", "Marndi"]
+                },
+                "Boudh": {
+                    "Boudh": ["Boudhgarh NAC Ward 1", "Boudhgarh NAC Ward 2", "Padmanpur"],
+                    "Kantamal": ["Kantamal", "Khatakhatia"],
+                    "Harabhanga": ["Harabhanga", "Purunakatak"]
+                },
                 "Cuttack": {
-                    "Cuttack Sadar": ["Paramahansa", "Bhairpur", "Kalarabank"],
-                    "Dasarathpur": ["Udaypur", "Nandipur"],
-                    "Niali": ["Niali GP", "Eranch"],
-                    "Salepur": ["Kishorenagar", "Salepur GP"],
-                    "Cuttack Municipal Corporation": ["Ward 1", "Ward 2", "Ward 3"]
+                    "Cuttack Municipal Corporation": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5", "Ward 59"],
+                    "Cuttack Sadar": ["Paramahansa", "Bhairpur", "Kalarabank", "Kandarpur"],
+                    "Niali": ["Niali", "Eranch", "Baharna", "Kasarda"],
+                    "Salepur": ["Salepur NAC", "Kishorenagar", "Pikol"],
+                    "Mahanga": ["Mahanga", "Kuanpal", "Bhitarsana"],
+                    "Athagarh": ["Athagarh NAC Ward 1", "Athagarh NAC Ward 2", "Bentapadar"],
+                    "Choudwar": ["Choudwar Municipality Ward 1", "Choudwar Municipality Ward 2"]
+                },
+                "Deogarh": {
+                    "Barkote": ["Barkote", "Dandasingha"],
+                    "Reamal": ["Reamal", "Tinkbir"],
+                    "Tileibani": ["Tileibani", "Deogarh Municipality Ward 1"]
+                },
+                "Dhenkanal": {
+                    "Dhenkanal": ["Dhenkanal Municipality Ward 1", "Dhenkanal Municipality Ward 2", "Gondia"],
+                    "Hindol": ["Hindol NAC", "Kankadahad"],
+                    "Kamakhyanagar": ["Kamakhyanagar NAC", "Bhuban NAC"]
+                },
+                "Gajapati": {
+                    "Paralakhemundi": ["Paralakhemundi Municipality Ward 1", "Paralakhemundi Municipality Ward 2"],
+                    "Gumma": ["Gumma", "Gaiba"],
+                    "Mohana": ["Mohana", "Chandragiri"]
+                },
+                "Ganjam": {
+                    "Brahmapur (BeMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 40"],
+                    "Chatrapur": ["Chatrapur NAC", "Aryapalli"],
+                    "Hinjilicut": ["Hinjilicut Municipality", "Kanchuru"],
+                    "Bhanjanagar": ["Bhanjanagar NAC", "Muzagada"]
+                },
+                "Jagatsinghpur": {
+                    "Jagatsinghpur": ["Jagatsinghpur Municipality Ward 1", "Jagatsinghpur Municipality Ward 2", "Alipingal"],
+                    "Paradip": ["Paradip Municipality Ward 1", "Paradip Municipality Ward 2"],
+                    "Tirtol": ["Tirtol", "Manijanga"],
+                    "Balikuda": ["Balikuda", "Machhagaon"]
                 },
                 "Jajpur": {
-                    "Dasarathpur": ["Udaypur", "Rambag", "Kalyanpur"],
-                    "Jajpur": ["Jajpur Town", "Panikoili"],
-                    "Korei": ["Korei GP"],
-                    "Vyasanagar Municipality": ["Ward 1", "Ward 10"]
+                    "Jajpur": ["Jajpur Municipality Ward 1", "Jajpur Municipality Ward 2", "Panikoili", "Sujampur"],
+                    "Vyasanagar Municipality": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5", "Ward 26"],
+                    "Dasarathpur": ["Udaypur", "Rambag", "Kalyanpur", "Kasapa", "Mallikapur"],
+                    "Korei": ["Korei", "Panikoili", "Baitarani Road"],
+                    "Dharmasala": ["Dharmasala", "Jaraka", "Rathia"],
+                    "Sukinda": ["Sukinda", "Kalarangi", "Daitari"]
+                },
+                "Jharsuguda": {
+                    "Jharsuguda": ["Jharsuguda Municipality Ward 1", "Jharsuguda Municipality Ward 2", "Durlaga"],
+                    "Brajarajnagar": ["Brajarajnagar Municipality", "Belpahar Municipality"],
+                    "Kolabira": ["Kolabira", "Kirmira"]
+                },
+                "Kalahandi": {
+                    "Bhawanipatna": ["Bhawanipatna Municipality Ward 1", "Bhawanipatna Municipality Ward 2", "Medinipur"],
+                    "Dharamgarh": ["Dharamgarh NAC", "Koksara"],
+                    "Junagarh": ["Junagarh NAC", "Golamunda"]
+                },
+                "Kandhamal": {
+                    "Phulbani": ["Phulbani Municipality Ward 1", "Phulbani Municipality Ward 2"],
+                    "Baliguda": ["Baliguda NAC", "K. Nuagaon"],
+                    "G. Udayagiri": ["G. Udayagiri NAC", "Tikabali", "Raikia"]
+                },
+                "Kendrapara": {
+                    "Kendrapara": ["Kendrapara Municipality Ward 1", "Kendrapara Municipality Ward 2", "Jamadhar"],
+                    "Pattamundai": ["Pattamundai Municipality Ward 1", "Pattamundai Municipality Ward 2"],
+                    "Aul": ["Aul", "Rajkanika"],
+                    "Mahakalapada": ["Mahakalapada", "Jamboo"]
+                },
+                "Kendujhar": {
+                    "Kendujhar": ["Kendujhar Municipality Ward 1", "Kendujhar Municipality Ward 2", "Banspal"],
+                    "Anandapur": ["Anandapur Municipality", "Ghasipura"],
+                    "Barbil": ["Barbil Municipality", "Joda Municipality"],
+                    "Champua": ["Champua NAC", "Jhumpura"]
                 },
                 "Khordha": {
-                    "Bhubaneswar (BMC)": ["Ward 1", "Ward 2"],
-                    "Jatni": ["Jatni Town", "Khurda Road"]
+                    "Bhubaneswar (BMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5", "Ward 6", "Ward 67"],
+                    "Khurda": ["Khurda Municipality Ward 1", "Khurda Municipality Ward 2", "Khurda Municipality Ward 3"],
+                    "Jatni": ["Jatni Municipality Ward 1", "Jatni Municipality Ward 2", "Khurda Road"],
+                    "Banapur": ["Banapur NAC", "Chilika", "Balugaon NAC"]
                 },
-                "Puri": {"Puri Sadar": ["GP 1"], "Pipili": ["GP 2"]},
-                "Bhadrak": {"Bhadrak Block": ["GP 1"]}, "Bolangir": {"Bolangir": ["GP1"]}, "Boudh": {"Boudh": ["GP1"]},
-                "Deogarh": {"Deogarh": ["GP1"]}, "Dhenkanal": {"Dhenkanal": ["GP1"]}, "Gajapati": {"Paralakhemundi": ["GP1"]},
-                "Ganjam": {"Brahmapur": ["GP1"]}, "Jagatsinghpur": {"Jagatsinghpur": ["GP1"]}, "Jharsuguda": {"Jharsuguda": ["GP1"]},
-                "Kalahandi": {"Bhawanipatna": ["GP1"]}, "Kandhamal": {"Phulbani": ["GP1"]}, "Kendrapara": {"Kendrapara": ["GP1"]},
-                "Kendujhar": {"Kendujhar": ["GP1"]}, "Koraput": {"Koraput": ["GP1"]}, "Malkangiri": {"Malkangiri": ["GP1"]},
-                "Mayurbhanj": {"Baripada": ["GP1"]}, "Nabarangpur": {"Nabarangpur": ["GP1"]}, "Nayagarh": {"Nayagarh": ["GP1"]},
-                "Nuapada": {"Nuapada": ["GP1"]}, "Rayagada": {"Rayagada": ["GP1"]}, "Sambalpur": {"Sambalpur": ["GP1"]},
-                "Subarnapur": {"Sonepur": ["GP1"]}, "Sundargarh": {"Rourkela": ["GP1"]}
+                "Koraput": {
+                    "Koraput": ["Koraput Municipality Ward 1", "Koraput Municipality Ward 2"],
+                    "Jeypore": ["Jeypore Municipality Ward 1", "Jeypore Municipality Ward 2"],
+                    "Sunabeda": ["Sunabeda Municipality", "Semiliguda"],
+                    "Kotpad": ["Kotpad NAC", "Borigumma"]
+                },
+                "Malkangiri": {
+                    "Malkangiri": ["Malkangiri Municipality Ward 1", "Malkangiri Municipality Ward 2", "MV-79"],
+                    "Mathili": ["Mathili", "Chitrakonda NAC"],
+                    "Kalimela": ["Kalimela", "Podia"]
+                },
+                "Mayurbhanj": {
+                    "Baripada": ["Baripada Municipality Ward 1", "Baripada Municipality Ward 2", "Baripada Municipality Ward 3"],
+                    "Rairangpur": ["Rairangpur Municipality", "Karanjia NAC"],
+                    "Udala": ["Udala NAC", "Kaptipada"],
+                    "Morada": ["Morada", "Rasgovindpur"]
+                },
+                "Nabarangpur": {
+                    "Nabarangpur": ["Nabarangpur Municipality Ward 1", "Nabarangpur Municipality Ward 2"],
+                    "Umerkote": ["Umerkote Municipality", "Raighar"],
+                    "Dabugam": ["Dabugam", "Papadahandi"]
+                },
+                "Nayagarh": {
+                    "Nayagarh": ["Nayagarh Municipality Ward 1", "Nayagarh Municipality Ward 2"],
+                    "Khandapada": ["Khandapada NAC", "Bhapur"],
+                    "Ranpur": ["Ranpur", "Odagaon NAC"]
+                },
+                "Nuapada": {
+                    "Nuapada": ["Nuapada NAC", "Khariar NAC"],
+                    "Komna": ["Komna", "Tarabodh"],
+                    "Boden": ["Boden", "Sinapali"]
+                },
+                "Puri": {
+                    "Puri": ["Puri Municipality Ward 1", "Puri Municipality Ward 2", "Puri Municipality Ward 3"],
+                    "Pipili": ["Pipili NAC", "Delanga"],
+                    "Nimapada": ["Nimapada NAC", "Kakatpur", "Astaranga"],
+                    "Satyabadi": ["Satyabadi", "Brahmagiri", "Krushnaprasad"]
+                },
+                "Rayagada": {
+                    "Rayagada": ["Rayagada Municipality Ward 1", "Rayagada Municipality Ward 2"],
+                    "Gunupur": ["Gunupur Municipality", "Padmapur"],
+                    "Bissam Cuttack": ["Bissam Cuttack", "Gudari NAC"]
+                },
+                "Sambalpur": {
+                    "Sambalpur (SMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 4"],
+                    "Rengali": ["Rengali", "Dhankauda"],
+                    "Kuchinda": ["Kuchinda NAC", "Jamankira"],
+                    "Rairakhol": ["Redhakhol NAC", "Naktideul"]
+                },
+                "Subarnapur": {
+                    "Sonepur": ["Sonepur Municipality Ward 1", "Sonepur Municipality Ward 2"],
+                    "Tarbha": ["Tarbha NAC", "Dunguripali"],
+                    "Binka": ["Binka NAC", "Ullunda"]
+                },
+                "Sundargarh": {
+                    "Rourkela (RMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 40"],
+                    "Sundargarh": ["Sundargarh Municipality Ward 1", "Sundargarh Municipality Ward 2"],
+                    "Rajgangpur": ["Rajgangpur Municipality", "Kutra"],
+                    "Biramitrapur": ["Biramitrapur Municipality", "Kuarmunda"]
+                }
             }
         };
 
