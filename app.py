@@ -168,7 +168,7 @@ html_design = """
                 <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
                     <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
                     <div class="space-y-4 text-sm text-gray-800">
-                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p></div>
+                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ。</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର।</p></div>
@@ -237,7 +237,7 @@ status_check_design = """
 """
 
 # ==========================================
-# 3. USER REGISTRATION PAGE (UPDATED WITH ALL STATES & LANGUAGE)
+# 3. USER REGISTRATION PAGE
 # ==========================================
 user_register_design = """
 <!DOCTYPE html>
@@ -257,10 +257,7 @@ user_register_design = """
             "Mizoram": "Mizo", "Nagaland": "English", "Odisha": "Odia", "Punjab": "Punjabi",
             "Rajasthan": "Hindi", "Sikkim": "English", "Tamil Nadu": "Tamil",
             "Telangana": "Telugu", "Tripura": "Bengali", "Uttar Pradesh": "Hindi",
-            "Uttarakhand": "Hindi", "West Bengal": "Bengali", "Andaman and Nicobar Islands": "Hindi",
-            "Chandigarh": "English", "Dadra & Nagar Haveli & Daman & Diu": "Gujarati",
-            "Delhi": "Hindi", "Jammu and Kashmir": "Urdu", "Ladakh": "Urdu",
-            "Lakshadweep": "Malayalam", "Puducherry": "Tamil"
+            "Uttarakhand": "Hindi", "West Bengal": "Bengali"
         };
 
         function updateLanguageOptions() {
@@ -270,7 +267,7 @@ user_register_design = """
 
             if(state && stateLanguages[state]) {
                 let localLang = stateLanguages[state];
-                let langs = new Set([localLang, "English", "Hindi"]); // Avoids duplicates
+                let langs = new Set([localLang, "English", "Hindi"]); 
                 langs.forEach(l => {
                     langSelect.innerHTML += `<option value="${l}">${l}</option>`;
                 });
@@ -312,41 +309,23 @@ user_register_design = """
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
                         <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                         <option value="Assam">Assam</option>
                         <option value="Bihar">Bihar</option>
                         <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Goa">Goa</option>
                         <option value="Gujarat">Gujarat</option>
                         <option value="Haryana">Haryana</option>
-                        <option value="Himachal Pradesh">Himachal Pradesh</option>
                         <option value="Jharkhand">Jharkhand</option>
                         <option value="Karnataka">Karnataka</option>
                         <option value="Kerala">Kerala</option>
                         <option value="Madhya Pradesh">Madhya Pradesh</option>
                         <option value="Maharashtra">Maharashtra</option>
-                        <option value="Manipur">Manipur</option>
-                        <option value="Meghalaya">Meghalaya</option>
-                        <option value="Mizoram">Mizoram</option>
-                        <option value="Nagaland">Nagaland</option>
                         <option value="Odisha">Odisha</option>
                         <option value="Punjab">Punjab</option>
                         <option value="Rajasthan">Rajasthan</option>
-                        <option value="Sikkim">Sikkim</option>
                         <option value="Tamil Nadu">Tamil Nadu</option>
                         <option value="Telangana">Telangana</option>
-                        <option value="Tripura">Tripura</option>
                         <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Uttarakhand">Uttarakhand</option>
                         <option value="West Bengal">West Bengal</option>
-                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                        <option value="Chandigarh">Chandigarh</option>
-                        <option value="Dadra & Nagar Haveli & Daman & Diu">Dadra & Nagar Haveli & Daman & Diu</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                        <option value="Ladakh">Ladakh</option>
-                        <option value="Lakshadweep">Lakshadweep</option>
-                        <option value="Puducherry">Puducherry</option>
                     </select>
                 </div>
                 <div>
@@ -421,7 +400,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED WITH DASHBOARD LANGUAGE SELECTOR)
+# 5. FULL USER DASHBOARD (UPDATED CASCADING DROPDOWNS FOR ALL LOCATION LEVELS)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -433,27 +412,51 @@ user_dashboard_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Andhra Pradesh": "Telugu", "Arunachal Pradesh": "English", "Assam": "Assamese",
-            "Bihar": "Hindi", "Chhattisgarh": "Hindi", "Goa": "Konkani", "Gujarat": "Gujarati",
-            "Haryana": "Hindi", "Himachal Pradesh": "Hindi", "Jharkhand": "Hindi",
-            "Karnataka": "Kannada", "Kerala": "Malayalam", "Madhya Pradesh": "Hindi",
-            "Maharashtra": "Marathi", "Manipur": "Manipuri", "Meghalaya": "English",
-            "Mizoram": "Mizo", "Nagaland": "English", "Odisha": "Odia", "Punjab": "Punjabi",
-            "Rajasthan": "Hindi", "Sikkim": "English", "Tamil Nadu": "Tamil",
-            "Telangana": "Telugu", "Tripura": "Bengali", "Uttar Pradesh": "Hindi",
-            "Uttarakhand": "Hindi", "West Bengal": "Bengali", "Andaman and Nicobar Islands": "Hindi",
-            "Chandigarh": "English", "Dadra & Nagar Haveli & Daman & Diu": "Gujarati",
-            "Delhi": "Hindi", "Jammu and Kashmir": "Urdu", "Ladakh": "Urdu",
-            "Lakshadweep": "Malayalam", "Puducherry": "Tamil"
+            "Andhra Pradesh": "Telugu", "Assam": "Assamese", "Bihar": "Hindi", 
+            "Chhattisgarh": "Hindi", "Gujarat": "Gujarati", "Haryana": "Hindi", 
+            "Jharkhand": "Hindi", "Karnataka": "Kannada", "Kerala": "Malayalam", 
+            "Madhya Pradesh": "Hindi", "Maharashtra": "Marathi", "Odisha": "Odia", 
+            "Punjab": "Punjabi", "Rajasthan": "Hindi", "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu", "Uttar Pradesh": "Hindi", "West Bengal": "Bengali"
         };
 
-        const gpList = ["GP 1", "GP 2", "GP 3", "GP 4"];
+        // Comprehensive Dummy Location Database (State -> District -> Block -> Panchayat)
         const locationData = {
             "Odisha": {
-                "Angul": { "Banarpal": gpList, "Chhendiapada": gpList, "Athamallik": gpList },
-                "Balasore": { "Basta": gpList, "Remuna": gpList, "Jaleswar": gpList },
-                "Cuttack": { "Cuttack Sadar": gpList, "Baranga": gpList, "Niali": gpList, "Kantapada": gpList },
-                "Puri": { "Puri Sadar": gpList, "Brahmagiri": gpList, "Pipili": gpList }
+                "Angul": { 
+                    "Banarpal": ["Balaramprasad", "Bandhasi", "Banarpal GP", "Gotamara"], 
+                    "Chhendiapada": ["Basantapur", "Chhendiapada GP", "Kusasingha"], 
+                    "Talcher": ["Bhalugadia", "Kalamchhuin", "Santhapada"] 
+                },
+                "Balasore": { 
+                    "Basta": ["Baharda", "Basta GP", "Darada", "Mathani"], 
+                    "Remuna": ["Ganeswarpur", "Kalyanpur", "Mandarpur"], 
+                    "Jaleswar": ["Bartana", "Chalanti", "Lakhannath"] 
+                },
+                "Cuttack": { 
+                    "Cuttack Sadar": ["Kalyanpur", "Paramahansa", "Urali"], 
+                    "Baranga": ["Belgachhia", "Dadha", "Ramdagarh"], 
+                    "Niali": ["Alana", "Eranch", "Niali GP"] 
+                },
+                "Puri": { 
+                    "Puri Sadar": ["Baliguali", "Chandanpur", "Gopinathpur"], 
+                    "Brahmagiri": ["Alarnath", "Bentapur", "Kanas"] 
+                }
+            },
+            "West Bengal": {
+                "Kolkata": {
+                    "KMC Area": ["Ward 1", "Ward 2", "Ward 3", "Ward 4"]
+                },
+                "Howrah": {
+                    "Bally Jagachha": ["Bally GP", "Jagachha GP", "Chakpara"],
+                    "Domjur": ["Begri", "Domjur GP", "Makardah"]
+                }
+            },
+            "Andhra Pradesh": {
+                "Visakhapatnam": {
+                    "Bheemunipatnam": ["Bheemili GP", "Chittivalasa", "Mulakuddu"],
+                    "Anandapuram": ["Anandapuram GP", "Gidijala", "Vellanki"]
+                }
             }
         };
 
@@ -467,10 +470,12 @@ user_dashboard_design = """
             let state = document.getElementById("state").value;
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
+            let gpSelect = document.getElementById("panchayat");
             
-            // Populate district logic
             distSelect.innerHTML = "<option value=''>Select District</option>";
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
+            gpSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+
             if(state && locationData[state]) {
                 for(let dist in locationData[state]) {
                     distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
@@ -501,10 +506,31 @@ user_dashboard_design = """
             let state = document.getElementById("state").value;
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
+            let gpSelect = document.getElementById("panchayat");
+            
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
+            gpSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+
             if(state && dist && locationData[state][dist]) {
                 for(let block in locationData[state][dist]) {
                     blockSelect.innerHTML += `<option value='${block}'>${block}</option>`;
+                }
+            }
+        }
+
+        // NEW FUNCTION: Populate Gram Panchayat/Ward based on Block
+        function populateGPs() {
+            let state = document.getElementById("state").value;
+            let dist = document.getElementById("district").value;
+            let block = document.getElementById("block").value;
+            let gpSelect = document.getElementById("panchayat");
+            
+            gpSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+
+            if(state && dist && block && locationData[state][dist][block]) {
+                let gps = locationData[state][dist][block];
+                for(let i=0; i<gps.length; i++) {
+                    gpSelect.innerHTML += `<option value='${gps[i]}'>${gps[i]}</option>`;
                 }
             }
         }
@@ -728,60 +754,48 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS (Updated Postal PIN and All States List) -->
+                <!-- ADDRESS (UPDATED CASCADING DROPDOWNS: State -> Dist -> Block -> Panchayat) -->
                 <div class="grid grid-cols-5 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-xs font-semibold">State</label>
                         <select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded" required>
                             <option value="">Select State</option>
                             <option value="Andhra Pradesh">Andhra Pradesh</option>
-                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                             <option value="Assam">Assam</option>
                             <option value="Bihar">Bihar</option>
                             <option value="Chhattisgarh">Chhattisgarh</option>
-                            <option value="Goa">Goa</option>
                             <option value="Gujarat">Gujarat</option>
                             <option value="Haryana">Haryana</option>
-                            <option value="Himachal Pradesh">Himachal Pradesh</option>
                             <option value="Jharkhand">Jharkhand</option>
                             <option value="Karnataka">Karnataka</option>
                             <option value="Kerala">Kerala</option>
                             <option value="Madhya Pradesh">Madhya Pradesh</option>
                             <option value="Maharashtra">Maharashtra</option>
-                            <option value="Manipur">Manipur</option>
-                            <option value="Meghalaya">Meghalaya</option>
-                            <option value="Mizoram">Mizoram</option>
-                            <option value="Nagaland">Nagaland</option>
                             <option value="Odisha">Odisha</option>
                             <option value="Punjab">Punjab</option>
                             <option value="Rajasthan">Rajasthan</option>
-                            <option value="Sikkim">Sikkim</option>
                             <option value="Tamil Nadu">Tamil Nadu</option>
                             <option value="Telangana">Telangana</option>
-                            <option value="Tripura">Tripura</option>
                             <option value="Uttar Pradesh">Uttar Pradesh</option>
-                            <option value="Uttarakhand">Uttarakhand</option>
                             <option value="West Bengal">West Bengal</option>
-                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                            <option value="Chandigarh">Chandigarh</option>
-                            <option value="Dadra & Nagar Haveli & Daman & Diu">Dadra & Nagar Haveli & Daman & Diu</option>
-                            <option value="Delhi">Delhi</option>
-                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                            <option value="Ladakh">Ladakh</option>
-                            <option value="Lakshadweep">Lakshadweep</option>
-                            <option value="Puducherry">Puducherry</option>
                         </select>
                     </div>
-                    <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded"><option value="">Select District</option></select></div>
-                    <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" class="w-full border p-2 rounded"><option value="">Select Block</option></select></div>
-                    <div><label class="block text-xs font-semibold">Panchayat/Ward</label><input type="text" id="panchayat" placeholder="Panchayat/Ward" class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded" required><option value="">Select District</option></select></div>
+                    <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" onchange="populateGPs()" class="w-full border p-2 rounded" required><option value="">Select Block</option></select></div>
+                    
+                    <!-- NEW: Panchayat/Ward Dropdown -->
+                    <div>
+                        <label class="block text-xs font-semibold">Panchayat/Ward</label>
+                        <select id="panchayat" class="w-full border p-2 rounded" required>
+                            <option value="">Select Panchayat/Ward</option>
+                        </select>
+                    </div>
+                    
                     <div><label class="block text-xs font-semibold">Postal PIN <span class="text-red-500">*</span></label><input type="text" placeholder="e.g. 751001" class="w-full border p-2 rounded" required></div>
                 </div>
                 <div><label class="block text-sm font-semibold">Full Address (Village/City, Post)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
-                <!-- ========================================== -->
-                <!-- NEW DYNAMIC AGE PROOF SECTION -->
-                <!-- ========================================== -->
+                <!-- AGE PROOF SECTION -->
                 <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
                     <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
                     <div class="grid grid-cols-3 gap-4">
@@ -802,9 +816,7 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- INCOME CERTIFICATE BLOCK (Updated Upload) -->
-                <!-- ========================================== -->
+                <!-- INCOME CERTIFICATE BLOCK -->
                 <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
                     <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
                     <div class="grid grid-cols-3 gap-4">
@@ -869,9 +881,7 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ========================================== -->
-                <!-- NEW BANK INFORMATION SECTION (EXACT DESIGN) -->
-                <!-- ========================================== -->
+                <!-- BANK INFORMATION -->
                 <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
                     
