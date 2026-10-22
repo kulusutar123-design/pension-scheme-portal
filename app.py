@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # ==========================================
-# 1. HOME PAGE DESIGN (ମୁଖ୍ୟ ପୃଷ୍ଠା - Purna Design)
+# 1. HOME PAGE DESIGN
 # ==========================================
 html_design = """
 <!DOCTYPE html>
@@ -30,19 +30,15 @@ html_design = """
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
 
-    <!-- Top Header / Navbar -->
     <header class="bg-white shadow-md border-b-4 border-blue-700 sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <div class="text-blue-700 text-4xl md:text-5xl">
-                    <i class="fa-solid fa-hands-holding-circle"></i>
-                </div>
+                <div class="text-blue-700 text-4xl md:text-5xl"><i class="fa-solid fa-hands-holding-circle"></i></div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold text-blue-800">Private Social Security Pension Scheme</h1>
                     <p class="text-sm font-semibold text-gray-600">A Private Initiative for the Needy</p>
                 </div>
             </div>
-            
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="#home" class="text-blue-700 font-bold flex items-center border-b-2 border-blue-700 pb-1"><i class="fa-solid fa-house mr-1"></i> Home</a>
                 <a href="#about" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center transition duration-300"><i class="fa-solid fa-circle-info mr-1"></i> About Us</a>
@@ -52,13 +48,10 @@ html_design = """
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section id="home" class="hero-bg py-16 px-4 border-b">
         <div class="container mx-auto">
             <div class="max-w-2xl bg-white/95 p-8 rounded-xl shadow-xl border-l-8 border-blue-600 backdrop-blur-sm">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 leading-tight">
-                    Support for Senior Citizens, Widows, Disabled & the Needy
-                </h2>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 leading-tight">Support for Senior Citizens, Widows, Disabled & the Needy</h2>
                 <p class="text-lg text-gray-700 font-medium mb-6">Providing financial independence and respect through our private pension initiative. Pension is not just money, it is respect.</p>
                 <a href="#schemes" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-blue-800 hover:shadow-lg transition duration-300 flex items-center w-max">
                     View Schemes <i class="fa-solid fa-arrow-down ml-2"></i>
@@ -67,78 +60,37 @@ html_design = """
         </div>
     </section>
 
-    <!-- 6 Action Cards Section -->
     <section class="container mx-auto px-4 py-12 relative -mt-10 md:-mt-16 z-10">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
-            
             <a href="/admin/login" class="block bg-gradient-to-b from-blue-500 to-blue-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-building text-4xl mb-4"></i>
-                <h3 class="font-bold text-lg mb-2">Admin Login</h3>
-                <p class="text-sm mb-4 text-blue-100">Official login for Administration</p>
-                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-building text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Admin Login</h3><p class="text-sm mb-4 text-blue-100">Official login for Administration</p>
             </a>
-
             <a href="/user/register" class="block bg-gradient-to-b from-green-500 to-green-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i>
-                <h3 class="font-bold text-lg mb-2">Pension Apply</h3>
-                <p class="text-sm mb-4 text-green-100">Apply for New Pension</p>
-                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Pension Apply</h3><p class="text-sm mb-4 text-green-100">Apply for New Pension</p>
             </a>
-
             <a href="/status/check" class="block bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i>
-                <h3 class="font-bold text-lg mb-2">Check Status</h3>
-                <p class="text-sm mb-4 text-orange-100">Check Your Application Status</p>
-                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Check Status</h3><p class="text-sm mb-4 text-orange-100">Check Your Application Status</p>
             </a>
-
             <a href="/user/login" class="block bg-gradient-to-b from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-user text-4xl mb-4"></i>
-                <h3 class="font-bold text-lg mb-2">Beneficiary</h3>
-                <p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p>
-                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-user text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Beneficiary</h3><p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p>
             </a>
-
             <a href="#schemes" class="block bg-gradient-to-b from-teal-400 to-teal-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-book-open text-4xl mb-4"></i>
-                <h3 class="font-bold text-lg mb-2">Schemes</h3>
-                <p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p>
-                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-book-open text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Schemes</h3><p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p>
             </a>
-
             <a href="#contact" class="block bg-gradient-to-b from-pink-500 to-pink-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-headset text-4xl mb-4"></i>
-                <h3 class="font-bold text-lg mb-2">Help Desk</h3>
-                <p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p>
-                <i class="fa-solid fa-circle-chevron-right text-2xl"></i>
+                <i class="fa-solid fa-headset text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Help Desk</h3><p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p>
             </a>
-
         </div>
     </section>
 
     <!-- SECTION: ABOUT US -->
     <section id="about" class="container mx-auto px-4 py-10">
         <div class="bg-white rounded-xl p-8 shadow-md border-t-4 border-blue-700">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-circle-info mr-2"></i> ଆମ ବିଷୟରେ (About Us)</h2>
-            </div>
-            
+            <div class="text-center mb-8"><h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-circle-info mr-2"></i> ଆମ ବିଷୟରେ (About Us)</h2></div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Odia -->
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
-                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3>
-                    <p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ।"</p>
-                </div>
-                <!-- English -->
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
-                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3>
-                    <p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy. Pension is not just money; it is respect."</p>
-                </div>
-                <!-- Hindi -->
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm">
-                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3>
-                    <p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है।"</p>
-                </div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା। ପେନସନ୍ କେବଳ ଟଙ୍କା ନୁହେଁ, ଏହା ହେଉଛି ସମ୍ମାନ।"</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy. Pension is not just money; it is respect."</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है। पेंशन केवल पैसा नहीं, बल्कि सम्मान है।"</p></div>
             </div>
         </div>
     </section>
@@ -146,66 +98,31 @@ html_design = """
     <!-- SECTION: SCHEMES & RULES -->
     <section id="schemes" class="bg-gray-100 py-12 border-t border-b border-gray-200">
         <div class="container mx-auto px-4">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i> ଯୋଜନା ଏବଂ ସର୍ତ୍ତାବଳୀ (Schemes & Conditions)</h2>
-            </div>
-
+            <div class="text-center mb-10"><h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i> ଯୋଜନା ଏବଂ ସର୍ତ୍ତାବଳୀ (Schemes & Conditions)</h2></div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Schemes List (ALL 6 ADDED BACK) -->
+                <!-- Schemes List -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
                     <ul class="space-y-4">
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm">
-                            <span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span>
-                            <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span>
-                        </li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm">
-                            <span class="font-semibold text-gray-800">ବିଧବା (Widow)</span>
-                            <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span>
-                        </li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm">
-                            <span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span>
-                            <span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span>
-                        </li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm">
-                            <span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span>
-                            <span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span>
-                        </li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-pink-500 shadow-sm">
-                            <span class="font-semibold text-gray-800">ଛାଡପତ୍ର ପାଇଥିବା (Divorcee)</span>
-                            <span class="text-sm bg-pink-100 text-pink-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span>
-                        </li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-teal-500 shadow-sm">
-                            <span class="font-semibold text-gray-800">କିନ୍ନର (Transgender)</span>
-                            <span class="text-sm bg-teal-100 text-teal-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span>
-                        </li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm"><span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm"><span class="font-semibold text-gray-800">ବିଧବା (Widow)</span><span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm"><span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span><span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm"><span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span><span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-pink-500 shadow-sm"><span class="font-semibold text-gray-800">ଛାଡପତ୍ର ପାଇଥିବା (Divorcee)</span><span class="text-sm bg-pink-100 text-pink-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-teal-500 shadow-sm"><span class="font-semibold text-gray-800">କିନ୍ନର (Transgender)</span><span class="text-sm bg-teal-100 text-teal-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span></li>
                         <li class="text-xs text-gray-500 italic mt-2">* ଅନ୍ୟାନ୍ୟ ଯୋଜନା: କୁଷ୍ଠରୋଗ ଆରୋଗ୍ୟ, ଏଡସ୍/ଏଚଆଇଭି ଆକ୍ରାନ୍ତ (ବିଧବା/ଭିନ୍ନକ୍ଷମ)</li>
                     </ul>
                 </div>
-
                 <!-- Strict Rules -->
                 <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
                     <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
                     <div class="space-y-4 text-sm text-gray-800">
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i>
-                            <p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i>
-                            <p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i>
-                            <p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ। ନଚେତ୍ ଆପେ ଆପେ ବନ୍ଦ ହୋଇଯିବ।</p>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i>
-                            <p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର। ଭୁଲ୍ ତଥ୍ୟ ଦେଲେ ପେନସନ୍ ତୁରନ୍ତ ବାତିଲ୍ ହେବ।</p>
-                        </div>
+                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p></div>
+                        <div class="flex items-start"><i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p></div>
+                        <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ। ନଚେତ୍ ଆପେ ଆପେ ବନ୍ଦ ହୋଇଯିବ।</p></div>
+                        <div class="flex items-start"><i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର। ଭୁଲ୍ ତଥ୍ୟ ଦେଲେ ପେନସନ୍ ତୁରନ୍ତ ବାତିଲ୍ ହେବ।</p></div>
                     </div>
                 </div>
-
                 <!-- Documents -->
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-folder-open mr-2"></i> ଦରକାରୀ କାଗଜପତ୍ର (Documents)</h3>
@@ -215,13 +132,8 @@ html_design = """
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
                         <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (Passport Size Photo)</li>
-                        <li class="flex items-start mt-2 bg-yellow-50 p-2 rounded text-xs border border-yellow-200">
-                            <i class="fa-solid fa-circle-info text-yellow-600 mt-1 mr-2"></i>
-                            ଯୋଜନା ଅନୁସାରେ ସ୍ୱତନ୍ତ୍ର ପ୍ରମାଣପତ୍ର (ଉଦାହରଣ: ଭିନ୍ନକ୍ଷମ ପ୍ରମାଣପତ୍ର, ସ୍ୱାମୀଙ୍କ ମୃତ୍ୟୁ ପ୍ରମାଣପତ୍ର ଇତ୍ୟାଦି)।
-                        </li>
                     </ul>
                 </div>
-
             </div>
         </div>
     </section>
@@ -236,14 +148,6 @@ html_design = """
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-white py-8 border-t-4 border-blue-600">
-        <div class="container mx-auto px-4 flex justify-between items-center text-sm">
-            <p class="text-gray-300">&copy; 2026 Private Social Security Pension Scheme</p>
-        </div>
-    </footer>
-
 </body>
 </html>
 """
@@ -259,12 +163,6 @@ status_check_design = """
     <title>Check Application Status</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        function showStatus(e) {
-            e.preventDefault();
-            document.getElementById('statusResult').classList.remove('hidden');
-        }
-    </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
@@ -273,7 +171,7 @@ status_check_design = """
             <i class="fa-solid fa-magnifying-glass text-4xl text-orange-500 mb-3"></i>
             <h2 class="text-2xl font-bold text-gray-800">Check Status</h2>
         </div>
-        <form onsubmit="showStatus(event)" class="space-y-4">
+        <form onsubmit="event.preventDefault(); document.getElementById('statusResult').classList.remove('hidden');" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Application Number</label>
                 <input type="text" placeholder="e.g. APP-XXXXXX" class="w-full px-4 py-3 border rounded-lg focus:ring-orange-500" required>
@@ -331,7 +229,7 @@ user_register_design = """
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
-                        <option>Andhra Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Gujarat</option><option>Jharkhand</option><option>Odisha</option><option>West Bengal</option>
+                        <option>Odisha</option><option>Andhra Pradesh</option><option>West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -399,7 +297,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. USER DASHBOARD (WITH MASSIVE DYNAMIC DROPDOWN FOR ODISHA)
+# 5. USER DASHBOARD (WITH MASSIVE DYNAMIC DROPDOWN FOR ODISHA 30 DISTS)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -410,179 +308,40 @@ user_dashboard_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        // MASSIVE DYNAMIC CASCADING DROPDOWN DATA FOR ODISHA (ALL 30 DISTRICTS)
+        // DYNAMIC CASCADING DROPDOWN FOR ODISHA 30 DISTRICTS FROM PDF
+        const gpList = ["GP 1", "GP 2", "GP 3", "GP 4"];
         const locationData = {
             "Odisha": {
-                "Angul": {
-                    "Angul": ["Angarabandha", "Badakera", "Balanga", "Bantala", "Baragounia"],
-                    "Athmallik": ["Athmallik NAC Ward 1", "Athmallik NAC Ward 2", "Kiantakata"],
-                    "Banarpal": ["Banarpal", "Banda", "Bonda"],
-                    "Chhendipada": ["Chhendipada", "Kusasingha"],
-                    "Angul Municipality": ["Ward 1", "Ward 2", "Ward 3", "Ward 4"]
-                },
-                "Balasore": {
-                    "Baleshwar Sadar": ["Sartha", "Sindhia", "Srirampur"],
-                    "Jaleswar": ["Jaleswar Municipality Ward 1", "Jaleswar Municipality Ward 2", "Sugo"],
-                    "Nilagiri": ["Nilagiri NAC Ward 1", "Ajodhya"],
-                    "Soro": ["Soro Municipality Ward 1", "Anantapur"]
-                },
-                "Bargarh": {
-                    "Bargarh": ["Bargarh Municipality Ward 1", "Bargarh Municipality Ward 2", "Bardol"],
-                    "Attabira": ["Attabira NAC", "Bheden"],
-                    "Padampur": ["Padampur NAC", "Rajborasambar"]
-                },
-                "Bhadrak": {
-                    "Bhadrak": ["Bhadrak Municipality Ward 1", "Bhadrak Municipality Ward 2", "Rahanja"],
-                    "Basudevpur": ["Basudevpur Municipality", "Lunga"],
-                    "Chandabali": ["Chandabali NAC", "Dhamra"]
-                },
-                "Bolangir": {
-                    "Bolangir": ["Bolangir Municipality Ward 1", "Bolangir Municipality Ward 2", "Kusmel"],
-                    "Titilagarh": ["Titilagarh Municipality", "Sihini"],
-                    "Patnagarh": ["Patnagarh NAC", "Marndi"]
-                },
-                "Boudh": {
-                    "Boudh": ["Boudhgarh NAC Ward 1", "Boudhgarh NAC Ward 2", "Padmanpur"],
-                    "Kantamal": ["Kantamal", "Khatakhatia"],
-                    "Harabhanga": ["Harabhanga", "Purunakatak"]
-                },
-                "Cuttack": {
-                    "Cuttack Municipal Corporation": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5", "Ward 59"],
-                    "Cuttack Sadar": ["Paramahansa", "Bhairpur", "Kalarabank", "Kandarpur"],
-                    "Niali": ["Niali", "Eranch", "Baharna", "Kasarda"],
-                    "Salepur": ["Salepur NAC", "Kishorenagar", "Pikol"],
-                    "Mahanga": ["Mahanga", "Kuanpal", "Bhitarsana"],
-                    "Athagarh": ["Athagarh NAC Ward 1", "Athagarh NAC Ward 2", "Bentapadar"],
-                    "Choudwar": ["Choudwar Municipality Ward 1", "Choudwar Municipality Ward 2"]
-                },
-                "Deogarh": {
-                    "Barkote": ["Barkote", "Dandasingha"],
-                    "Reamal": ["Reamal", "Tinkbir"],
-                    "Tileibani": ["Tileibani", "Deogarh Municipality Ward 1"]
-                },
-                "Dhenkanal": {
-                    "Dhenkanal": ["Dhenkanal Municipality Ward 1", "Dhenkanal Municipality Ward 2", "Gondia"],
-                    "Hindol": ["Hindol NAC", "Kankadahad"],
-                    "Kamakhyanagar": ["Kamakhyanagar NAC", "Bhuban NAC"]
-                },
-                "Gajapati": {
-                    "Paralakhemundi": ["Paralakhemundi Municipality Ward 1", "Paralakhemundi Municipality Ward 2"],
-                    "Gumma": ["Gumma", "Gaiba"],
-                    "Mohana": ["Mohana", "Chandragiri"]
-                },
-                "Ganjam": {
-                    "Brahmapur (BeMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 40"],
-                    "Chatrapur": ["Chatrapur NAC", "Aryapalli"],
-                    "Hinjilicut": ["Hinjilicut Municipality", "Kanchuru"],
-                    "Bhanjanagar": ["Bhanjanagar NAC", "Muzagada"]
-                },
-                "Jagatsinghpur": {
-                    "Jagatsinghpur": ["Jagatsinghpur Municipality Ward 1", "Jagatsinghpur Municipality Ward 2", "Alipingal"],
-                    "Paradip": ["Paradip Municipality Ward 1", "Paradip Municipality Ward 2"],
-                    "Tirtol": ["Tirtol", "Manijanga"],
-                    "Balikuda": ["Balikuda", "Machhagaon"]
-                },
-                "Jajpur": {
-                    "Jajpur": ["Jajpur Municipality Ward 1", "Jajpur Municipality Ward 2", "Panikoili", "Sujampur"],
-                    "Vyasanagar Municipality": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5", "Ward 26"],
-                    "Dasarathpur": ["Udaypur", "Rambag", "Kalyanpur", "Kasapa", "Mallikapur"],
-                    "Korei": ["Korei", "Panikoili", "Baitarani Road"],
-                    "Dharmasala": ["Dharmasala", "Jaraka", "Rathia"],
-                    "Sukinda": ["Sukinda", "Kalarangi", "Daitari"]
-                },
-                "Jharsuguda": {
-                    "Jharsuguda": ["Jharsuguda Municipality Ward 1", "Jharsuguda Municipality Ward 2", "Durlaga"],
-                    "Brajarajnagar": ["Brajarajnagar Municipality", "Belpahar Municipality"],
-                    "Kolabira": ["Kolabira", "Kirmira"]
-                },
-                "Kalahandi": {
-                    "Bhawanipatna": ["Bhawanipatna Municipality Ward 1", "Bhawanipatna Municipality Ward 2", "Medinipur"],
-                    "Dharamgarh": ["Dharamgarh NAC", "Koksara"],
-                    "Junagarh": ["Junagarh NAC", "Golamunda"]
-                },
-                "Kandhamal": {
-                    "Phulbani": ["Phulbani Municipality Ward 1", "Phulbani Municipality Ward 2"],
-                    "Baliguda": ["Baliguda NAC", "K. Nuagaon"],
-                    "G. Udayagiri": ["G. Udayagiri NAC", "Tikabali", "Raikia"]
-                },
-                "Kendrapara": {
-                    "Kendrapara": ["Kendrapara Municipality Ward 1", "Kendrapara Municipality Ward 2", "Jamadhar"],
-                    "Pattamundai": ["Pattamundai Municipality Ward 1", "Pattamundai Municipality Ward 2"],
-                    "Aul": ["Aul", "Rajkanika"],
-                    "Mahakalapada": ["Mahakalapada", "Jamboo"]
-                },
-                "Kendujhar": {
-                    "Kendujhar": ["Kendujhar Municipality Ward 1", "Kendujhar Municipality Ward 2", "Banspal"],
-                    "Anandapur": ["Anandapur Municipality", "Ghasipura"],
-                    "Barbil": ["Barbil Municipality", "Joda Municipality"],
-                    "Champua": ["Champua NAC", "Jhumpura"]
-                },
-                "Khordha": {
-                    "Bhubaneswar (BMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 5", "Ward 6", "Ward 67"],
-                    "Khurda": ["Khurda Municipality Ward 1", "Khurda Municipality Ward 2", "Khurda Municipality Ward 3"],
-                    "Jatni": ["Jatni Municipality Ward 1", "Jatni Municipality Ward 2", "Khurda Road"],
-                    "Banapur": ["Banapur NAC", "Chilika", "Balugaon NAC"]
-                },
-                "Koraput": {
-                    "Koraput": ["Koraput Municipality Ward 1", "Koraput Municipality Ward 2"],
-                    "Jeypore": ["Jeypore Municipality Ward 1", "Jeypore Municipality Ward 2"],
-                    "Sunabeda": ["Sunabeda Municipality", "Semiliguda"],
-                    "Kotpad": ["Kotpad NAC", "Borigumma"]
-                },
-                "Malkangiri": {
-                    "Malkangiri": ["Malkangiri Municipality Ward 1", "Malkangiri Municipality Ward 2", "MV-79"],
-                    "Mathili": ["Mathili", "Chitrakonda NAC"],
-                    "Kalimela": ["Kalimela", "Podia"]
-                },
-                "Mayurbhanj": {
-                    "Baripada": ["Baripada Municipality Ward 1", "Baripada Municipality Ward 2", "Baripada Municipality Ward 3"],
-                    "Rairangpur": ["Rairangpur Municipality", "Karanjia NAC"],
-                    "Udala": ["Udala NAC", "Kaptipada"],
-                    "Morada": ["Morada", "Rasgovindpur"]
-                },
-                "Nabarangpur": {
-                    "Nabarangpur": ["Nabarangpur Municipality Ward 1", "Nabarangpur Municipality Ward 2"],
-                    "Umerkote": ["Umerkote Municipality", "Raighar"],
-                    "Dabugam": ["Dabugam", "Papadahandi"]
-                },
-                "Nayagarh": {
-                    "Nayagarh": ["Nayagarh Municipality Ward 1", "Nayagarh Municipality Ward 2"],
-                    "Khandapada": ["Khandapada NAC", "Bhapur"],
-                    "Ranpur": ["Ranpur", "Odagaon NAC"]
-                },
-                "Nuapada": {
-                    "Nuapada": ["Nuapada NAC", "Khariar NAC"],
-                    "Komna": ["Komna", "Tarabodh"],
-                    "Boden": ["Boden", "Sinapali"]
-                },
-                "Puri": {
-                    "Puri": ["Puri Municipality Ward 1", "Puri Municipality Ward 2", "Puri Municipality Ward 3"],
-                    "Pipili": ["Pipili NAC", "Delanga"],
-                    "Nimapada": ["Nimapada NAC", "Kakatpur", "Astaranga"],
-                    "Satyabadi": ["Satyabadi", "Brahmagiri", "Krushnaprasad"]
-                },
-                "Rayagada": {
-                    "Rayagada": ["Rayagada Municipality Ward 1", "Rayagada Municipality Ward 2"],
-                    "Gunupur": ["Gunupur Municipality", "Padmapur"],
-                    "Bissam Cuttack": ["Bissam Cuttack", "Gudari NAC"]
-                },
-                "Sambalpur": {
-                    "Sambalpur (SMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 4"],
-                    "Rengali": ["Rengali", "Dhankauda"],
-                    "Kuchinda": ["Kuchinda NAC", "Jamankira"],
-                    "Rairakhol": ["Redhakhol NAC", "Naktideul"]
-                },
-                "Subarnapur": {
-                    "Sonepur": ["Sonepur Municipality Ward 1", "Sonepur Municipality Ward 2"],
-                    "Tarbha": ["Tarbha NAC", "Dunguripali"],
-                    "Binka": ["Binka NAC", "Ullunda"]
-                },
-                "Sundargarh": {
-                    "Rourkela (RMC)": ["Ward 1", "Ward 2", "Ward 3", "Ward 4", "Ward 40"],
-                    "Sundargarh": ["Sundargarh Municipality Ward 1", "Sundargarh Municipality Ward 2"],
-                    "Rajgangpur": ["Rajgangpur Municipality", "Kutra"],
-                    "Biramitrapur": ["Biramitrapur Municipality", "Kuarmunda"]
-                }
+                "Angul": { "Banarpal": gpList, "Chhendiapada": gpList, "Athamallik": gpList, "Kisshorenagar": gpList, "Talcher": gpList, "Kaniha": gpList, "Pallahara": gpList },
+                "Balasore": { "Basta": gpList, "Remuna": gpList, "Jaleswar": gpList, "Bhograi": gpList, "Baliapal": gpList, "Nilagiri": gpList, "Oupada": gpList, "Sora": gpList, "Bahanaga": gpList, "Simulia": gpList, "Khaira": gpList },
+                "Bargarh": { "Barpali": gpList, "Bheden": gpList, "Bhatil": gpList, "Ambabhona": gpList, "Atabira": gpList, "Padampur": gpList, "Paikmal": gpList, "Jharbhand": gpList, "Sohella": gpList, "Bijepur": gpList },
+                "Bhadrak": { "Basudevpur": gpList, "Bhadrak": gpList, "Bhandaripokhari": gpList, "Bonth": gpList, "Chandabali": gpList, "Dhamanagar": gpList, "Tihidi": gpList },
+                "Bolangir": { "Deogam": gpList, "Gudvella": gpList, "Puintal": gpList, "Luisinga": gpList, "Agalapur": gpList, "Titilagarh": gpList, "Saintala": gpList, "Bangamunda": gpList, "Muribahal": gpList, "Turekela": gpList, "Patnagarh": gpList, "Belapada": gpList, "Khaprakhole": gpList },
+                "Boudh": { "Boudh": gpList, "Harbhanga": gpList, "Kantamal": gpList },
+                "Cuttack": { "Cuttack Sadar": gpList, "Baranga": gpList, "Niali": gpList, "Kantapada": gpList, "Salepur": gpList, "Nischantakoili": gpList, "Mahanga": gpList, "Tangi-Choudwar": gpList, "Athagarh": gpList, "Tigiria": gpList, "Baramba": gpList, "Narasinghpur": gpList, "Banki": gpList, "Banki-Dampada": gpList },
+                "Deogarh": { "Barkote": gpList, "Reamal": gpList, "Tileibani": gpList },
+                "Dhenkanal": { "Dhenkanal (Sadar)": gpList, "Gondia": gpList, "Odapada": gpList, "Hindol": gpList, "Kamakhyanagar": gpList, "Parjang": gpList, "Kankadahad": gpList, "Bhuban": gpList },
+                "Gajapati": { "Paralakhemundi": gpList, "Kasinagar": gpList, "Gumma": gpList, "Mohana": gpList, "Nuagada": gpList, "R.Udayagiri": gpList, "Rayagad": gpList },
+                "Ganjam": { "Patrapur": gpList, "Chikiti": gpList, "Rangeilunda": gpList, "Digipahandi": gpList, "Sanakhemundi": gpList, "Kukudakhandi": gpList, "Chatrapur": gpList, "Ganjam": gpList, "Purusottampur": gpList, "Hinjilikatu": gpList, "Khallikote": gpList, "Beguniapada": gpList, "Kabisuryanagar": gpList, "Polsara": gpList, "Aska": gpList, "Sheragada": gpList, "Dharakote": gpList, "Sorada": gpList, "Bhanjanagar": gpList, "Belguntha": gpList, "Buguda": gpList, "Jagannath Prasad": gpList },
+                "Jagatsinghpur": { "Jagatsinghpur": gpList, "Biridi": gpList, "Naugaon": gpList, "Balikuda": gpList, "Raghunathpur": gpList, "Tirtol": gpList, "Ersama": gpList, "Kujang": gpList },
+                "Jajpur": { "Jajpur": gpList, "Dasarathpur": gpList, "Binjharpur": gpList, "Dangadi": gpList, "Sukinda": gpList, "Korei": gpList, "Dharmasala": gpList, "Barchana": gpList, "Rasulpur": gpList, "Bari": gpList },
+                "Jharsuguda": { "Jharsuguda": gpList, "Lakhanpur": gpList, "Kirmira": gpList, "Kolabira": gpList, "Laikera": gpList },
+                "Kalahandi": { "Bhawanipatna": gpList, "Kesinga": gpList, "Thuamul Rampur": gpList, "Narla": gpList, "Madanpur Rampur": gpList, "Karlamunda": gpList, "Lanjigarh": gpList, "Dharmagarh": gpList, "Golamunda": gpList, "Jaipatna": gpList, "Junagarh": gpList, "Kalampur": gpList, "Koksara": gpList },
+                "Kendrapara": { "Kendrapara": gpList, "Derabish": gpList, "Marsaghai": gpList, "Mahakalapara": gpList, "Garadpur": gpList, "Pattamundai": gpList, "Rajnagar": gpList, "Rajkanika": gpList, "Aul": gpList },
+                "Keonjhar": { "Keonjhar": gpList, "Saharapada": gpList, "Telkoi": gpList, "Ghatgaon": gpList, "Bansalpal": gpList, "Patna": gpList, "Harichandanpur": gpList, "Anandapur": gpList, "Ghasipura": gpList, "Hatadihi": gpList, "Champua": gpList, "Jhumpura": gpList, "Joda": gpList },
+                "Khordha": { "Khurda": gpList, "Begunia": gpList, "Bolagad": gpList, "Bhubaneswar": gpList, "Jatni": gpList, "Balipatna": gpList, "Balianta": gpList, "Tangii": gpList, "Chilika": gpList, "Banapur": gpList },
+                "Koraput": { "Koraput": gpList, "Dasamanthpur": gpList, "Semiliguda": gpList, "Kalimela": gpList, "Nandapur": gpList, "Pottangi": gpList, "Lamptaput": gpList, "Narayanapatna": gpList, "Bandhugaon": gpList, "Laxmipur": gpList, "jeypore": gpList, "Kundra": gpList, "Boriguma": gpList, "Kotpad": gpList, "Boipariguda": gpList },
+                "Malkanagiri": { "Malkanagiri": gpList, "Korukonda": gpList, "Mathili": gpList, "Kallimela": gpList, "Podia": gpList, "Givindpali": gpList, "Khairaput": gpList, "Kudmulgumma": gpList },
+                "Mayurbhanj": { "Baripada": gpList, "Samakhunta": gpList, "Suliapdad": gpList, "Betanati": gpList, "Badasahi": gpList, "Rasagobindapur": gpList, "Bangiriposhi": gpList, "Kuliana": gpList, "Sarasakana": gpList, "Udala": gpList, "Khunta": gpList, "Kaptipada": gpList, "Karanjia": gpList, "Thakurmunda": gpList, "Sukuruli": gpList, "Joshipur": gpList, "Raruan": gpList, "Rairangapur": gpList, "Jamda": gpList, "Bijatala": gpList, "Bisoi": gpList, "Gopabandhunagar": gpList, "Tiring": gpList, "Kusumi": gpList, "Moroda": gpList, "Bahalda": gpList },
+                "Nawarangpur": { "Nowarangpur": gpList, "Nandahandi": gpList, "Tentulikhuinti": gpList, "Papadahandi": gpList, "Kosagumuda": gpList, "Dabugaon": gpList, "Umerkote": gpList, "Jharigaon": gpList, "Chandahandi": gpList, "Raighar": gpList },
+                "Nayagarh": { "Nayagarh": gpList, "Odagaon": gpList, "Bhapur": gpList, "Khandapada": gpList, "Ranpur": gpList, "Daspalla": gpList, "Nuagaon": gpList, "Gania": gpList },
+                "Nuapada": { "Nuapada": gpList, "Boden": gpList, "Khariar": gpList, "Komna": gpList, "Sinapali": gpList },
+                "Phulbani": { "Phulbani": gpList, "Phiringia": gpList, "Khajuripada": gpList, "K.Nuagaon": gpList, "Daringbadi": gpList, "Balliguda": gpList, "Kotgarh": gpList, "Tumudibandh": gpList, "G.Udayagiri": gpList, "Raikia": gpList, "Tikabali": gpList, "Chakapad": gpList },
+                "Puri": { "Puri Sadar": gpList, "Brahmagiri": gpList, "Krushnaprasad": gpList, "Satyabadi": gpList, "Kanas": gpList, "Delang": gpList, "Pipili": gpList, "Nimapada": gpList, "Gop": gpList, "Kakatpur": gpList, "Astarang": gpList },
+                "Rayagada": { "Rayagada": gpList, "Kolanara": gpList, "Kaalyansinghpur": gpList, "Kaashipur": gpList, "Gunupur": gpList, "Padmapur": gpList, "Ramanaguda": gpList, "Gudari": gpList, "Muniguda": gpList, "Bisam-Cuttack": gpList, "Chandrapur": gpList },
+                "Sambalpur": { "Dhankauda": gpList, "Maneswar": gpList, "Jujumora": gpList, "Rengali": gpList, "Rairakhola": gpList, "Nakatideul": gpList, "Kuchinda": gpList, "Bamara": gpList, "Jamanakira": gpList },
+                "Sonepur": { "Sonepur": gpList, "Tarva": gpList, "Birmaharajpur": gpList, "Ulunda": gpList, "Dunguripalli": gpList, "Binka": gpList },
+                "Sundargarh": { "Sundargarh (Sadar)": gpList, "Balisankara": gpList, "Subdega": gpList, "Lephripara": gpList, "Hemgiri": gpList, "Tanngarapalli": gpList, "Rajgangpur": gpList, "Kutra": gpList, "Lathikata": gpList, "Kuanrmunda": gpList, "Badagaon": gpList, "Nuagaon": gpList, "Bisra": gpList, "Gurundia": gpList, "Koira": gpList, "Lahunipada": gpList, "Banaigarh": gpList }
             }
         };
 
@@ -699,6 +458,7 @@ user_dashboard_design = """
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow">
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
             <form onsubmit="submitFinalApp(event)" class="space-y-6">
+                
                 <!-- Personal Info -->
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label><input type="text" class="w-full border p-2 rounded" required></div>
@@ -712,12 +472,17 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
                 </div>
                 
-                <!-- Scheme & Aadhaar -->
+                <!-- Scheme (ALL 6 SCHEMES INCLUDED) & Aadhaar -->
                 <div class="grid grid-cols-2 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                         <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
-                            <option>Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow">Widow (ବିଧବା)</option><option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Divorcee">Divorcee</option><option value="Transgender">Transgender</option>
+                            <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option>
+                            <option value="Widow">Widow (ବିଧବା)</option>
+                            <option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option>
+                            <option value="Unmarried">Unmarried (ଅବିବାହିତା)</option>
+                            <option value="Divorcee">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option>
+                            <option value="Transgender">Transgender (କିନ୍ନର)</option>
                         </select>
                     </div>
                     <div>
@@ -730,7 +495,7 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS DROPDOWNS -->
+                <!-- DYNAMIC ADDRESS DROPDOWNS -->
                 <div class="grid grid-cols-4 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-xs font-semibold">State</label>
