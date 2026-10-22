@@ -168,7 +168,7 @@ html_design = """
                 <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
                     <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
                     <div class="space-y-4 text-sm text-gray-800">
-                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ。</p></div>
+                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ।</p></div>
                         <div class="flex items-start"><i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର।</p></div>
@@ -400,7 +400,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED CASCADING DROPDOWNS FOR ALL LOCATION LEVELS)
+# 5. FULL USER DASHBOARD 
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -420,7 +420,6 @@ user_dashboard_design = """
             "Telangana": "Telugu", "Uttar Pradesh": "Hindi", "West Bengal": "Bengali"
         };
 
-        // Comprehensive Dummy Location Database (State -> District -> Block -> Panchayat)
         const locationData = {
             "Odisha": {
                 "Angul": { 
@@ -461,7 +460,6 @@ user_dashboard_design = """
         };
 
         window.onload = function() {
-            // Setup default state in dashboard as Odisha (assuming from registration)
             document.getElementById('state').value = 'Odisha';
             populateDistricts();
         };
@@ -482,7 +480,6 @@ user_dashboard_design = """
                 }
             }
 
-            // Language logic for dashboard based on selected state
             let langSelect = document.getElementById('form_language');
             let displayRegState = document.getElementById('display_reg_state');
             
@@ -518,7 +515,6 @@ user_dashboard_design = """
             }
         }
 
-        // NEW FUNCTION: Populate Gram Panchayat/Ward based on Block
         function populateGPs() {
             let state = document.getElementById("state").value;
             let dist = document.getElementById("district").value;
@@ -556,9 +552,6 @@ user_dashboard_design = """
             } else { specialBox.classList.add('hidden'); }
         }
 
-        // ===============================================
-        // DYNAMIC AGE PROOF (PAN / VOTER / RATION)
-        // ===============================================
         function updateAgeProof() {
             let docType = document.getElementById("age_proof_type").value;
             let docNumBox = document.getElementById("age_proof_number");
@@ -573,9 +566,6 @@ user_dashboard_design = """
             }
         }
 
-        // ===============================================
-        // AADHAAR VERIFY
-        // ===============================================
         function verifyAadhaar() {
             let fullName = document.getElementById('full_name').value;
             let aadhaarInput = document.getElementById('aadhaar_input').value;
@@ -588,9 +578,6 @@ user_dashboard_design = """
             document.getElementById('aadhaar_status').classList.add('hidden');
         }
 
-        // ===============================================
-        // REAL BANK IFSC API FETCH
-        // ===============================================
         async function fetchIFSC() {
             let ifsc = document.getElementById("ifsc_code").value.trim().toUpperCase();
             if(!ifsc) { alert("Please enter IFSC Code first."); return; }
@@ -610,9 +597,6 @@ user_dashboard_design = """
             }
         }
 
-        // ===============================================
-        // INCOME FETCH LOGIC
-        // ===============================================
         async function verifyIncome() {
             let cert = document.getElementById('income_cert_no').value;
             let year = document.getElementById('income_year').value;
@@ -684,7 +668,6 @@ user_dashboard_design = """
     <main class="flex-1 overflow-y-auto p-6">
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow">
             
-            <!-- NEW: DYNAMIC DASHBOARD LANGUAGE SELECTION HEADER -->
             <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
                 <div class="mb-2 md:mb-0">
                     <p class="text-sm font-semibold text-blue-800"><i class="fa-solid fa-earth-asia"></i> Registered State: <span id="display_reg_state" class="font-bold text-lg text-purple-700 border-b border-purple-300 pb-1">Odisha</span></p>
@@ -692,7 +675,6 @@ user_dashboard_design = """
                 <div class="flex items-center gap-3">
                     <label class="text-sm font-bold text-gray-700"><i class="fa-solid fa-language text-blue-600"></i> Form Language:</label>
                     <select id="form_language" class="border border-blue-300 p-2 rounded bg-white font-bold text-sm text-blue-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer" required>
-                        <!-- Auto Populated by JS based on state -->
                         <option value="Odia">Odia</option>
                         <option value="English">English</option>
                         <option value="Hindi">Hindi</option>
@@ -703,7 +685,6 @@ user_dashboard_design = """
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
             <form onsubmit="submitFinalApp(event)" class="space-y-6">
                 
-                <!-- Personal Info (Updated Profile Photo Location) -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
@@ -723,7 +704,6 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
                 </div>
                 
-                <!-- Scheme & Aadhaar (Updated PDF Upload Location) -->
                 <div class="grid grid-cols-2 gap-6 border-t pt-4">
                     <div>
                         <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
@@ -754,7 +734,6 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS (UPDATED CASCADING DROPDOWNS: State -> Dist -> Block -> Panchayat) -->
                 <div class="grid grid-cols-5 gap-4 border-t pt-4">
                     <div>
                         <label class="block text-xs font-semibold">State</label>
@@ -782,20 +761,16 @@ user_dashboard_design = """
                     </div>
                     <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded" required><option value="">Select District</option></select></div>
                     <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" onchange="populateGPs()" class="w-full border p-2 rounded" required><option value="">Select Block</option></select></div>
-                    
-                    <!-- NEW: Panchayat/Ward Dropdown -->
                     <div>
                         <label class="block text-xs font-semibold">Panchayat/Ward</label>
                         <select id="panchayat" class="w-full border p-2 rounded" required>
                             <option value="">Select Panchayat/Ward</option>
                         </select>
                     </div>
-                    
                     <div><label class="block text-xs font-semibold">Postal PIN <span class="text-red-500">*</span></label><input type="text" placeholder="e.g. 751001" class="w-full border p-2 rounded" required></div>
                 </div>
                 <div><label class="block text-sm font-semibold">Full Address (Village/City, Post)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
-                <!-- AGE PROOF SECTION -->
                 <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
                     <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
                     <div class="grid grid-cols-3 gap-4">
@@ -816,7 +791,6 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- INCOME CERTIFICATE BLOCK -->
                 <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
                     <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
                     <div class="grid grid-cols-3 gap-4">
@@ -838,7 +812,6 @@ user_dashboard_design = """
                             <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-6 py-2 rounded hover:bg-green-700 shadow"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fetch Data</button>
                         </div>
                         
-                        <!-- Manual Entry Fields -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
                             <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
@@ -881,7 +854,6 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- BANK INFORMATION -->
                 <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
                     
@@ -970,7 +942,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD
+# 6. FULL ADMIN DASHBOARD (UPDATED WITH SETTINGS PAGE)
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1043,6 +1015,7 @@ admin_design = """
                 'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
                 'renewals': '<i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> 3-Month Renewals',
                 'payments': '<i class="fa-solid fa-money-bill-transfer text-blue-600 mr-2"></i> Payment Records',
+                'settings': '<i class="fa-solid fa-gears text-blue-600 mr-2"></i> System & API Settings',
                 'profile': '<i class="fa-solid fa-user-gear text-blue-600 mr-2"></i> Admin Profile Settings'
             };
             document.getElementById('header-title').innerHTML = titles[tabId];
@@ -1063,7 +1036,9 @@ admin_design = """
                 <li><a href="#" onclick="switchTab('beneficiaries', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-users w-6 mr-2"></i> Beneficiaries</a></li>
                 <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals Tracker</a></li>
                 <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payment Records</a></li>
-                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('profile', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-user-gear w-6 mr-2"></i> Admin Profile</a></li>
+                
+                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('settings', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-gears w-6 mr-2"></i> API & Settings</a></li>
+                <li><a href="#" onclick="switchTab('profile', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-user-gear w-6 mr-2"></i> Admin Profile</a></li>
             </ul>
         </nav>
         <div class="p-4 border-t border-slate-700">
@@ -1177,6 +1152,53 @@ admin_design = """
                             <button class="bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- NEW SETTINGS SECTION -->
+            <div id="section-settings" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border p-8">
+                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
+                    <form>
+                        <!-- Fee Setting -->
+                        <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Fee Amount (₹)</label>
+                                <input type="number" value="100" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <!-- PayU Gateway -->
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> PayU Payment Gateway Keys</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
+                                <input type="password" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
+                                <input type="password" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <!-- DBT / Payout -->
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-building-columns text-purple-600"></i> DBT / Payout API Keys (Bank Transfer)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
+                                <input type="password" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Secret</label>
+                                <input type="password" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button type="button" onclick="alert('Settings Saved Successfully!')" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
