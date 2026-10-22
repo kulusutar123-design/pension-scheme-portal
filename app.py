@@ -421,7 +421,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD
+# 5. FULL USER DASHBOARD (UPDATED WITH DASHBOARD LANGUAGE SELECTOR)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -432,51 +432,67 @@ user_dashboard_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
+        const stateLanguages = {
+            "Andhra Pradesh": "Telugu", "Arunachal Pradesh": "English", "Assam": "Assamese",
+            "Bihar": "Hindi", "Chhattisgarh": "Hindi", "Goa": "Konkani", "Gujarat": "Gujarati",
+            "Haryana": "Hindi", "Himachal Pradesh": "Hindi", "Jharkhand": "Hindi",
+            "Karnataka": "Kannada", "Kerala": "Malayalam", "Madhya Pradesh": "Hindi",
+            "Maharashtra": "Marathi", "Manipur": "Manipuri", "Meghalaya": "English",
+            "Mizoram": "Mizo", "Nagaland": "English", "Odisha": "Odia", "Punjab": "Punjabi",
+            "Rajasthan": "Hindi", "Sikkim": "English", "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu", "Tripura": "Bengali", "Uttar Pradesh": "Hindi",
+            "Uttarakhand": "Hindi", "West Bengal": "Bengali", "Andaman and Nicobar Islands": "Hindi",
+            "Chandigarh": "English", "Dadra & Nagar Haveli & Daman & Diu": "Gujarati",
+            "Delhi": "Hindi", "Jammu and Kashmir": "Urdu", "Ladakh": "Urdu",
+            "Lakshadweep": "Malayalam", "Puducherry": "Tamil"
+        };
+
         const gpList = ["GP 1", "GP 2", "GP 3", "GP 4"];
         const locationData = {
             "Odisha": {
-                "Angul": { "Banarpal": gpList, "Chhendiapada": gpList, "Athamallik": gpList, "Kisshorenagar": gpList, "Talcher": gpList, "Kaniha": gpList, "Pallahara": gpList },
-                "Balasore": { "Basta": gpList, "Remuna": gpList, "Jaleswar": gpList, "Bhograi": gpList, "Baliapal": gpList, "Nilagiri": gpList, "Oupada": gpList, "Sora": gpList, "Bahanaga": gpList, "Simulia": gpList, "Khaira": gpList },
-                "Bargarh": { "Barpali": gpList, "Bheden": gpList, "Bhatil": gpList, "Ambabhona": gpList, "Atabira": gpList, "Padampur": gpList, "Paikmal": gpList, "Jharbhand": gpList, "Sohella": gpList, "Bijepur": gpList },
-                "Bhadrak": { "Basudevpur": gpList, "Bhadrak": gpList, "Bhandaripokhari": gpList, "Bonth": gpList, "Chandabali": gpList, "Dhamanagar": gpList, "Tihidi": gpList },
-                "Bolangir": { "Deogam": gpList, "Gudvella": gpList, "Puintal": gpList, "Luisinga": gpList, "Agalapur": gpList, "Titilagarh": gpList, "Saintala": gpList, "Bangamunda": gpList, "Muribahal": gpList, "Turekela": gpList, "Patnagarh": gpList, "Belapada": gpList, "Khaprakhole": gpList },
-                "Boudh": { "Boudh": gpList, "Harbhanga": gpList, "Kantamal": gpList },
-                "Cuttack": { "Cuttack Sadar": gpList, "Baranga": gpList, "Niali": gpList, "Kantapada": gpList, "Salepur": gpList, "Nischantakoili": gpList, "Mahanga": gpList, "Tangi-Choudwar": gpList, "Athagarh": gpList, "Tigiria": gpList, "Baramba": gpList, "Narasinghpur": gpList, "Banki": gpList, "Banki-Dampada": gpList },
-                "Deogarh": { "Barkote": gpList, "Reamal": gpList, "Tileibani": gpList },
-                "Dhenkanal": { "Dhenkanal (Sadar)": gpList, "Gondia": gpList, "Odapada": gpList, "Hindol": gpList, "Kamakhyanagar": gpList, "Parjang": gpList, "Kankadahad": gpList, "Bhuban": gpList },
-                "Gajapati": { "Paralakhemundi": gpList, "Kasinagar": gpList, "Gumma": gpList, "Mohana": gpList, "Nuagada": gpList, "R.Udayagiri": gpList, "Rayagad": gpList },
-                "Ganjam": { "Patrapur": gpList, "Chikiti": gpList, "Rangeilunda": gpList, "Digipahandi": gpList, "Sanakhemundi": gpList, "Kukudakhandi": gpList, "Chatrapur": gpList, "Ganjam": gpList, "Purusottampur": gpList, "Hinjilikatu": gpList, "Khallikote": gpList, "Beguniapada": gpList, "Kabisuryanagar": gpList, "Polsara": gpList, "Aska": gpList, "Sheragada": gpList, "Dharakote": gpList, "Sorada": gpList, "Bhanjanagar": gpList, "Belguntha": gpList, "Buguda": gpList, "Jagannath Prasad": gpList },
-                "Jagatsinghpur": { "Jagatsinghpur": gpList, "Biridi": gpList, "Naugaon": gpList, "Balikuda": gpList, "Raghunathpur": gpList, "Tirtol": gpList, "Ersama": gpList, "Kujang": gpList },
-                "Jajpur": { "Jajpur": gpList, "Dasarathpur": gpList, "Binjharpur": gpList, "Dangadi": gpList, "Sukinda": gpList, "Korei": gpList, "Dharmasala": gpList, "Barchana": gpList, "Rasulpur": gpList, "Bari": gpList },
-                "Jharsuguda": { "Jharsuguda": gpList, "Lakhanpur": gpList, "Kirmira": gpList, "Kolabira": gpList, "Laikera": gpList },
-                "Kalahandi": { "Bhawanipatna": gpList, "Kesinga": gpList, "Thuamul Rampur": gpList, "Narla": gpList, "Madanpur Rampur": gpList, "Karlamunda": gpList, "Lanjigarh": gpList, "Dharmagarh": gpList, "Golamunda": gpList, "Jaipatna": gpList, "Junagarh": gpList, "Kalampur": gpList, "Koksara": gpList },
-                "Kendrapara": { "Kendrapara": gpList, "Derabish": gpList, "Marsaghai": gpList, "Mahakalapara": gpList, "Garadpur": gpList, "Pattamundai": gpList, "Rajnagar": gpList, "Rajkanika": gpList, "Aul": gpList },
-                "Keonjhar": { "Keonjhar": gpList, "Saharapada": gpList, "Telkoi": gpList, "Ghatgaon": gpList, "Bansalpal": gpList, "Patna": gpList, "Harichandanpur": gpList, "Anandapur": gpList, "Ghasipura": gpList, "Hatadihi": gpList, "Champua": gpList, "Jhumpura": gpList, "Joda": gpList },
-                "Khordha": { "Khurda": gpList, "Begunia": gpList, "Bolagad": gpList, "Bhubaneswar": gpList, "Jatni": gpList, "Balipatna": gpList, "Balianta": gpList, "Tangii": gpList, "Chilika": gpList, "Banapur": gpList },
-                "Koraput": { "Koraput": gpList, "Dasamanthpur": gpList, "Semiliguda": gpList, "Kalimela": gpList, "Nandapur": gpList, "Pottangi": gpList, "Lamptaput": gpList, "Narayanapatna": gpList, "Bandhugaon": gpList, "Laxmipur": gpList, "jeypore": gpList, "Kundra": gpList, "Boriguma": gpList, "Kotpad": gpList, "Boipariguda": gpList },
-                "Malkanagiri": { "Malkanagiri": gpList, "Korukonda": gpList, "Mathili": gpList, "Kallimela": gpList, "Podia": gpList, "Givindpali": gpList, "Khairaput": gpList, "Kudmulgumma": gpList },
-                "Mayurbhanj": { "Baripada": gpList, "Samakhunta": gpList, "Suliapdad": gpList, "Betanati": gpList, "Badasahi": gpList, "Rasagobindapur": gpList, "Bangiriposhi": gpList, "Kuliana": gpList, "Sarasakana": gpList, "Udala": gpList, "Khunta": gpList, "Kaptipada": gpList, "Karanjia": gpList, "Thakurmunda": gpList, "Sukuruli": gpList, "Joshipur": gpList, "Raruan": gpList, "Rairangapur": gpList, "Jamda": gpList, "Bijatala": gpList, "Bisoi": gpList, "Gopabandhunagar": gpList, "Tiring": gpList, "Kusumi": gpList, "Moroda": gpList, "Bahalda": gpList },
-                "Nawarangpur": { "Nowarangpur": gpList, "Nandahandi": gpList, "Tentulikhuinti": gpList, "Papadahandi": gpList, "Kosagumuda": gpList, "Dabugaon": gpList, "Umerkote": gpList, "Jharigaon": gpList, "Chandahandi": gpList, "Raighar": gpList },
-                "Nayagarh": { "Nayagarh": gpList, "Odagaon": gpList, "Bhapur": gpList, "Khandapada": gpList, "Ranpur": gpList, "Daspalla": gpList, "Nuagaon": gpList, "Gania": gpList },
-                "Nuapada": { "Nuapada": gpList, "Boden": gpList, "Khariar": gpList, "Komna": gpList, "Sinapali": gpList },
-                "Phulbani": { "Phulbani": gpList, "Phiringia": gpList, "Khajuripada": gpList, "K.Nuagaon": gpList, "Daringbadi": gpList, "Balliguda": gpList, "Kotgarh": gpList, "Tumudibandh": gpList, "G.Udayagiri": gpList, "Raikia": gpList, "Tikabali": gpList, "Chakapad": gpList },
-                "Puri": { "Puri Sadar": gpList, "Brahmagiri": gpList, "Krushnaprasad": gpList, "Satyabadi": gpList, "Kanas": gpList, "Delang": gpList, "Pipili": gpList, "Nimapada": gpList, "Gop": gpList, "Kakatpur": gpList, "Astarang": gpList },
-                "Rayagada": { "Rayagada": gpList, "Kolanara": gpList, "Kaalyansinghpur": gpList, "Kaashipur": gpList, "Gunupur": gpList, "Padmapur": gpList, "Ramanaguda": gpList, "Gudari": gpList, "Muniguda": gpList, "Bisam-Cuttack": gpList, "Chandrapur": gpList },
-                "Sambalpur": { "Dhankauda": gpList, "Maneswar": gpList, "Jujumora": gpList, "Rengali": gpList, "Rairakhola": gpList, "Nakatideul": gpList, "Kuchinda": gpList, "Bamara": gpList, "Jamanakira": gpList },
-                "Sonepur": { "Sonepur": gpList, "Tarva": gpList, "Birmaharajpur": gpList, "Ulunda": gpList, "Dunguripalli": gpList, "Binka": gpList },
-                "Sundargarh": { "Sundargarh (Sadar)": gpList, "Balisankara": gpList, "Subdega": gpList, "Lephripara": gpList, "Hemgiri": gpList, "Tanngarapalli": gpList, "Rajgangpur": gpList, "Kutra": gpList, "Lathikata": gpList, "Kuanrmunda": gpList, "Badagaon": gpList, "Nuagaon": gpList, "Bisra": gpList, "Gurundia": gpList, "Koira": gpList, "Lahunipada": gpList, "Banaigarh": gpList }
+                "Angul": { "Banarpal": gpList, "Chhendiapada": gpList, "Athamallik": gpList },
+                "Balasore": { "Basta": gpList, "Remuna": gpList, "Jaleswar": gpList },
+                "Cuttack": { "Cuttack Sadar": gpList, "Baranga": gpList, "Niali": gpList, "Kantapada": gpList },
+                "Puri": { "Puri Sadar": gpList, "Brahmagiri": gpList, "Pipili": gpList }
             }
+        };
+
+        window.onload = function() {
+            // Setup default state in dashboard as Odisha (assuming from registration)
+            document.getElementById('state').value = 'Odisha';
+            populateDistricts();
         };
 
         function populateDistricts() {
             let state = document.getElementById("state").value;
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
+            
+            // Populate district logic
             distSelect.innerHTML = "<option value=''>Select District</option>";
             blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
             if(state && locationData[state]) {
                 for(let dist in locationData[state]) {
                     distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
+                }
+            }
+
+            // Language logic for dashboard based on selected state
+            let langSelect = document.getElementById('form_language');
+            let displayRegState = document.getElementById('display_reg_state');
+            
+            if(langSelect && state) {
+                if(displayRegState) displayRegState.innerText = state;
+                langSelect.innerHTML = '';
+                
+                if(stateLanguages[state]) {
+                    let localLang = stateLanguages[state];
+                    let langs = new Set([localLang, "English", "Hindi"]);
+                    langs.forEach(l => {
+                        langSelect.innerHTML += `<option value="${l}">${l}</option>`;
+                    });
+                } else {
+                    langSelect.innerHTML = `<option value="English">English</option><option value="Hindi">Hindi</option>`;
                 }
             }
         }
@@ -641,6 +657,23 @@ user_dashboard_design = """
 
     <main class="flex-1 overflow-y-auto p-6">
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow">
+            
+            <!-- NEW: DYNAMIC DASHBOARD LANGUAGE SELECTION HEADER -->
+            <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
+                <div class="mb-2 md:mb-0">
+                    <p class="text-sm font-semibold text-blue-800"><i class="fa-solid fa-earth-asia"></i> Registered State: <span id="display_reg_state" class="font-bold text-lg text-purple-700 border-b border-purple-300 pb-1">Odisha</span></p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-bold text-gray-700"><i class="fa-solid fa-language text-blue-600"></i> Form Language:</label>
+                    <select id="form_language" class="border border-blue-300 p-2 rounded bg-white font-bold text-sm text-blue-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer" required>
+                        <!-- Auto Populated by JS based on state -->
+                        <option value="Odia">Odia</option>
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                    </select>
+                </div>
+            </div>
+
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
             <form onsubmit="submitFinalApp(event)" class="space-y-6">
                 
@@ -695,9 +728,50 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS (Updated Postal PIN) -->
+                <!-- ADDRESS (Updated Postal PIN and All States List) -->
                 <div class="grid grid-cols-5 gap-4 border-t pt-4">
-                    <div><label class="block text-xs font-semibold">State</label><select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded"><option value="">Select State</option><option value="Odisha">Odisha</option></select></div>
+                    <div>
+                        <label class="block text-xs font-semibold">State</label>
+                        <select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded" required>
+                            <option value="">Select State</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                            <option value="Assam">Assam</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Chhattisgarh">Chhattisgarh</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Manipur">Manipur</option>
+                            <option value="Meghalaya">Meghalaya</option>
+                            <option value="Mizoram">Mizoram</option>
+                            <option value="Nagaland">Nagaland</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Sikkim">Sikkim</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Tripura">Tripura</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Uttarakhand">Uttarakhand</option>
+                            <option value="West Bengal">West Bengal</option>
+                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                            <option value="Chandigarh">Chandigarh</option>
+                            <option value="Dadra & Nagar Haveli & Daman & Diu">Dadra & Nagar Haveli & Daman & Diu</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                            <option value="Ladakh">Ladakh</option>
+                            <option value="Lakshadweep">Lakshadweep</option>
+                            <option value="Puducherry">Puducherry</option>
+                        </select>
+                    </div>
                     <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded"><option value="">Select District</option></select></div>
                     <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" class="w-full border p-2 rounded"><option value="">Select Block</option></select></div>
                     <div><label class="block text-xs font-semibold">Panchayat/Ward</label><input type="text" id="panchayat" placeholder="Panchayat/Ward" class="w-full border p-2 rounded"></div>
