@@ -213,7 +213,7 @@ html_design = """
 """
 
 # ==========================================
-# 2. STATUS CHECK PAGE (UPDATED FOR REMARKS)
+# 2. STATUS CHECK PAGE
 # ==========================================
 status_check_design = """
 <!DOCTYPE html>
@@ -1045,7 +1045,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD (STRICT LOGIN & VERIFICATION UPDATES)
+# 6. FULL ADMIN DASHBOARD (UPDATED STRICT LOGIN & VIEW OPTION)
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1063,7 +1063,7 @@ admin_login_design = """
             else { passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }
         }
 
-        // STRICT LOGIN AUTHENTICATION ADDED HERE
+        // STRICT LOGIN AUTHENTICATION
         function handleAdminLogin(event) {
             event.preventDefault();
             let adminId = document.getElementById('admin_id').value;
@@ -1083,7 +1083,6 @@ admin_login_design = """
             <i class="fa-solid fa-user-shield text-5xl text-blue-700 mb-3"></i>
             <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
         </div>
-        <!-- CHANGED FROM GET TO JAVASCRIPT AUTHENTICATION -->
         <form onsubmit="handleAdminLogin(event)" class="space-y-6">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Admin ID / Email</label>
@@ -1165,6 +1164,14 @@ admin_design = """
             document.getElementById('sys_verification_modal').classList.add('hidden');
         }
 
+        function viewFullApplication(appId) {
+            document.getElementById('full_app_view_modal').classList.remove('hidden');
+        }
+
+        function closeFullAppModal() {
+            document.getElementById('full_app_view_modal').classList.add('hidden');
+        }
+
         function rejectAppWithRemark() {
             let reason = prompt("Please enter the reason for rejection (Remark):");
             if (reason != null && reason != "") {
@@ -1183,7 +1190,7 @@ admin_design = """
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
 
-    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl h-full">
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl h-full print:hidden">
         <div class="p-5 border-b border-slate-700 text-center">
             <i class="fa-solid fa-user-shield text-4xl text-blue-500 mb-2"></i>
             <h2 class="text-xl font-bold">Admin Panel</h2>
@@ -1192,9 +1199,8 @@ admin_design = """
             <ul class="space-y-2 px-3">
                 <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
                 
-                <!-- NEW SECTIONS ADDED HERE -->
                 <li class="mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Verification Steps</span></li>
-                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verification <span class="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">New</span></a></li>
+                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verification</a></li>
                 <li><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Final Admin Approval</a></li>
                 <li><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-3 text-red-400 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
 
@@ -1212,15 +1218,15 @@ admin_design = """
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center">
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative print:hidden">
+        <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center print:hidden">
             <h1 id="header-title" class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm font-medium">Welcome, <strong>Admin</strong></span>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <div class="flex-1 overflow-y-auto p-6 bg-gray-50 print:hidden">
             
             <!-- DASHBOARD -->
             <div id="section-dashboard" class="content-section">
@@ -1249,7 +1255,10 @@ admin_design = """
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
                         <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
-                        <span class="text-xs font-bold text-gray-500">Cross-checking Name, Aadhaar & Income</span>
+                        <div class="space-x-2">
+                            <button onclick="alert('Downloading Data to Excel...')" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
+                            <button onclick="alert('Downloading Data to PDF...')" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border-collapse">
@@ -1260,8 +1269,10 @@ admin_design = """
                                 <tr id="row_app_9082" class="hover:bg-gray-50 border-b">
                                     <td class="py-4 px-4 font-medium text-blue-600">#APP-9082</td><td class="py-4 px-4 font-bold">Rama Chandra Das</td><td class="py-4 px-4">Old Age Pension</td>
                                     <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                        <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Verify Data</button>
-                                        <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Sys Approve</button>
+                                        <!-- ADDED VIEW BUTTON -->
+                                        <button onclick="viewFullApplication('#APP-9082')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                                        <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
+                                        <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
                                         <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
                                     </td>
                                 </tr>
@@ -1314,6 +1325,8 @@ admin_design = """
                                     <td class="py-4 px-4 font-medium text-blue-600">#APP-8051</td><td class="py-4 px-4 font-bold">Harihar Nayak</td>
                                     <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
                                     <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                        <!-- ADDED VIEW BUTTON -->
+                                        <button onclick="viewFullApplication('#APP-8051')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
                                         <button onclick="alert('Application Finally Approved and Added to Beneficiary List!');" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
                                         <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
                                     </td>
@@ -1351,10 +1364,17 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- OTHER TABS -->
+            <!-- BENEFICIARIES -->
             <div id="section-beneficiaries" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center"><h2 class="font-bold text-lg">Active Beneficiaries List</h2></div>
+                    <!-- EXCEL PDF ADDED -->
+                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
+                        <div class="space-x-2">
+                            <button onclick="alert('Downloading User Data to Excel...')" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
+                            <button onclick="alert('Downloading User Data to PDF...')" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
@@ -1375,6 +1395,7 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- RENEWALS -->
             <div id="section-renewals" class="content-section hidden">
                  <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
                     <h2 class="font-bold text-lg mb-4">Renewal Status</h2>
@@ -1393,18 +1414,20 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- PAYMENTS -->
             <div id="section-payments" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="font-bold text-lg">Monthly Payment Records</h2>
                         <div class="space-x-2">
-                            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
-                            <button class="bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                            <button onclick="alert('Downloading Payments Data to Excel...')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
+                            <button onclick="alert('Downloading Payments Data to PDF...')" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
@@ -1471,6 +1494,67 @@ admin_design = """
 
         </div>
     </main>
+
+    <!-- FULL APPLICATION VIEW & PRINT MODAL -->
+    <div id="full_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static">
+        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col print:h-auto print:shadow-none print:w-full">
+            
+            <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl print:hidden">
+                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> User Application Data</h3>
+                <div class="space-x-2">
+                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Details</button>
+                    <button onclick="closeFullAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-8 print:overflow-visible print:p-0">
+                <div class="text-center mb-6 border-b-2 border-gray-800 pb-4">
+                    <h2 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h2>
+                    <p class="font-bold text-lg text-gray-600">Applicant Full Details Form</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
+                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-9082</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base">Old Age Pension</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹100)</p></div>
+                </div>
+                
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="font-bold">Rama Chandra Das</p></div>
+                    <div><p class="text-gray-500 text-xs">Father's Name</p><p class="font-bold">Harihar Das</p></div>
+                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p class="font-bold">Sita Das</p></div>
+                    <div><p class="text-gray-500 text-xs">Gender</p><p class="font-bold">Male</p></div>
+                    <div><p class="text-gray-500 text-xs">Date of Birth</p><p class="font-bold">15-Aug-1950 (76 Yrs)</p></div>
+                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p class="font-bold tracking-widest">XXXX-XXXX-9876</p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
+                    <div><p class="text-gray-500 text-xs">District</p><p class="font-bold">Bhadrak</p></div>
+                    <div><p class="text-gray-500 text-xs">Block</p><p class="font-bold">Dhamanagar</p></div>
+                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p class="font-bold">Kalyani</p></div>
+                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p class="font-bold">At- Kalyani, Po- Dhamanagar, Dist- Bhadrak, Pin- 756117</p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
+                    <div><p class="text-gray-500 text-xs">Certificate No</p><p class="font-bold">E-INC/2025/111222</p></div>
+                    <div><p class="text-gray-500 text-xs">Issued By</p><p class="font-bold">Tahasildar, Bhubaneswar</p></div>
+                    <div><p class="text-gray-500 text-xs">Detected Income</p><p class="font-bold text-red-600">Rs. 35,000/-</p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">4. Bank & DBT Information</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
+                    <div><p class="text-gray-500 text-xs">Bank Name</p><p class="font-bold">State Bank of India</p></div>
+                    <div><p class="text-gray-500 text-xs">Account No</p><p class="font-bold tracking-wider">30987654321</p></div>
+                    <div><p class="text-gray-500 text-xs">IFSC Code</p><p class="font-bold">SBIN0001234</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 """
