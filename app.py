@@ -234,6 +234,9 @@ status_check_design = """
 
             resBox.classList.remove('hidden');
             
+            let isApplied = localStorage.getItem('user_has_applied');
+            let savedAppNo = localStorage.getItem('user_app_no');
+
             if(appNo === "APP-REJECTED") {
                 resBox.className = "mt-6 border p-4 rounded-lg bg-red-50 border-red-200";
                 statIcon.className = "fa-solid fa-circle-xmark text-red-600 mr-1";
@@ -241,11 +244,17 @@ status_check_design = """
                 statText.innerText = "Rejected by Admin";
                 statRemark.innerHTML = "<strong>Remark:</strong> Aadhaar Name and Income Certificate Name mismatch.";
                 statRemark.classList.remove('hidden');
-            } else {
+            } else if (appNo === savedAppNo && isApplied === 'true') {
                 resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                 statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
                 statText.className = "text-orange-600 font-bold";
                 statText.innerText = "Pending System Verification";
+                statRemark.classList.add('hidden');
+            } else {
+                 resBox.className = "mt-6 border p-4 rounded-lg bg-gray-50 border-gray-200";
+                statIcon.className = "fa-solid fa-question-circle text-gray-600 mr-1";
+                statText.className = "text-gray-600 font-bold";
+                statText.innerText = "Application Not Found / Not Paid";
                 statRemark.classList.add('hidden');
             }
         }
@@ -288,34 +297,7 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Odisha": "Odia",
-            "Andhra Pradesh": "Telugu",
-            "Arunachal Pradesh": "English",
-            "Assam": "Assamese",
-            "Bihar": "Hindi",
-            "Chhattisgarh": "Hindi",
-            "Goa": "Konkani",
-            "Gujarat": "Gujarati",
-            "Haryana": "Hindi",
-            "Himachal Pradesh": "Hindi",
-            "Jharkhand": "Hindi",
-            "Karnataka": "Kannada",
-            "Kerala": "Malayalam",
-            "Madhya Pradesh": "Hindi",
-            "Maharashtra": "Marathi",
-            "Manipur": "Manipuri",
-            "Meghalaya": "English",
-            "Mizoram": "Mizo",
-            "Nagaland": "English",
-            "Punjab": "Punjabi",
-            "Rajasthan": "Hindi",
-            "Sikkim": "English",
-            "Tamil Nadu": "Tamil",
-            "Telangana": "Telugu",
-            "Tripura": "Bengali",
-            "Uttar Pradesh": "Hindi",
-            "Uttarakhand": "Hindi",
-            "West Bengal": "Bengali"
+            "Odisha": "Odia"
         };
 
         function updateLanguageOptions() {
@@ -714,6 +696,53 @@ user_dashboard_design = """
                 alert("Error fetching IFSC details.");
             }
         }
+
+        async function verifyIncome() {
+            let cert = document.getElementById('income_cert_no').value;
+            let year = document.getElementById('income_year').value;
+
+            if(cert && year !== "Select") {
+                try {
+                    let response = await fetch(`/api/get_income?cert_no=${cert}`);
+                    let data = await response.json();
+
+                    if(data.error) {
+                        alert("Invalid Certificate Number or Data Not Found in Database!");
+                        return;
+                    }
+
+                    alert(`Fetching Income Details from Database for Certificate ${cert}...`);
+                    
+                    document.getElementById('inc_issued_to').value = data.name;
+                    document.getElementById('inc_father').value = data.father;
+                    document.getElementById('inc_mother').value = data.mother;
+                    document.getElementById('inc_district').value = data.district;
+                    document.getElementById('inc_authority').value = data.authority;
+                    document.getElementById('inc_date').value = data.date;
+                    document.getElementById('inc_amount').value = data.amount;
+                    document.getElementById('inc_relation').value = "Self";
+
+                    let nameField = document.getElementById('full_name');
+                    if(!nameField.value) {
+                        nameField.value = data.name;
+                    }
+                    document.getElementById('father_name').value = data.father;
+                    document.getElementById('mother_name').value = data.mother;
+                    
+                    populateDistricts();
+                    setTimeout(() => {
+                        document.getElementById("district").value = data.district;
+                        populateBlocks();
+                    }, 100);
+
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                    alert("System Error: Unable to fetch data from Server.");
+                }
+            } else {
+                alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
+            }
+        }
         
         function updateAddressCharCount() {
             let addressInput = document.getElementById('manual_address');
@@ -791,6 +820,7 @@ user_dashboard_design = """
                 }
                 
                 localStorage.setItem('user_has_applied', 'true');
+                localStorage.setItem('admin_sync_ready', 'true');
 
                 document.body.appendChild(form);
                 form.submit(); 
@@ -1325,6 +1355,31 @@ admin_design = """
             if(localStorage.getItem('payu_merchant_salt')) document.getElementById('payu_merchant_salt').value = localStorage.getItem('payu_merchant_salt');
             if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
+            
+            // AUTO SYNC LIVE DATA TO ADMIN PANEL
+            let syncReady = localStorage.getItem('admin_sync_ready');
+            if(syncReady === 'true') {
+                let liveName = localStorage.getItem('user_full_name');
+                let liveScheme = localStorage.getItem('u_scheme');
+                
+                let tbody = document.getElementById('sys_verify_tbody');
+                let newRow = document.createElement('tr');
+                newRow.className = "hover:bg-green-50 border-b bg-green-50 transition-all";
+                newRow.innerHTML = `
+                    <td class="py-4 px-4 font-medium text-blue-600">#APP-2026101 <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
+                    <td class="py-4 px-4 font-bold text-green-800">${liveName}</td>
+                    <td class="py-4 px-4">${liveScheme}</td>
+                    <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                        <button onclick="viewFullApplication('#APP-2026101')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                        <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
+                        <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
+                        <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                    </td>
+                `;
+                tbody.insertBefore(newRow, tbody.firstChild);
+                
+                localStorage.removeItem('admin_sync_ready');
+            }
         };
 
         function saveSettings() {
@@ -1383,7 +1438,6 @@ admin_design = """
             let reason = prompt("Please enter the reason for rejection (Remark):");
             if (reason != null && reason != "") {
                 alert("Application Rejected and Moved to Rejected Box with Remark: " + reason);
-                document.getElementById('row_app_9082').classList.add('hidden');
                 document.getElementById('sys_verification_modal').classList.add('hidden');
             }
         }
@@ -1471,7 +1525,7 @@ admin_design = """
                             <thead class="bg-gray-100 text-gray-600 text-sm">
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">System Action</th></tr>
                             </thead>
-                            <tbody class="text-sm">
+                            <tbody id="sys_verify_tbody" class="text-sm">
                                 <tr id="row_app_9082" class="hover:bg-gray-50 border-b">
                                     <td class="py-4 px-4 font-medium text-blue-600">#APP-9082</td><td class="py-4 px-4 font-bold">Rama Chandra Das</td><td class="py-4 px-4">Old Age Pension</td>
                                     <td class="py-4 px-4 flex justify-center space-x-2 items-center">
@@ -1493,7 +1547,7 @@ admin_design = """
                         <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Match Analysis</h3>
                         <div class="space-y-4 text-sm">
                             <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
-                                <span class="font-semibold text-gray-600">Applicant Form Name:</span><span class="font-bold text-gray-800">Rama Chandra Das</span>
+                                <span class="font-semibold text-gray-600">Applicant Form Name:</span><span class="font-bold text-gray-800"><script>document.write(localStorage.getItem('user_full_name') || 'N/A');</script></span>
                             </div>
                             <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
                                 <span class="font-semibold text-gray-600">Aadhaar Card Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (99%)</span>
@@ -1713,29 +1767,29 @@ admin_design = """
                 </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
-                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-9082</p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base">Old Age Pension</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-2026101</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base"><script>document.write(localStorage.getItem('u_scheme') || 'Old Age Pension');</script></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹100)</p></div>
                 </div>
                 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="font-bold">Rama Chandra Das</p></div>
-                    <div><p class="text-gray-500 text-xs">Father's Name</p><p class="font-bold">Harihar Das</p></div>
-                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p class="font-bold">Sita Das</p></div>
+                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="font-bold"><script>document.write(localStorage.getItem('user_full_name') || 'Kulu Sutar');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">Father's Name</p><p class="font-bold"><script>document.write(localStorage.getItem('u_father') || 'N/A');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p class="font-bold"><script>document.write(localStorage.getItem('u_mother') || 'N/A');</script></p></div>
                     <div><p class="text-gray-500 text-xs">Gender</p><p class="font-bold">Male</p></div>
                     <div><p class="text-gray-500 text-xs">Date of Birth</p><p class="font-bold">15-Aug-1950 (76 Yrs)</p></div>
-                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p class="font-bold tracking-widest">XXXX-XXXX-9876</p></div>
+                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p class="font-bold tracking-widest"><script>document.write(localStorage.getItem('user_aadhaar') || 'XXXX-XXXX-9876');</script></p></div>
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
-                    <div><p class="text-gray-500 text-xs">District</p><p class="font-bold">Bhadrak</p></div>
-                    <div><p class="text-gray-500 text-xs">Block</p><p class="font-bold">Dhamanagar</p></div>
-                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p class="font-bold">Kalyani</p></div>
-                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p class="font-bold">At- Kalyani, Po- Dhamanagar, Dist- Bhadrak, Pin- 756117</p></div>
+                    <div><p class="text-gray-500 text-xs">District</p><p class="font-bold"><script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">Block</p><p class="font-bold"><script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p class="font-bold"><script>document.write(localStorage.getItem('u_gp') || 'N/A');</script></p></div>
+                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p class="font-bold"><script>document.write(localStorage.getItem('u_address') || 'N/A');</script></p></div>
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
