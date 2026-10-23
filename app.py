@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import hashlib
@@ -168,7 +168,7 @@ html_design = """
                 <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
                     <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
                     <ul class="space-y-4">
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm"><span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span></li>
+                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm"><span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦0 ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm"><span class="font-semibold text-gray-800">ବିଧବା (Widow)</span><span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm"><span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span><span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span></li>
                         <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm"><span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span><span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
@@ -297,7 +297,34 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Odisha": "Odia"
+            "Odisha": "Odia",
+            "Andhra Pradesh": "Telugu",
+            "Arunachal Pradesh": "English",
+            "Assam": "Assamese",
+            "Bihar": "Hindi",
+            "Chhattisgarh": "Hindi",
+            "Goa": "Konkani",
+            "Gujarat": "Gujarati",
+            "Haryana": "Hindi",
+            "Himachal Pradesh": "Hindi",
+            "Jharkhand": "Hindi",
+            "Karnataka": "Kannada",
+            "Kerala": "Malayalam",
+            "Madhya Pradesh": "Hindi",
+            "Maharashtra": "Marathi",
+            "Manipur": "Manipuri",
+            "Meghalaya": "English",
+            "Mizoram": "Mizo",
+            "Nagaland": "English",
+            "Punjab": "Punjabi",
+            "Rajasthan": "Hindi",
+            "Sikkim": "English",
+            "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu",
+            "Tripura": "Bengali",
+            "Uttar Pradesh": "Hindi",
+            "Uttarakhand": "Hindi",
+            "West Bengal": "Bengali"
         };
 
         function updateLanguageOptions() {
@@ -495,7 +522,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD 
+# 5. FULL USER DASHBOARD (DYNAMIC FEE ADDED)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -547,6 +574,10 @@ user_dashboard_design = """
 
         window.onload = function() {
             populateDistricts();
+            
+            // Set dynamic fee from Admin
+            let dynamicFee = localStorage.getItem('app_fee') || '100';
+            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = dynamicFee);
             
             let savedFullName = localStorage.getItem('user_full_name');
             let savedMobile = localStorage.getItem('user_mobile');
@@ -782,7 +813,11 @@ user_dashboard_design = """
             alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
             
             let txnid = "TXN" + new Date().getTime();
-            let amount = "100.00";
+            // Fetch dynamic amount from settings
+            let amtSetting = localStorage.getItem('app_fee') || '100';
+            let amount = parseFloat(amtSetting).toFixed(2);
+            localStorage.setItem('paid_amount', amount); // Save for print
+            
             let productinfo = "PensionApplication";
             let firstname = document.getElementById('full_name').value || "User";
             let email = document.getElementById('app_email').value || "user@example.com"; 
@@ -820,7 +855,6 @@ user_dashboard_design = """
                 }
                 
                 localStorage.setItem('user_has_applied', 'true');
-                localStorage.setItem('admin_sync_ready', 'true');
 
                 document.body.appendChild(form);
                 form.submit(); 
@@ -838,6 +872,9 @@ user_dashboard_design = """
             let scheme = localStorage.getItem('u_scheme') || 'Old Age Pension';
             let elsScheme = document.querySelectorAll('.print_u_scheme');
             elsScheme.forEach(el => el.innerText = scheme);
+            
+            let fee = localStorage.getItem('paid_amount') || '100.00';
+            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = fee);
 
             let safeSet = (id, key) => {
                 let el = document.getElementById(id);
@@ -1162,7 +1199,7 @@ user_dashboard_design = """
                 <div class="text-center">
                     <p class="text-sm font-semibold text-gray-500 mb-2">Proceed to Secure Payment</p>
                     <button type="button" id="payu_button" onclick="simulatePayUPayment()" disabled class="bg-green-600 text-white font-extrabold text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
-                        <i class="fa-solid fa-lock mr-2"></i> Pay Now with PayU
+                        <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
                     </button>
                     <div class="mt-4 flex justify-center items-center gap-4 text-gray-400 text-3xl">
                         <i class="fa-brands fa-cc-visa"></i>
@@ -1187,7 +1224,7 @@ user_dashboard_design = """
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded shadow-sm">
                         <p class="text-gray-500 text-sm font-semibold uppercase">Payment Reference (PayU)</p>
                         <p class="text-xl font-bold text-gray-800">TXN-9843729910</p>
-                        <p class="mt-2 text-sm"><strong>Amount Paid:</strong> <span class="text-green-700 font-bold">₹100.00</span> (Success)</p>
+                        <p class="mt-2 text-sm"><strong>Amount Paid:</strong> <span class="text-green-700 font-bold">₹<span class="display_app_fee"></span></span> (Success)</p>
                     </div>
                 </div>
 
@@ -1215,7 +1252,7 @@ user_dashboard_design = """
                         <div><strong>Application No:</strong> APP-2026101</div>
                         <div><strong>Transaction ID:</strong> TXN-9843729910</div>
                         <div><strong>Applicant Name:</strong> <span class="print_u_name"></span></div>
-                        <div><strong>Payment Status:</strong> SUCCESS (₹100)</div>
+                        <div><strong>Payment Status:</strong> SUCCESS (₹<span class="display_app_fee"></span>)</div>
                         <div><strong>Scheme Category:</strong> <span class="print_u_scheme"></span></div>
                         <div><strong>Date & Time:</strong> 23 Oct 2026</div>
                     </div>
@@ -1266,7 +1303,7 @@ user_dashboard_design = """
                     <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-2026101</p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base print_u_scheme"></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹100)</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹<span class="display_app_fee"></span>)</p></div>
                 </div>
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
                 <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
@@ -1356,29 +1393,28 @@ admin_design = """
             if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
             
-            // AUTO SYNC LIVE DATA TO ADMIN PANEL
-            let syncReady = localStorage.getItem('admin_sync_ready');
-            if(syncReady === 'true') {
-                let liveName = localStorage.getItem('user_full_name');
-                let liveScheme = localStorage.getItem('u_scheme');
+            let isApplied = localStorage.getItem('user_has_applied');
+            if(isApplied === 'true') {
+                let liveName = localStorage.getItem('user_full_name') || 'Kulu Sutar';
+                let liveScheme = localStorage.getItem('u_scheme') || 'Old Age Pension';
                 
                 let tbody = document.getElementById('sys_verify_tbody');
-                let newRow = document.createElement('tr');
-                newRow.className = "hover:bg-green-50 border-b bg-green-50 transition-all";
-                newRow.innerHTML = `
-                    <td class="py-4 px-4 font-medium text-blue-600">#APP-2026101 <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
-                    <td class="py-4 px-4 font-bold text-green-800">${liveName}</td>
-                    <td class="py-4 px-4">${liveScheme}</td>
-                    <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                        <button onclick="viewFullApplication('#APP-2026101')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
-                        <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
-                        <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
-                        <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
-                    </td>
-                `;
-                tbody.insertBefore(newRow, tbody.firstChild);
-                
-                localStorage.removeItem('admin_sync_ready');
+                if (tbody) {
+                    let newRow = document.createElement('tr');
+                    newRow.className = "hover:bg-green-50 border-b bg-green-50 transition-all";
+                    newRow.innerHTML = `
+                        <td class="py-4 px-4 font-medium text-blue-600">#APP-2026101 <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
+                        <td class="py-4 px-4 font-bold text-green-800">${liveName}</td>
+                        <td class="py-4 px-4">${liveScheme}</td>
+                        <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                            <button onclick="viewFullApplication('#APP-2026101')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                            <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
+                            <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
+                            <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                        </td>
+                    `;
+                    tbody.insertBefore(newRow, tbody.firstChild);
+                }
             }
         };
 
@@ -1767,29 +1803,29 @@ admin_design = """
                 </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
-                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-2026101</p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base"><script>document.write(localStorage.getItem('u_scheme') || 'Old Age Pension');</script></p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-9082</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base">Old Age Pension</p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹100)</p></div>
                 </div>
                 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="font-bold"><script>document.write(localStorage.getItem('user_full_name') || 'Kulu Sutar');</script></p></div>
-                    <div><p class="text-gray-500 text-xs">Father's Name</p><p class="font-bold"><script>document.write(localStorage.getItem('u_father') || 'N/A');</script></p></div>
-                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p class="font-bold"><script>document.write(localStorage.getItem('u_mother') || 'N/A');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="font-bold">Rama Chandra Das</p></div>
+                    <div><p class="text-gray-500 text-xs">Father's Name</p><p class="font-bold">Harihar Das</p></div>
+                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p class="font-bold">Sita Das</p></div>
                     <div><p class="text-gray-500 text-xs">Gender</p><p class="font-bold">Male</p></div>
                     <div><p class="text-gray-500 text-xs">Date of Birth</p><p class="font-bold">15-Aug-1950 (76 Yrs)</p></div>
-                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p class="font-bold tracking-widest"><script>document.write(localStorage.getItem('user_aadhaar') || 'XXXX-XXXX-9876');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p class="font-bold tracking-widest">XXXX-XXXX-9876</p></div>
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
-                    <div><p class="text-gray-500 text-xs">District</p><p class="font-bold"><script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p></div>
-                    <div><p class="text-gray-500 text-xs">Block</p><p class="font-bold"><script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p></div>
-                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p class="font-bold"><script>document.write(localStorage.getItem('u_gp') || 'N/A');</script></p></div>
-                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p class="font-bold"><script>document.write(localStorage.getItem('u_address') || 'N/A');</script></p></div>
+                    <div><p class="text-gray-500 text-xs">District</p><p class="font-bold">Bhadrak</p></div>
+                    <div><p class="text-gray-500 text-xs">Block</p><p class="font-bold">Dhamanagar</p></div>
+                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p class="font-bold">Kalyani</p></div>
+                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p class="font-bold">At- Kalyani, Po- Dhamanagar, Dist- Bhadrak, Pin- 756117</p></div>
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
@@ -1822,6 +1858,11 @@ async def read_root():
 
 @app.get("/status/check", response_class=HTMLResponse)
 async def status_check_page():
+    return status_check_design
+
+# EITHI NUA POST ROUTE ADD KELA, JYA MULE PAYU REDIRECT ERROR YENAR NAHI
+@app.post("/status/check", response_class=HTMLResponse)
+async def status_check_page_post(request: Request):
     return status_check_design
 
 @app.get("/user/register", response_class=HTMLResponse)
