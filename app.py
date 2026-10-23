@@ -671,7 +671,7 @@ user_dashboard_design = """
             }
         }
 
-        // REAL PAYU REDIRECTION LOGIC
+        // UPDATED: LIVE PAYU REDIRECTION LOGIC
         async function simulatePayUPayment() {
             alert('Redirecting to Real PayU Secure Payment Gateway...');
             
@@ -690,10 +690,10 @@ user_dashboard_design = """
                 let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
                 let data = await response.json();
 
-                // Create Hidden Form to Submit to PayU Server
+                // EITHI AAME LINK KU CHANGE KARI "SECURE" (LIVE) KARI DECHHU
                 let form = document.createElement("form");
                 form.setAttribute("method", "POST");
-                form.setAttribute("action", "https://test.payu.in/_payment");
+                form.setAttribute("action", "https://secure.payu.in/_payment");
 
                 let params = {
                     "key": data.key,
