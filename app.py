@@ -59,7 +59,7 @@ async def get_income_data(cert_no: str):
 
 @app.get("/api/payu_hash")
 async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstname: str, email: str):
-    # Ehi jagare tora ASALI PayU Key au Salt set karidia jaichi
+    # Asali (Live) money ke liye yahan apni Live Key aur Live Salt dalna hoga
     key = "OLBUPA" 
     salt = "63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" 
     
@@ -411,7 +411,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD 
+# 5. FULL USER DASHBOARD (LIVE REAL MONEY SETTING)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -671,11 +671,12 @@ user_dashboard_design = """
             }
         }
 
-        // UPDATED: LIVE PAYU REDIRECTION LOGIC
+        // ===============================================
+        // ASALI PAYU LIVE SECURE REDIRECTION
+        // ===============================================
         async function simulatePayUPayment() {
-            alert('Redirecting to Real PayU Secure Payment Gateway...');
+            alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
             
-            // Transaction Details
             let txnid = "TXN" + new Date().getTime();
             let amount = "100.00";
             let productinfo = "PensionApplication";
@@ -686,7 +687,7 @@ user_dashboard_design = """
             let furl = window.location.origin + "/status/check";
 
             try {
-                // Get Secure Hash from FastAPI Backend
+                // Backend se asali Live Hash aayega
                 let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
                 let data = await response.json();
 
@@ -1318,12 +1319,10 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
                     <form>
-                        <!-- Fee Setting -->
                         <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
                             <div>
@@ -1332,7 +1331,6 @@ admin_design = """
                             </div>
                         </div>
 
-                        <!-- PayU Gateway -->
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> PayU Payment Gateway Keys</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
@@ -1345,7 +1343,6 @@ admin_design = """
                             </div>
                         </div>
 
-                        <!-- DBT / Payout -->
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-building-columns text-purple-600"></i> DBT / Payout API Keys (Bank Transfer)</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
                             <div>
