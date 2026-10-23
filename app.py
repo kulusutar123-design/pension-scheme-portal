@@ -411,7 +411,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (LIVE REAL MONEY SETTING)
+# 5. FULL USER DASHBOARD (UPDATED FOR NEW ADDRESS LOGIC)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -423,101 +423,65 @@ user_dashboard_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Andhra Pradesh": "Telugu", "Assam": "Assamese", "Bihar": "Hindi", 
-            "Chhattisgarh": "Hindi", "Gujarat": "Gujarati", "Haryana": "Hindi", 
-            "Jharkhand": "Hindi", "Karnataka": "Kannada", "Kerala": "Malayalam", 
-            "Madhya Pradesh": "Hindi", "Maharashtra": "Marathi", "Odisha": "Odia", 
-            "Punjab": "Punjabi", "Rajasthan": "Hindi", "Tamil Nadu": "Tamil",
-            "Telangana": "Telugu", "Uttar Pradesh": "Hindi", "West Bengal": "Bengali"
+            "Odisha": "Odia"
         };
 
         const locationData = {
             "Odisha": {
-                "Angul": { 
-                    "Banarpal": ["Balaramprasad", "Bandhasi", "Banarpal GP", "Gotamara"], 
-                    "Chhendiapada": ["Basantapur", "Chhendiapada GP", "Kusasingha"], 
-                    "Talcher": ["Bhalugadia", "Kalamchhuin", "Santhapada"] 
+                "Anugola": {}, "Balangir": {}, "Baleshwar": {}, "Baragada": {},
+                "Bhadrak": {
+                    "Banta": [], "Basudebpur Mpl": [], "Basudevpur": [], "Bhadrak": [],
+                    "Bhadrak Mpl": [], "Bhandaripokhari": [], "Chandabali": [],
+                    "Chandabali Nac": [],
+                    "Dhamanagar": [
+                        "Anandapur", "Arjunnpur", "Asurali", "Bamkura", "Bhaganpur",
+                        "Bhattasahi", "Dakpur", "Dalanga", "Dhusuri", "Dobal",
+                        "Fatepur", "Gadiali", "Garei Chudakati", "Gesindapur",
+                        "Hasanabad", "Kalyani", "Karada", "Kasimpur", "Katasani",
+                        "Khadipada", "Khaparpada", "Kothar", "Mustafapur", "Nadigan",
+                        "Padhani", "Palasahi", "Radhaballavapur", "Raipur",
+                        "Rayangdini", "Sahada", "Sahaspur"
+                    ],
+                    "Dhamanagar Nac": [], "Tihidi": []
                 },
-                "Balasore": { 
-                    "Basta": ["Baharda", "Basta GP", "Darada", "Mathani"], 
-                    "Remuna": ["Ganeswarpur", "Kalyanpur", "Mandarpur"], 
-                    "Jaleswar": ["Bartana", "Chalanti", "Lakhannath"] 
-                },
-                "Cuttack": { 
-                    "Cuttack Sadar": ["Kalyanpur", "Paramahansa", "Urali"], 
-                    "Baranga": ["Belgachhia", "Dadha", "Ramdagarh"], 
-                    "Niali": ["Alana", "Eranch", "Niali GP"] 
-                },
-                "Puri": { 
-                    "Puri Sadar": ["Baliguali", "Chandanpur", "Gopinathpur"], 
-                    "Brahmagiri": ["Alarnath", "Bentapur", "Kanas"] 
-                }
-            },
-            "West Bengal": {
-                "Kolkata": {
-                    "KMC Area": ["Ward 1", "Ward 2", "Ward 3", "Ward 4"]
-                },
-                "Howrah": {
-                    "Bally Jagachha": ["Bally GP", "Jagachha GP", "Chakpara"],
-                    "Domjur": ["Begri", "Domjur GP", "Makardah"]
-                }
-            },
-            "Andhra Pradesh": {
-                "Visakhapatnam": {
-                    "Bheemunipatnam": ["Bheemili GP", "Chittivalasa", "Mulakuddu"],
-                    "Anandapuram": ["Anandapuram GP", "Gidijala", "Vellanki"]
-                }
+                "Boudh": {}, "Debagada": {}, "Dhenkanal": {}, "Gajapati": {},
+                "Ganjam": {}, "Jagatsinghpur": {}, "Jajpur": {}, "Jharsuguda": {},
+                "Kalahandi": {}, "Kandhamala": {}, "Kataka": {}, "Kendrapada": {},
+                "Kendujhar": {}, "Khordha": {}, "Koraput": {}, "Malkangiri": {},
+                "Mayurbhanj": {}, "Nabarangpur": {}, "Nayagada": {}, "Nuapada": {},
+                "Puri": {}, "Rayagada": {}, "Sambalpur": {}, "Subarnapur": {}, "Sundaragada": {}
             }
         };
 
         window.onload = function() {
-            document.getElementById('state').value = 'Odisha';
             populateDistricts();
         };
 
         function populateDistricts() {
-            let state = document.getElementById("state").value;
+            let state = "Odisha"; // Defaulting to Odisha as requested
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
             let gpSelect = document.getElementById("panchayat");
             
-            distSelect.innerHTML = "<option value=''>Select District</option>";
-            blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
-            gpSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+            distSelect.innerHTML = "<option value=''>Select</option>";
+            blockSelect.innerHTML = "<option value=''>Select</option>";
+            gpSelect.innerHTML = "<option value=''>Select</option>";
 
             if(state && locationData[state]) {
                 for(let dist in locationData[state]) {
                     distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
                 }
             }
-
-            let langSelect = document.getElementById('form_language');
-            let displayRegState = document.getElementById('display_reg_state');
-            
-            if(langSelect && state) {
-                if(displayRegState) displayRegState.innerText = state;
-                langSelect.innerHTML = '';
-                
-                if(stateLanguages[state]) {
-                    let localLang = stateLanguages[state];
-                    let langs = new Set([localLang, "English", "Hindi"]);
-                    langs.forEach(l => {
-                        langSelect.innerHTML += `<option value="${l}">${l}</option>`;
-                    });
-                } else {
-                    langSelect.innerHTML = `<option value="English">English</option><option value="Hindi">Hindi</option>`;
-                }
-            }
         }
 
         function populateBlocks() {
-            let state = document.getElementById("state").value;
+            let state = "Odisha";
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
             let gpSelect = document.getElementById("panchayat");
             
-            blockSelect.innerHTML = "<option value=''>Select Block/Municipality</option>";
-            gpSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+            blockSelect.innerHTML = "<option value=''>Select</option>";
+            gpSelect.innerHTML = "<option value=''>Select</option>";
 
             if(state && dist && locationData[state][dist]) {
                 for(let block in locationData[state][dist]) {
@@ -527,12 +491,12 @@ user_dashboard_design = """
         }
 
         function populateGPs() {
-            let state = document.getElementById("state").value;
+            let state = "Odisha";
             let dist = document.getElementById("district").value;
             let block = document.getElementById("block").value;
             let gpSelect = document.getElementById("panchayat");
             
-            gpSelect.innerHTML = "<option value=''>Select Panchayat/Ward</option>";
+            gpSelect.innerHTML = "<option value=''>Select</option>";
 
             if(state && dist && block && locationData[state][dist][block]) {
                 let gps = locationData[state][dist][block];
@@ -637,7 +601,6 @@ user_dashboard_design = """
                     document.getElementById('father_name').value = data.father;
                     document.getElementById('mother_name').value = data.mother;
                     
-                    document.getElementById("state").value = "Odisha";
                     populateDistricts();
                     setTimeout(() => {
                         document.getElementById("district").value = data.district;
@@ -651,6 +614,12 @@ user_dashboard_design = """
             } else {
                 alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
             }
+        }
+        
+        function updateAddressCharCount() {
+            let addressInput = document.getElementById('manual_address');
+            let charsLeft = 200 - addressInput.value.length;
+            document.getElementById('address_char_count').innerText = charsLeft + " characters remaining";
         }
         
         function goToPaymentStep(e) {
@@ -671,9 +640,6 @@ user_dashboard_design = """
             }
         }
 
-        // ===============================================
-        // ASALI PAYU LIVE SECURE REDIRECTION
-        // ===============================================
         async function simulatePayUPayment() {
             alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
             
@@ -687,11 +653,9 @@ user_dashboard_design = """
             let furl = window.location.origin + "/status/check";
 
             try {
-                // Backend se asali Live Hash aayega
                 let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
                 let data = await response.json();
 
-                // EITHI AAME LINK KU CHANGE KARI "SECURE" (LIVE) KARI DECHHU
                 let form = document.createElement("form");
                 form.setAttribute("method", "POST");
                 form.setAttribute("action", "https://secure.payu.in/_payment");
@@ -763,20 +727,20 @@ user_dashboard_design = """
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
-                        <input type="text" id="full_name" class="w-full border p-2 rounded font-bold text-blue-800" required>
+                        <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
-                        <input type="file" class="w-full border p-1 rounded text-sm bg-gray-50" accept="image/*" required>
+                        <input type="file" class="w-full border-b border-gray-300 p-2 text-sm outline-none bg-transparent" accept="image/*" required>
                     </div>
-                    <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border p-2 rounded" required></div>
-                    <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
+                    <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
                     <div>
                         <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
-                        <select class="w-full border p-2 rounded"><option>Male</option><option>Female</option><option>Transgender</option></select>
+                        <select class="w-full border-b border-gray-300 p-2 outline-none bg-transparent"><option>Male</option><option>Female</option><option>Transgender</option></select>
                     </div>
-                    <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border p-2 rounded" required></div>
-                    <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border p-2 rounded bg-gray-100"></div>
+                    <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
+                    <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border-b border-gray-300 p-2 outline-none bg-gray-50"></div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-6 border-t pt-4">
@@ -793,7 +757,7 @@ user_dashboard_design = """
                     <div>
                         <label class="block text-sm font-semibold mb-2">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
                         <div class="flex gap-2">
-                            <input type="text" id="aadhaar_input" placeholder="[Aadhaar Redacted]" class="w-full border p-2 rounded" required>
+                            <input type="text" id="aadhaar_input" placeholder="[Aadhaar Redacted]" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required>
                             <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white font-bold px-4 rounded hover:bg-blue-700">VALIDATE</button>
                         </div>
                         <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
@@ -809,42 +773,44 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <div class="grid grid-cols-5 gap-4 border-t pt-4">
-                    <div>
-                        <label class="block text-xs font-semibold">State</label>
-                        <select id="state" onchange="populateDistricts()" class="w-full border p-2 rounded" required>
-                            <option value="">Select State</option>
-                            <option value="Andhra Pradesh">Andhra Pradesh</option>
-                            <option value="Assam">Assam</option>
-                            <option value="Bihar">Bihar</option>
-                            <option value="Chhattisgarh">Chhattisgarh</option>
-                            <option value="Gujarat">Gujarat</option>
-                            <option value="Haryana">Haryana</option>
-                            <option value="Jharkhand">Jharkhand</option>
-                            <option value="Karnataka">Karnataka</option>
-                            <option value="Kerala">Kerala</option>
-                            <option value="Madhya Pradesh">Madhya Pradesh</option>
-                            <option value="Maharashtra">Maharashtra</option>
-                            <option value="Odisha">Odisha</option>
-                            <option value="Punjab">Punjab</option>
-                            <option value="Rajasthan">Rajasthan</option>
-                            <option value="Tamil Nadu">Tamil Nadu</option>
-                            <option value="Telangana">Telangana</option>
-                            <option value="Uttar Pradesh">Uttar Pradesh</option>
-                            <option value="West Bengal">West Bengal</option>
-                        </select>
+                <!-- ADDRESS INFORMATION SECTION UPDATE -->
+                <div class="mt-6 border-t pt-4">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800">Address Information</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">District</label>
+                            <select id="district" onchange="populateBlocks()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Block/ULB</label>
+                            <select id="block" onchange="populateGPs()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">GP/Ward</label>
+                            <select id="panchayat" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Village <span class="text-red-500 text-xs">*</span></label>
+                            <input type="text" placeholder="Enter Village" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Pin Code <span class="text-red-500 text-xs">*</span></label>
+                            <input type="text" placeholder="e.g. 751001" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                        </div>
                     </div>
-                    <div><label class="block text-xs font-semibold">District</label><select id="district" onchange="populateBlocks()" class="w-full border p-2 rounded" required><option value="">Select District</option></select></div>
-                    <div><label class="block text-xs font-semibold">Block/Municipality</label><select id="block" onchange="populateGPs()" class="w-full border p-2 rounded" required><option value="">Select Block</option></select></div>
-                    <div>
-                        <label class="block text-xs font-semibold">Panchayat/Ward</label>
-                        <select id="panchayat" class="w-full border p-2 rounded" required>
-                            <option value="">Select Panchayat/Ward</option>
-                        </select>
+                    
+                    <div class="mt-6">
+                        <label class="block text-sm text-gray-500 mb-1">Address <span class="text-red-500 text-xs">*</span></label>
+                        <input type="text" id="manual_address" maxlength="200" oninput="updateAddressCharCount()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                        <p id="address_char_count" class="text-red-500 text-sm mt-1">200 characters remaining</p>
                     </div>
-                    <div><label class="block text-xs font-semibold">Postal PIN <span class="text-red-500">*</span></label><input type="text" placeholder="e.g. 751001" class="w-full border p-2 rounded" required></div>
                 </div>
-                <div><label class="block text-sm font-semibold">Full Address (Village/City, Post)</label><textarea class="w-full border p-2 rounded"></textarea></div>
 
                 <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
                     <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
@@ -1319,6 +1285,7 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
