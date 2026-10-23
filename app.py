@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+import hashlib
 
 app = FastAPI()
 
@@ -47,7 +48,7 @@ income_database = {
 }
 
 # ==========================================
-# API ROUTE FOR AUTO-FETCH
+# API ROUTES
 # ==========================================
 @app.get("/api/get_income")
 async def get_income_data(cert_no: str):
@@ -55,6 +56,19 @@ async def get_income_data(cert_no: str):
         return income_database[cert_no]
     else:
         return {"error": "Certificate Not Found"}
+
+@app.get("/api/payu_hash")
+async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstname: str, email: str):
+    # Ehi jagare asali software re Admin Panel ru asithiba Key au Salt lagiba
+    # Ebe pain eita PayU ra standard TEST key au salt achi
+    key = "gtKFFx" 
+    salt = "eCwWELxi" 
+    
+    # Hash formula: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5|udf6|udf7|udf8|udf9|udf10|salt
+    hash_string = f"{key}|{txnid}|{amount}|{productinfo}|{firstname}|{email}|||||||||||{salt}"
+    hash_val = hashlib.sha512(hash_string.encode('utf-8')).hexdigest().lower()
+    
+    return {"hash": hash_val, "key": key}
 
 
 # ==========================================
@@ -398,7 +412,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD 
+# 5. FULL USER DASHBOARD (UPDATED FOR REAL PAYU REDIRECTION)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -447,6 +461,12 @@ user_dashboard_design = """
                 "Howrah": {
                     "Bally Jagachha": ["Bally GP", "Jagachha GP", "Chakpara"],
                     "Domjur": ["Begri", "Domjur GP", "Makardah"]
+                }
+            },
+            "Andhra Pradesh": {
+                "Visakhapatnam": {
+                    "Bheemunipatnam": ["Bheemili GP", "Chittivalasa", "Mulakuddu"],
+                    "Anandapuram": ["Anandapuram GP", "Gidijala", "Vellanki"]
                 }
             }
         };
@@ -634,14 +654,12 @@ user_dashboard_design = """
             }
         }
         
-        // NEW FUNCTION: GO TO PAYMENT PAGE
         function goToPaymentStep(e) {
             e.preventDefault();
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-payment-step').classList.remove('hidden');
         }
 
-        // NEW FUNCTION: TOGGLE PAY BUTTON ON CHECKBOX
         function togglePayButton() {
             let cb = document.getElementById('tnc_checkbox');
             let btn = document.getElementById('payu_button');
@@ -654,14 +672,57 @@ user_dashboard_design = """
             }
         }
 
-        // NEW FUNCTION: SIMULATE PAYU SECURE PAYMENT & REDIRECT
-        function simulatePayUPayment() {
-            alert('Redirecting to PayU Secure Payment Gateway...');
-            setTimeout(() => {
-                alert('Payment Successful! Generating Print Receipt and Application Details...');
-                document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
-                document.getElementById('section-status').classList.remove('hidden');
-            }, 1500);
+        // NEW: REAL PAYU REDIRECTION LOGIC
+        async function simulatePayUPayment() {
+            alert('Redirecting to Real PayU Secure Payment Gateway...');
+            
+            // Transaction Details
+            let txnid = "TXN" + new Date().getTime();
+            let amount = "100.00";
+            let productinfo = "PensionApplication";
+            let firstname = document.getElementById('full_name').value || "User";
+            let email = "user@example.com"; 
+            let phone = "9876543210";
+            let surl = window.location.origin + "/status/check";
+            let furl = window.location.origin + "/status/check";
+
+            try {
+                // Get Secure Hash from FastAPI Backend
+                let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
+                let data = await response.json();
+
+                // Create Hidden Form to Submit to PayU Test Server
+                let form = document.createElement("form");
+                form.setAttribute("method", "POST");
+                form.setAttribute("action", "https://test.payu.in/_payment");
+
+                let params = {
+                    "key": data.key,
+                    "txnid": txnid,
+                    "amount": amount,
+                    "productinfo": productinfo,
+                    "firstname": firstname,
+                    "email": email,
+                    "phone": phone,
+                    "surl": surl,
+                    "furl": furl,
+                    "hash": data.hash
+                };
+
+                for(let key in params) {
+                    let hiddenField = document.createElement("input");
+                    hiddenField.setAttribute("type", "hidden");
+                    hiddenField.setAttribute("name", key);
+                    hiddenField.setAttribute("value", params[key]);
+                    form.appendChild(hiddenField);
+                }
+
+                document.body.appendChild(form);
+                form.submit(); // This will open the real PayU payment page
+                
+            } catch (error) {
+                alert("Error connecting to PayU Gateway. Checking connection...");
+            }
         }
     </script>
 </head>
@@ -680,9 +741,6 @@ user_dashboard_design = """
 
     <main class="flex-1 overflow-y-auto p-6">
         
-        <!-- ===================================== -->
-        <!-- APPLICATION FORM TAB -->
-        <!-- ===================================== -->
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
             
             <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
@@ -700,7 +758,6 @@ user_dashboard_design = """
             </div>
 
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
-            <!-- Changed function to goToPaymentStep -->
             <form onsubmit="goToPaymentStep(event)" class="space-y-6">
                 
                 <div class="grid grid-cols-2 gap-4">
@@ -715,7 +772,7 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border p-2 rounded" required></div>
                     <div>
-                        <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
+                        <label class="block text-sm font-semibold">Gender (ଲig)</label>
                         <select class="w-full border p-2 rounded"><option>Male</option><option>Female</option><option>Transgender</option></select>
                     </div>
                     <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border p-2 rounded" required></div>
@@ -937,15 +994,11 @@ user_dashboard_design = """
 
                 <div class="mt-8 flex justify-center gap-4">
                     <button type="button" class="bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded shadow hover:bg-gray-400">BACK</button>
-                    <!-- EBE EITA ELIGIBLE MARILE PAYMENT PAGE KU JIBA -->
                     <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE / NEXT</button>
                 </div>
             </form>
         </div>
 
-        <!-- ===================================== -->
-        <!-- NEW PAYMENT & TERMS SECTION -->
-        <!-- ===================================== -->
         <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
             <div class="max-w-3xl mx-auto border-2 border-orange-300 rounded-xl p-6 bg-orange-50">
                 <h2 class="text-2xl font-bold text-orange-700 mb-4 text-center border-b border-orange-300 pb-2"><i class="fa-solid fa-file-shield mr-2"></i> Application Declaration & Payment</h2>
@@ -974,9 +1027,6 @@ user_dashboard_design = """
             </div>
         </div>
 
-        <!-- ===================================== -->
-        <!-- STATUS & PRINT RECEIPT SECTION -->
-        <!-- ===================================== -->
         <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow">
             <div class="print:hidden">
                 <h2 class="text-3xl font-bold mb-6 text-green-700 border-b pb-2"><i class="fa-solid fa-circle-check"></i> Application Submitted & Paid</h2>
@@ -1004,7 +1054,6 @@ user_dashboard_design = """
                 </div>
             </div>
 
-            <!-- PRINTABLE TEMPLATE (Only visible during Print) -->
             <div class="hidden print:block border-2 border-gray-800 p-8 rounded-lg mt-10 relative">
                 <div class="absolute top-4 right-4 border border-gray-400 p-1 w-24 h-32 text-center text-xs text-gray-500 flex items-center justify-center">Passport Photo</div>
                 <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
@@ -1040,7 +1089,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD (NO CHANGES - 100% SAFE)
+# 6. FULL ADMIN DASHBOARD 
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
