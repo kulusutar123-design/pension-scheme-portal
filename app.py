@@ -313,7 +313,34 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Odisha": "Odia"
+            "Odisha": "Odia",
+            "Andhra Pradesh": "Telugu",
+            "Arunachal Pradesh": "English",
+            "Assam": "Assamese",
+            "Bihar": "Hindi",
+            "Chhattisgarh": "Hindi",
+            "Goa": "Konkani",
+            "Gujarat": "Gujarati",
+            "Haryana": "Hindi",
+            "Himachal Pradesh": "Hindi",
+            "Jharkhand": "Hindi",
+            "Karnataka": "Kannada",
+            "Kerala": "Malayalam",
+            "Madhya Pradesh": "Hindi",
+            "Maharashtra": "Marathi",
+            "Manipur": "Manipuri",
+            "Meghalaya": "English",
+            "Mizoram": "Mizo",
+            "Nagaland": "English",
+            "Punjab": "Punjabi",
+            "Rajasthan": "Hindi",
+            "Sikkim": "English",
+            "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu",
+            "Tripura": "Bengali",
+            "Uttar Pradesh": "Hindi",
+            "Uttarakhand": "Hindi",
+            "West Bengal": "Bengali"
         };
 
         function updateLanguageOptions() {
@@ -390,7 +417,34 @@ user_register_design = """
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
                         <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -629,13 +683,13 @@ user_dashboard_design = """
             let age = new Date().getFullYear() - dob.getFullYear();
             document.getElementById('age').value = age;
             let scheme = document.getElementById('scheme').value;
-            if(scheme === 'Old Age' && age < 55) { alert('System Error: Age must be 55 or above for Old Age Pension.'); }
+            if(scheme === 'Old Age Pension' && age < 55) { alert('System Error: Age must be 55 or above for Old Age Pension.'); }
         }
 
         function checkSchemeCondition() {
             let scheme = document.getElementById('scheme').value;
             let specialBox = document.getElementById('special_cert_box');
-            if(scheme === 'Widow' || scheme === 'Disability' || scheme === 'Divorcee' || scheme === 'Transgender') {
+            if(scheme === 'Widow Pension' || scheme === 'Disability Pension' || scheme === 'Divorcee Pension' || scheme === 'Transgender Pension') {
                 specialBox.classList.remove('hidden');
             } else { specialBox.classList.add('hidden'); }
         }
@@ -756,7 +810,6 @@ user_dashboard_design = """
             localStorage.setItem('u_gp', document.getElementById('panchayat').value);
             localStorage.setItem('u_address', document.getElementById('manual_address').value);
             
-            // NEW SAVED FIELDS
             localStorage.setItem('u_gender', document.getElementById('gender_select').value);
             localStorage.setItem('u_dob', document.getElementById('dob').value);
             localStorage.setItem('u_inc_cert', document.getElementById('income_cert_no').value);
@@ -797,7 +850,7 @@ user_dashboard_design = """
             let surl = window.location.origin + "/status/check";
             let furl = window.location.origin + "/status/check";
 
-            // AUTOMATIC SYSTEM VERIFICATION LOGIC
+            // AUTO SYSTEM VERIFICATION LOGIC
             let incAmt = document.getElementById('inc_amount').value || "";
             let authName = document.getElementById('inc_issued_to').value || "";
             
@@ -863,41 +916,36 @@ user_dashboard_design = """
         }
 
         function loadPrintData() {
-            let name = localStorage.getItem('user_full_name') || 'N/A';
-            let elsName = document.querySelectorAll('.print_u_name');
-            elsName.forEach(el => el.innerText = name);
+            let safeSet = (className, key, defaultVal) => {
+                let val = localStorage.getItem(key) || defaultVal;
+                document.querySelectorAll(className).forEach(el => el.innerText = val);
+            };
             
-            let appNo = localStorage.getItem('user_app_no') || 'N/A';
-            let elsApp = document.querySelectorAll('.print_u_appno');
-            elsApp.forEach(el => el.innerText = appNo);
-            
-            let scheme = localStorage.getItem('u_scheme') || 'N/A';
-            let elsScheme = document.querySelectorAll('.print_u_scheme');
-            elsScheme.forEach(el => el.innerText = scheme);
-            
-            let fee = localStorage.getItem('paid_amount') || '100.00';
-            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = fee);
+            safeSet('.print_u_name', 'user_full_name', 'N/A');
+            safeSet('.print_u_appno', 'user_app_no', 'N/A');
+            safeSet('.print_u_scheme', 'u_scheme', 'N/A');
+            safeSet('.display_app_fee', 'paid_amount', '100.00');
 
-            let safeSet = (id, key) => {
+            let safeSetId = (id, key) => {
                 let el = document.getElementById(id);
                 if(el) el.innerText = localStorage.getItem(key) || 'N/A';
             };
             
-            safeSet('print_u_father', 'u_father');
-            safeSet('print_u_mother', 'u_mother');
-            safeSet('print_u_aadhaar', 'user_aadhaar');
-            safeSet('print_u_dist', 'u_dist');
-            safeSet('print_u_block', 'u_block');
-            safeSet('print_u_gp', 'u_gp');
-            safeSet('print_u_address', 'u_address');
-            safeSet('print_u_dob', 'u_dob');
-            safeSet('print_u_gender', 'u_gender');
-            safeSet('print_u_inc_cert', 'u_inc_cert');
-            safeSet('print_u_inc_auth', 'u_inc_auth');
-            safeSet('print_u_inc_amount', 'u_inc_amount');
-            safeSet('print_u_bank', 'u_bank');
-            safeSet('print_u_acc', 'u_acc');
-            safeSet('print_u_ifsc', 'u_ifsc');
+            safeSetId('print_u_father', 'u_father');
+            safeSetId('print_u_mother', 'u_mother');
+            safeSetId('print_u_aadhaar', 'user_aadhaar');
+            safeSetId('print_u_dist', 'u_dist');
+            safeSetId('print_u_block', 'u_block');
+            safeSetId('print_u_gp', 'u_gp');
+            safeSetId('print_u_address', 'u_address');
+            safeSetId('print_u_dob', 'u_dob');
+            safeSetId('print_u_gender', 'u_gender');
+            safeSetId('print_u_inc_cert', 'u_inc_cert');
+            safeSetId('print_u_inc_auth', 'u_inc_auth');
+            safeSetId('print_u_inc_amount', 'u_inc_amount');
+            safeSetId('print_u_bank', 'u_bank');
+            safeSetId('print_u_acc', 'u_acc');
+            safeSetId('print_u_ifsc', 'u_ifsc');
         }
         
         function viewUserAppModal() {
@@ -1315,12 +1363,38 @@ user_dashboard_design = """
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹<span class="display_app_fee"></span>)</p></div>
                 </div>
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
-                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
-                    <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar') || 'N/A');</script></p>
-                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p>
-                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p>
+                
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="print_u_name font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Father's Name</p><p id="v_father_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p id="v_mother_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Gender</p><p id="v_gender_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Date of Birth</p><p id="v_dob_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p id="v_aadhaar_user" class="font-bold tracking-widest"></p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
+                    <div><p class="text-gray-500 text-xs">District</p><p id="v_dist_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Block</p><p id="v_block_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p id="v_gp_user" class="font-bold"></p></div>
+                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p id="v_address_user" class="font-bold"></p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
+                    <div><p class="text-gray-500 text-xs">Certificate No</p><p id="v_inc_cert_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Issued By</p><p id="v_inc_auth_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Detected Income</p><p id="v_inc_amount_user" class="font-bold text-red-600"></p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">4. Bank & DBT Information</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
+                    <div><p class="text-gray-500 text-xs">Bank Name</p><p id="v_bank_user" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Account No</p><p id="v_acc_user" class="font-bold tracking-wider"></p></div>
+                    <div><p class="text-gray-500 text-xs">IFSC Code</p><p id="v_ifsc_user" class="font-bold"></p></div>
                 </div>
             </div>
         </div>
@@ -1537,7 +1611,6 @@ admin_design = """
             document.getElementById('v_gp').innerText = localStorage.getItem('u_gp') || 'N/A';
             document.getElementById('v_address').innerText = localStorage.getItem('u_address') || 'N/A';
             
-            // NEW FIELDS ADDED
             document.getElementById('v_dob').innerText = localStorage.getItem('u_dob') || 'N/A';
             document.getElementById('v_gender').innerText = localStorage.getItem('u_gender') || 'N/A';
             document.getElementById('v_inc_cert').innerText = localStorage.getItem('u_inc_cert') || 'N/A';
@@ -1640,4 +1713,240 @@ admin_design = """
             </div>
 
             <!-- REJECTED BOX -->
-            <div id="section-rejected" class="content
+            <div id="section-rejected" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-red-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-red-800"><i class="fa-solid fa-trash-can mr-2"></i> Rejected Applications Box</h2>
+                        <span class="text-xs font-bold text-red-600 border border-red-300 bg-white px-2 py-1 rounded-full"><i class="fa-solid fa-rotate-left"></i> Items Auto-Delete after 3 Months</span>
+                    </div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Rejected By</th><th class="py-3 px-4 border-b w-1/3">Remark / Reason</th><th class="py-3 px-4 border-b text-center">Delete</th></tr>
+                            </thead>
+                            <tbody id="rejected_tbody" class="text-sm">
+                                <!-- DYNAMIC DATA -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-beneficiaries" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
+                        <div class="space-x-2">
+                            <button onclick="alert('Downloading User Data to Excel...')" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
+                            <button onclick="alert('Downloading User Data to PDF...')" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b text-center">Admin Action</th></tr>
+                            </thead>
+                            <tbody id="beneficiaries_tbody" class="text-sm">
+                                <!-- DYNAMIC DATA -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-renewals" class="content-section hidden">
+                 <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
+                    <h2 class="font-bold text-lg mb-4">Renewal Status</h2>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-100 text-gray-600 text-sm">
+                            <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status / Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="bg-red-50 hover:bg-red-100 border-b">
+                                <td class="py-4 px-4 font-medium text-red-700">#BEN-089</td><td class="py-4 px-4 font-bold text-red-700">Bimala Das</td>
+                                <td class="py-4 px-4"><span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (3+ Months)</span></td>
+                                <td class="py-4 px-4 text-center"><button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-hand-paper"></i> Stop Pension</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-payments" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-bold text-lg">Monthly Payment Records</h2>
+                        <div class="space-x-2">
+                            <button onclick="alert('Downloading Payments Data to Excel...')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
+                            <button onclick="alert('Downloading Payments Data to PDF...')" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-settings" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border p-8">
+                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
+                    <form>
+                        <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Fee Amount (₹)</label>
+                                <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> PayU Payment Gateway Keys</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
+                                <input type="password" id="payu_merchant_key" value="OLBUPA" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
+                                <input type="password" id="payu_merchant_salt" value="63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-building-columns text-purple-600"></i> DBT / Payout API Keys (Bank Transfer)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
+                                <input type="password" id="payout_api_key" value="0b223e8abf8a96a8b53ebba0c1e610dd6acb9dc0ed3d9b6754cd67f2a42b9b03" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Secret</label>
+                                <input type="password" id="payout_api_secret" value="4e513dcbf8512d0ca462d356e09abeba7de8937582d8635919a7bab3db5b4562" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button type="button" onclick="saveSettings()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="section-profile" class="content-section hidden">
+                <div class="max-w-2xl bg-white rounded-xl shadow-sm border p-8">
+                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-user-pen"></i> Update Admin Profile</h2>
+                    <form class="space-y-5">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label><input type="text" value="Super Admin" class="w-full px-4 py-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Mobile No.</label><input type="text" value="9876543210" class="w-full px-4 py-2 border rounded-lg"></div>
+                        </div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Email ID (Login ID)</label><input type="email" value="admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg"></div>
+                        <div class="border-t pt-5 mt-5">
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-lock text-gray-500"></i> Change Password</h3>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div><label class="block text-sm text-gray-600 mb-1">New Password</label><input type="password" placeholder="Enter new password" class="w-full px-4 py-2 border rounded-lg"></div>
+                                <div><label class="block text-sm text-gray-600 mb-1">Confirm Password</label><input type="password" placeholder="Re-enter password" class="w-full px-4 py-2 border rounded-lg"></div>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex justify-end"><button type="button" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FULL APPLICATION VIEW & PRINT MODAL -->
+    <div id="full_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static">
+        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col print:h-auto print:shadow-none print:w-full">
+            
+            <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl print:hidden">
+                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> User Application Data</h3>
+                <div class="space-x-2">
+                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Details</button>
+                    <button onclick="closeFullAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-8 print:overflow-visible print:p-0">
+                <div class="text-center mb-6 border-b-2 border-gray-800 pb-4">
+                    <h2 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h2>
+                    <p class="font-bold text-lg text-gray-600">Applicant Full Details Form</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
+                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p id="v_appno" class="font-bold text-base text-blue-700"></p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p id="v_scheme" class="font-bold text-base"></p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p id="v_fee" class="font-bold text-green-600"></p></div>
+                </div>
+                
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">Full Name</p><p id="v_name" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Father's Name</p><p id="v_father" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p id="v_mother" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Gender</p><p id="v_gender" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Date of Birth</p><p id="v_dob" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p id="v_aadhaar" class="font-bold tracking-widest"></p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
+                    <div><p class="text-gray-500 text-xs">District</p><p id="v_dist" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Block</p><p id="v_block" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p id="v_gp" class="font-bold"></p></div>
+                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p id="v_address" class="font-bold"></p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
+                    <div><p class="text-gray-500 text-xs">Certificate No</p><p id="v_inc_cert" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Issued By</p><p id="v_inc_auth" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Detected Income</p><p id="v_inc_amount" class="font-bold text-red-600"></p></div>
+                </div>
+
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">4. Bank & DBT Information</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
+                    <div><p class="text-gray-500 text-xs">Bank Name</p><p id="v_bank" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Account No</p><p id="v_acc" class="font-bold tracking-wider"></p></div>
+                    <div><p class="text-gray-500 text-xs">IFSC Code</p><p id="v_ifsc" class="font-bold"></p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ==========================================
+# 7. EXPLICIT ROUTES DEFINITION 
+# ==========================================
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    return html_design
+
+@app.get("/status/check", response_class=HTMLResponse)
+async def status_check_page():
+    return status_check_design
+
+@app.post("/status/check", response_class=HTMLResponse)
+async def status_check_page_post(request: Request):
+    return status_check_design
+
+@app.get("/user/register", response_class=HTMLResponse)
+async def user_register_page():
+    return user_register_design
+
+@app.get("/user/login", response_class=HTMLResponse)
+async def user_login_page():
+    return user_login_design
+
+@app.get("/user/dashboard", response_class=HTMLResponse)
+async def user_dashboard_route():
+    return user_dashboard_design
+
+@app.get("/admin/login", response_class=HTMLResponse)
+async def admin_login_page():
+    return admin_login_design
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard_route():
+    return admin_design
