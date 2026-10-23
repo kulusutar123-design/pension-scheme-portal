@@ -234,7 +234,6 @@ status_check_design = """
 
             resBox.classList.remove('hidden');
             
-            // Simulation logic for Demo
             if(appNo === "APP-REJECTED") {
                 resBox.className = "mt-6 border p-4 rounded-lg bg-red-50 border-red-200";
                 statIcon.className = "fa-solid fa-circle-xmark text-red-600 mr-1";
@@ -360,6 +359,8 @@ user_register_design = """
             let pwd = document.getElementById('reg_pass').value;
             let conf_pwd = document.getElementById('reg_conf_pass').value;
             let fullName = document.getElementById('reg_full_name').value;
+            let mobileNo = document.getElementById('reg_mobile').value;
+            let emailId = document.getElementById('reg_email').value;
             
             if (pwd !== conf_pwd) {
                 alert('Password and Confirm Password do not match!');
@@ -370,6 +371,8 @@ user_register_design = """
             localStorage.setItem('user_app_no', appNo);
             localStorage.setItem('user_password', pwd);
             localStorage.setItem('user_full_name', fullName);
+            localStorage.setItem('user_mobile', mobileNo);
+            localStorage.setItem('user_email', emailId);
             
             alert('Registration Successful! Your Application No is: ' + appNo + '. Please Login.');
             window.location.href = '/user/login';
@@ -430,10 +433,10 @@ user_register_design = """
             </div>
 
             <div class="flex gap-4">
-                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Mobile No</label><input type="text" class="w-full px-4 py-2 border rounded-lg" required></div>
+                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Mobile No</label><input type="text" id="reg_mobile" class="w-full px-4 py-2 border rounded-lg" required></div>
                 <div class="w-1/2">
                     <label class="block text-sm font-semibold text-gray-700">Email ID</label>
-                    <div class="flex"><input type="email" class="w-full px-4 py-2 border rounded-l-lg" required><button type="button" class="bg-blue-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="generateOTP()">Get OTP</button></div>
+                    <div class="flex"><input type="email" id="reg_email" class="w-full px-4 py-2 border rounded-l-lg" required><button type="button" class="bg-blue-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="generateOTP()">Get OTP</button></div>
                 </div>
             </div>
             <div id="otpDisplay" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
@@ -563,12 +566,32 @@ user_dashboard_design = """
         window.onload = function() {
             populateDistricts();
             
+            // LOCKING NAME, MOBILE & EMAIL FROM REGISTRATION
             let savedFullName = localStorage.getItem('user_full_name');
+            let savedMobile = localStorage.getItem('user_mobile');
+            let savedEmail = localStorage.getItem('user_email');
+            
             if(savedFullName) {
                 let nameField = document.getElementById('full_name');
                 nameField.value = savedFullName;
                 nameField.setAttribute('readonly', 'readonly');
                 nameField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
+            }
+            if(savedMobile) {
+                let mobField = document.getElementById('app_mobile');
+                if(mobField){
+                    mobField.value = savedMobile;
+                    mobField.setAttribute('readonly', 'readonly');
+                    mobField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
+                }
+            }
+            if(savedEmail) {
+                let emailField = document.getElementById('app_email');
+                if(emailField){
+                    emailField.value = savedEmail;
+                    emailField.setAttribute('readonly', 'readonly');
+                    emailField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
+                }
             }
             
             let isApplied = localStorage.getItem('user_has_applied');
@@ -621,6 +644,9 @@ user_dashboard_design = """
         function switchUserTab(tabId) {
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
+            if(tabId === 'status') {
+                loadPrintData();
+            }
         }
         
         function calculateAge() {
@@ -689,53 +715,6 @@ user_dashboard_design = """
                 alert("Error fetching IFSC details.");
             }
         }
-
-        async function verifyIncome() {
-            let cert = document.getElementById('income_cert_no').value;
-            let year = document.getElementById('income_year').value;
-
-            if(cert && year !== "Select") {
-                try {
-                    let response = await fetch(`/api/get_income?cert_no=${cert}`);
-                    let data = await response.json();
-
-                    if(data.error) {
-                        alert("Invalid Certificate Number or Data Not Found in Database!");
-                        return;
-                    }
-
-                    alert(`Fetching Income Details from Database for Certificate ${cert}...`);
-                    
-                    document.getElementById('inc_issued_to').value = data.name;
-                    document.getElementById('inc_father').value = data.father;
-                    document.getElementById('inc_mother').value = data.mother;
-                    document.getElementById('inc_district').value = data.district;
-                    document.getElementById('inc_authority').value = data.authority;
-                    document.getElementById('inc_date').value = data.date;
-                    document.getElementById('inc_amount').value = data.amount;
-                    document.getElementById('inc_relation').value = "Self";
-
-                    let nameField = document.getElementById('full_name');
-                    if(!nameField.value) {
-                        nameField.value = data.name;
-                    }
-                    document.getElementById('father_name').value = data.father;
-                    document.getElementById('mother_name').value = data.mother;
-                    
-                    populateDistricts();
-                    setTimeout(() => {
-                        document.getElementById("district").value = data.district;
-                        populateBlocks();
-                    }, 100);
-
-                } catch (error) {
-                    console.error("Error fetching data:", error);
-                    alert("System Error: Unable to fetch data from Server.");
-                }
-            } else {
-                alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
-            }
-        }
         
         function updateAddressCharCount() {
             let addressInput = document.getElementById('manual_address');
@@ -746,8 +725,14 @@ user_dashboard_design = """
         function goToPaymentStep(e) {
             e.preventDefault();
             
-            let aadhaarInput = document.getElementById('aadhaar_input').value;
-            localStorage.setItem('user_aadhaar', aadhaarInput);
+            localStorage.setItem('user_aadhaar', document.getElementById('aadhaar_input').value);
+            localStorage.setItem('u_father', document.getElementById('father_name').value);
+            localStorage.setItem('u_mother', document.getElementById('mother_name').value);
+            localStorage.setItem('u_scheme', document.getElementById('scheme').value);
+            localStorage.setItem('u_dist', document.getElementById('district').value);
+            localStorage.setItem('u_block', document.getElementById('block').value);
+            localStorage.setItem('u_gp', document.getElementById('panchayat').value);
+            localStorage.setItem('u_address', document.getElementById('manual_address').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-payment-step').classList.remove('hidden');
@@ -772,8 +757,8 @@ user_dashboard_design = """
             let amount = "100.00";
             let productinfo = "PensionApplication";
             let firstname = document.getElementById('full_name').value || "User";
-            let email = "user@example.com"; 
-            let phone = "9876543210";
+            let email = document.getElementById('app_email').value || "user@example.com"; 
+            let phone = document.getElementById('app_mobile').value || "9876543210";
             let surl = window.location.origin + "/status/check";
             let furl = window.location.origin + "/status/check";
 
@@ -815,6 +800,38 @@ user_dashboard_design = """
                 alert("Error connecting to PayU Gateway. Checking connection...");
             }
         }
+
+        function loadPrintData() {
+            let name = localStorage.getItem('user_full_name') || 'Kulu Sutar';
+            let elsName = document.querySelectorAll('.print_u_name');
+            elsName.forEach(el => el.innerText = name);
+            
+            let scheme = localStorage.getItem('u_scheme') || 'Old Age Pension';
+            let elsScheme = document.querySelectorAll('.print_u_scheme');
+            elsScheme.forEach(el => el.innerText = scheme);
+
+            let safeSet = (id, key) => {
+                let el = document.getElementById(id);
+                if(el) el.innerText = localStorage.getItem(key) || 'N/A';
+            };
+            
+            safeSet('print_u_father', 'u_father');
+            safeSet('print_u_mother', 'u_mother');
+            safeSet('print_u_aadhaar', 'user_aadhaar');
+            safeSet('print_u_dist', 'u_dist');
+            safeSet('print_u_block', 'u_block');
+            safeSet('print_u_gp', 'u_gp');
+            safeSet('print_u_address', 'u_address');
+        }
+        
+        function viewUserAppModal() {
+            loadPrintData();
+            document.getElementById('user_app_view_modal').classList.remove('hidden');
+        }
+
+        function closeUserAppModal() {
+            document.getElementById('user_app_view_modal').classList.add('hidden');
+        }
     </script>
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden">
@@ -830,7 +847,7 @@ user_dashboard_design = """
         <div class="p-4"><a href="/" class="flex items-center text-red-400 hover:text-red-300"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout / Back Home</a></div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-6">
+    <main class="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
         
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
             
@@ -852,11 +869,22 @@ user_dashboard_design = """
                 <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
                 <form onsubmit="goToPaymentStep(event)" class="space-y-6">
                     
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
                             <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
                         </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600">Registered Mobile No</label>
+                            <input type="text" id="app_mobile" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-800 bg-transparent" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600">Registered Email ID</label>
+                            <input type="text" id="app_email" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-800 bg-transparent" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
                         <div>
                             <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
                             <input type="file" class="w-full border-b border-gray-300 p-2 text-sm outline-none bg-transparent" accept="image/*" required>
@@ -974,10 +1002,8 @@ user_dashboard_design = """
                                 <label class="block text-xs font-semibold text-gray-700">Token No</label>
                                 <input type="text" id="income_token_no" class="w-full border p-2 rounded bg-white">
                             </div>
-                            <div class="col-span-3 text-right">
-                                <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-6 py-2 rounded hover:bg-green-700 shadow"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fetch Data</button>
-                            </div>
                             
+                            <!-- MANUAL ENTRY (NO FETCH BUTTON) -->
                             <div>
                                 <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
                                 <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
@@ -1119,8 +1145,8 @@ user_dashboard_design = """
             </div>
         </div>
 
-        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow">
-            <div class="print:hidden">
+        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
+            <div>
                 <h2 class="text-3xl font-bold mb-6 text-green-700 border-b pb-2"><i class="fa-solid fa-circle-check"></i> Application Submitted & Paid</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -1137,45 +1163,92 @@ user_dashboard_design = """
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-                    <button type="button" onclick="window.print()" class="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-gray-900 transition flex items-center justify-center">
-                        <i class="fa-solid fa-print mr-2 text-xl"></i> Print Payment Receipt
+                    <button type="button" onclick="viewUserAppModal()" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-purple-700 transition flex items-center justify-center">
+                        <i class="fa-solid fa-eye mr-2 text-xl"></i> View Full Application Details
                     </button>
                     <button type="button" onclick="window.print()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition flex items-center justify-center">
-                        <i class="fa-solid fa-file-pdf mr-2 text-xl"></i> View & Print Application PDF
+                        <i class="fa-solid fa-print mr-2 text-xl"></i> Print Application & Receipt
                     </button>
                 </div>
             </div>
-
-            <div class="hidden print:block border-2 border-gray-800 p-8 rounded-lg mt-10 relative">
-                <div class="absolute top-4 right-4 border border-gray-400 p-1 w-24 h-32 text-center text-xs text-gray-500 flex items-center justify-center">Passport Photo</div>
-                <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
-                    <h1 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h1>
-                    <p class="font-bold text-lg">Application & Payment Receipt</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-                    <div><strong>Application No:</strong> APP-2026101</div>
-                    <div><strong>Transaction ID:</strong> TXN-9843729910</div>
-                    <div><strong>Applicant Name:</strong> <script>document.write(localStorage.getItem('user_full_name') || 'Kulu Sutar');</script></div>
-                    <div><strong>Payment Status:</strong> SUCCESS (₹100)</div>
-                    <div><strong>Scheme Category:</strong> Old Age Pension</div>
-                    <div><strong>Date & Time:</strong> 23 Oct 2026</div>
-                </div>
-                <div class="border-t border-gray-400 pt-4 text-xs text-justify">
-                    <strong>Declaration:</strong> I declare that all information provided is true and my annual income is strictly below Rs. 50,000. If my income is found to exceed 50,000 or if any data is false, Admin holds the right to reject my application without prior notice. I agree to all terms and conditions.
-                </div>
-                <div class="mt-16 flex justify-between">
-                    <div class="border-t border-gray-800 pt-1 w-48 text-center font-bold">Applicant Signature</div>
-                    <div class="border-t border-gray-800 pt-1 w-48 text-center font-bold">Admin Authority (Seal)</div>
-                </div>
-            </div>
-
         </div>
         
+        <!-- PRINT TEMPLATE (HIDDEN ON SCREEN, VISIBLE ON PRINT) -->
+        <div class="hidden print:block w-full">
+            <div class="border border-gray-300 p-2 mb-8">
+                <div class="border-2 border-gray-800 p-6 relative rounded">
+                    <div class="absolute top-6 right-6 border border-gray-400 p-1 w-20 h-28 text-center text-[10px] text-gray-500 flex items-center justify-center">Passport Photo</div>
+                    <div class="text-center border-b-2 border-gray-800 pb-4 mb-6 pr-24">
+                        <h1 class="text-xl font-extrabold uppercase tracking-wide">PRIVATE SOCIAL SECURITY PENSION SCHEME</h1>
+                        <p class="font-bold text-md mt-1">Application & Payment Receipt</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs mb-6">
+                        <div><strong>Application No:</strong> APP-2026101</div>
+                        <div><strong>Transaction ID:</strong> TXN-9843729910</div>
+                        <div><strong>Applicant Name:</strong> <span class="print_u_name"></span></div>
+                        <div><strong>Payment Status:</strong> SUCCESS (₹100)</div>
+                        <div><strong>Scheme Category:</strong> <span class="print_u_scheme"></span></div>
+                        <div><strong>Date & Time:</strong> 23 Oct 2026</div>
+                    </div>
+                    <div class="border-t border-gray-400 pt-4 text-[10px] text-justify leading-tight mb-16">
+                        <strong>Declaration:</strong> I declare that all information provided is true and my annual income is strictly below Rs. 50,000. If my income is found to exceed 50,000 or if any data is false, Admin holds the right to reject my application without prior notice. I agree to all terms and conditions.
+                    </div>
+                    <div class="flex justify-between items-end mt-12">
+                        <div class="border-t border-gray-800 pt-1 w-40 text-center font-bold text-xs">Applicant Signature</div>
+                        <div class="border-t border-gray-800 pt-1 w-40 text-center font-bold text-xs">Admin Authority (Seal)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border border-gray-800 p-6 rounded print:page-break-before">
+                <h2 class="text-lg font-bold border-b border-gray-800 mb-4 pb-2">Full Application Details</h2>
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <p><strong>Name:</strong> <span class="print_u_name"></span></p>
+                    <p><strong>Father's Name:</strong> <span id="print_u_father"></span></p>
+                    <p><strong>Mother's Name:</strong> <span id="print_u_mother"></span></p>
+                    <p><strong>Aadhaar No:</strong> <span id="print_u_aadhaar"></span></p>
+                    <p><strong>State:</strong> Odisha</p>
+                    <p><strong>District:</strong> <span id="print_u_dist"></span></p>
+                    <p><strong>Block:</strong> <span id="print_u_block"></span></p>
+                    <p><strong>GP / Ward:</strong> <span id="print_u_gp"></span></p>
+                    <div class="col-span-2"><p><strong>Full Address:</strong> <span id="print_u_address"></span></p></div>
+                </div>
+            </div>
+        </div>
+
         <div id="section-renew" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
             <h2 class="text-2xl font-bold mb-4 text-orange-600">3-Month Renewal</h2>
             <button onclick="alert('Data Fetched! Proceeding to Payment...');" class="bg-orange-600 text-white px-6 py-2 rounded font-bold">Renew Pension</button>
         </div>
     </main>
+
+    <!-- FULL APPLICATION VIEW MODAL (USER DASHBOARD) -->
+    <div id="user_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl">
+                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> My Application Data</h3>
+                <div class="space-x-2">
+                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Form & Receipt</button>
+                    <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
+                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700">APP-2026101</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base print_u_scheme"></p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹100)</p></div>
+                </div>
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
+                    <p><strong>Name:</strong> <span class="print_u_name"></span></p>
+                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar') || 'N/A');</script></p>
+                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p>
+                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 """
@@ -1708,7 +1781,7 @@ async def user_login_page():
 
 @app.get("/user/dashboard", response_class=HTMLResponse)
 async def user_dashboard_page():
-    return user_dashboard_design
+    return user_dashboard_page
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_page():
