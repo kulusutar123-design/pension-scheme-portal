@@ -213,7 +213,7 @@ html_design = """
 """
 
 # ==========================================
-# 2. STATUS CHECK PAGE
+# 2. STATUS CHECK PAGE (UPDATED FOR REMARKS)
 # ==========================================
 status_check_design = """
 <!DOCTYPE html>
@@ -223,6 +223,34 @@ status_check_design = """
     <title>Check Application Status</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        function checkAppStatus(e) {
+            e.preventDefault();
+            let appNo = document.getElementById('appNoInput').value.trim().toUpperCase();
+            let resBox = document.getElementById('statusResult');
+            let statIcon = document.getElementById('stat_icon');
+            let statText = document.getElementById('stat_text');
+            let statRemark = document.getElementById('stat_remark');
+
+            resBox.classList.remove('hidden');
+            
+            // Simulation logic for Demo
+            if(appNo === "APP-REJECTED") {
+                resBox.className = "mt-6 border p-4 rounded-lg bg-red-50 border-red-200";
+                statIcon.className = "fa-solid fa-circle-xmark text-red-600 mr-1";
+                statText.className = "text-red-600 font-bold";
+                statText.innerText = "Rejected by Admin";
+                statRemark.innerHTML = "<strong>Remark:</strong> Aadhaar Name and Income Certificate Name mismatch.";
+                statRemark.classList.remove('hidden');
+            } else {
+                resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
+                statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
+                statText.className = "text-orange-600 font-bold";
+                statText.innerText = "Pending System Verification";
+                statRemark.classList.add('hidden');
+            }
+        }
+    </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
@@ -231,16 +259,17 @@ status_check_design = """
             <i class="fa-solid fa-magnifying-glass text-4xl text-orange-500 mb-3"></i>
             <h2 class="text-2xl font-bold text-gray-800">Check Status</h2>
         </div>
-        <form onsubmit="event.preventDefault(); document.getElementById('statusResult').classList.remove('hidden');" class="space-y-4">
+        <form onsubmit="checkAppStatus(event)" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Application Number</label>
-                <input type="text" placeholder="e.g. APP-XXXXXX" class="w-full px-4 py-3 border rounded-lg focus:ring-orange-500" required>
+                <input type="text" id="appNoInput" placeholder="e.g. APP-XXXXXX" class="w-full px-4 py-3 border rounded-lg focus:ring-orange-500" required>
             </div>
             <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600">Check Status</button>
         </form>
         <div id="statusResult" class="hidden mt-6 bg-gray-50 border p-4 rounded-lg">
             <h3 class="font-bold text-gray-800 mb-2">Current Status:</h3>
-            <p class="text-orange-600 font-bold"><i class="fa-solid fa-hourglass-half"></i> Pending Admin Verification</p>
+            <p><i id="stat_icon" class="fa-solid fa-hourglass-half mr-1"></i> <span id="stat_text" class="font-bold">Pending System Verification</span></p>
+            <p id="stat_remark" class="hidden mt-2 text-sm text-gray-700 border-t pt-2"></p>
         </div>
     </div>
 </body>
@@ -386,7 +415,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED DATA FROM PDF)
+# 5. FULL USER DASHBOARD 
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -1016,7 +1045,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD 
+# 6. FULL ADMIN DASHBOARD (STRICT LOGIN & VERIFICATION UPDATES)
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1033,6 +1062,19 @@ admin_login_design = """
             if (passField.type === "password") { passField.type = "text"; eyeIcon.classList.remove("fa-eye"); eyeIcon.classList.add("fa-eye-slash"); } 
             else { passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }
         }
+
+        // STRICT LOGIN AUTHENTICATION ADDED HERE
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            let adminId = document.getElementById('admin_id').value;
+            let adminPass = document.getElementById('password').value;
+
+            if(adminId === 'admin@kulusutar.in' && adminPass === 'Admin@123') {
+                window.location.href = '/admin';
+            } else {
+                alert('Access Denied: Invalid ID or Password! Please enter correct credentials.');
+            }
+        }
     </script>
 </head>
 <body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
@@ -1041,10 +1083,11 @@ admin_login_design = """
             <i class="fa-solid fa-user-shield text-5xl text-blue-700 mb-3"></i>
             <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
         </div>
-        <form action="/admin" method="GET" class="space-y-6">
+        <!-- CHANGED FROM GET TO JAVASCRIPT AUTHENTICATION -->
+        <form onsubmit="handleAdminLogin(event)" class="space-y-6">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Admin ID / Email</label>
-                <div class="relative"><i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-400"></i><input type="text" placeholder="Enter ID or Email" class="w-full pl-10 pr-4 py-3 border rounded-lg" required></div>
+                <div class="relative"><i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-400"></i><input type="text" id="admin_id" placeholder="Enter ID or Email" class="w-full pl-10 pr-4 py-3 border rounded-lg" required></div>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
@@ -1102,7 +1145,9 @@ admin_design = """
 
             let titles = {
                 'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
-                'newapps': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Application Verification',
+                'sysverify': '<i class="fa-solid fa-microchip text-blue-600 mr-2"></i> System Verification (Level 1)',
+                'adminapprove': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Final Admin Approval (Level 2)',
+                'rejected': '<i class="fa-solid fa-trash-can text-red-600 mr-2"></i> Rejected Applications Box',
                 'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
                 'renewals': '<i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> 3-Month Renewals',
                 'payments': '<i class="fa-solid fa-money-bill-transfer text-blue-600 mr-2"></i> Payment Records',
@@ -1110,6 +1155,29 @@ admin_design = """
                 'profile': '<i class="fa-solid fa-user-gear text-blue-600 mr-2"></i> Admin Profile Settings'
             };
             document.getElementById('header-title').innerHTML = titles[tabId];
+        }
+
+        function verifySysDoc() {
+            document.getElementById('sys_verification_modal').classList.remove('hidden');
+        }
+        
+        function closeSysModal() {
+            document.getElementById('sys_verification_modal').classList.add('hidden');
+        }
+
+        function rejectAppWithRemark() {
+            let reason = prompt("Please enter the reason for rejection (Remark):");
+            if (reason != null && reason != "") {
+                alert("Application Rejected and Moved to Rejected Box with Remark: " + reason);
+                document.getElementById('row_app_9082').classList.add('hidden');
+                document.getElementById('sys_verification_modal').classList.add('hidden');
+            }
+        }
+
+        function deleteRejectedRow(rowId) {
+            if(confirm("Are you sure you want to permanently delete this rejected application data?")) {
+                document.getElementById(rowId).classList.add('hidden');
+            }
         }
     </script>
 </head>
@@ -1123,7 +1191,14 @@ admin_design = """
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
                 <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
-                <li><a href="#" onclick="switchTab('newapps', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Applications Verification</a></li>
+                
+                <!-- NEW SECTIONS ADDED HERE -->
+                <li class="mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Verification Steps</span></li>
+                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verification <span class="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">New</span></a></li>
+                <li><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Final Admin Approval</a></li>
+                <li><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-3 text-red-400 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
+
+                <li class="mt-4 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</span></li>
                 <li><a href="#" onclick="switchTab('beneficiaries', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-users w-6 mr-2"></i> Beneficiaries</a></li>
                 <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals Tracker</a></li>
                 <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payment Records</a></li>
@@ -1147,6 +1222,7 @@ admin_design = """
 
         <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
             
+            <!-- DASHBOARD -->
             <div id="section-dashboard" class="content-section">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
@@ -1162,29 +1238,84 @@ admin_design = """
                         <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-hourglass-half"></i></div>
                     </div>
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-red-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Rejected</p><h3 class="text-2xl font-bold text-red-700">85</h3></div>
+                        <div><p class="text-sm text-gray-500 font-semibold">Total Rejected</p><h3 class="text-2xl font-bold text-red-700">85</h3></div>
                         <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-ban"></i></div>
                     </div>
                 </div>
             </div>
 
-            <div id="section-newapps" class="content-section hidden">
+            <!-- SYSTEM VERIFICATION (LEVEL 1) -->
+            <div id="section-sysverify" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-lg">Verify New Applications</h2></div>
+                    <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
+                        <span class="text-xs font-bold text-gray-500">Cross-checking Name, Aadhaar & Income</span>
+                    </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
-                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">System Action</th></tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr id="row_app_9082" class="hover:bg-gray-50 border-b">
+                                    <td class="py-4 px-4 font-medium text-blue-600">#APP-9082</td><td class="py-4 px-4 font-bold">Rama Chandra Das</td><td class="py-4 px-4">Old Age Pension</td>
+                                    <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                        <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Verify Data</button>
+                                        <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Sys Approve</button>
+                                        <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VERIFICATION MODAL -->
+                <div id="sys_verification_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                    <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 relative">
+                        <button onclick="closeSysModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+                        <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Match Analysis</h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
+                                <span class="font-semibold text-gray-600">Applicant Form Name:</span><span class="font-bold text-gray-800">Rama Chandra Das</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                <span class="font-semibold text-gray-600">Aadhaar Card Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (99%)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                <span class="font-semibold text-gray-600">Income Cert Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (100%)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                <span class="font-semibold text-gray-600">Age Proof Document Check:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Verified (>55 Yrs)</span>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end gap-3">
+                            <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600">Reject Data</button>
+                            <button onclick="closeSysModal()" class="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700">All Good (Close)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINAL ADMIN APPROVAL (LEVEL 2) -->
+            <div id="section-adminapprove" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-blue-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-blue-800"><i class="fa-solid fa-user-check mr-2"></i> Final Admin Approval</h2>
+                        <span class="text-xs font-bold text-gray-500 bg-white px-2 py-1 border rounded">System Verified Applications Only</span>
+                    </div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Sys Status</th><th class="py-3 px-4 border-b text-center">Final Action</th></tr>
                             </thead>
                             <tbody class="text-sm">
                                 <tr class="hover:bg-gray-50 border-b">
-                                    <td class="py-4 px-4 font-medium text-blue-600">#APP-9082</td><td class="py-4 px-4 font-bold">Rama Chandra Das</td><td class="py-4 px-4">Old Age Pension</td>
+                                    <td class="py-4 px-4 font-medium text-blue-600">#APP-8051</td><td class="py-4 px-4 font-bold">Harihar Nayak</td>
+                                    <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
                                     <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                        <button class="bg-green-500 text-white px-3 py-1 rounded shadow hover:bg-green-600"><i class="fa-solid fa-check"></i> Approve</button>
-                                        <div class="flex items-center border border-red-300 rounded overflow-hidden">
-                                            <input type="text" placeholder="Reason..." class="px-2 py-1 w-24 text-xs outline-none text-red-700 placeholder-red-300">
-                                            <button class="bg-red-500 text-white px-3 py-1 hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Reject</button>
-                                        </div>
+                                        <button onclick="alert('Application Finally Approved and Added to Beneficiary List!');" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
+                                        <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1193,6 +1324,34 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- REJECTED BOX -->
+            <div id="section-rejected" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-red-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-red-800"><i class="fa-solid fa-trash-can mr-2"></i> Rejected Applications Box</h2>
+                        <span class="text-xs font-bold text-red-600 border border-red-300 bg-white px-2 py-1 rounded-full"><i class="fa-solid fa-rotate-left"></i> Items Auto-Delete after 3 Months</span>
+                    </div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Rejected By</th><th class="py-3 px-4 border-b w-1/3">Remark / Reason</th><th class="py-3 px-4 border-b text-center">Delete</th></tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr id="rej_row_1" class="hover:bg-red-50 border-b">
+                                    <td class="py-4 px-4 font-medium text-red-600">#APP-REJECTED</td><td class="py-4 px-4 font-bold text-gray-800">Demo User</td>
+                                    <td class="py-4 px-4 text-gray-600 font-semibold">Admin</td>
+                                    <td class="py-4 px-4 text-gray-600 italic">Aadhaar Name and Income Certificate Name mismatch.</td>
+                                    <td class="py-4 px-4 text-center">
+                                        <button onclick="deleteRejectedRow('rej_row_1')" class="bg-gray-200 text-red-600 px-3 py-1 rounded shadow hover:bg-red-600 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete Data</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER TABS -->
             <div id="section-beneficiaries" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center"><h2 class="font-bold text-lg">Active Beneficiaries List</h2></div>
