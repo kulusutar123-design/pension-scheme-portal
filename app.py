@@ -59,10 +59,9 @@ async def get_income_data(cert_no: str):
 
 @app.get("/api/payu_hash")
 async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstname: str, email: str):
-    # Ehi jagare asali software re Admin Panel ru asithiba Key au Salt lagiba
-    # Ebe pain eita PayU ra standard TEST key au salt achi
-    key = "gtKFFx" 
-    salt = "eCwWELxi" 
+    # Ehi jagare tora ASALI PayU Key au Salt set karidia jaichi
+    key = "OLBUPA" 
+    salt = "63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" 
     
     # Hash formula: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5|udf6|udf7|udf8|udf9|udf10|salt
     hash_string = f"{key}|{txnid}|{amount}|{productinfo}|{firstname}|{email}|||||||||||{salt}"
@@ -412,7 +411,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED FOR REAL PAYU REDIRECTION)
+# 5. FULL USER DASHBOARD 
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -691,7 +690,7 @@ user_dashboard_design = """
                 let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
                 let data = await response.json();
 
-                // Create Hidden Form to Submit to PayU Test Server
+                // Create Hidden Form to Submit to PayU Server
                 let form = document.createElement("form");
                 form.setAttribute("method", "POST");
                 form.setAttribute("action", "https://test.payu.in/_payment");
@@ -718,7 +717,7 @@ user_dashboard_design = """
                 }
 
                 document.body.appendChild(form);
-                form.submit(); // This will open the real PayU payment page
+                form.submit(); 
                 
             } catch (error) {
                 alert("Error connecting to PayU Gateway. Checking connection...");
@@ -1143,7 +1142,6 @@ admin_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        // NEW JAVASCRIPT: LOAD SETTINGS FROM LOCALSTORAGE
         window.onload = function() {
             if(localStorage.getItem('app_fee')) document.getElementById('app_fee').value = localStorage.getItem('app_fee');
             if(localStorage.getItem('payu_merchant_key')) document.getElementById('payu_merchant_key').value = localStorage.getItem('payu_merchant_key');
@@ -1152,7 +1150,6 @@ admin_design = """
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
         };
 
-        // NEW JAVASCRIPT: SAVE SETTINGS TO LOCALSTORAGE
         function saveSettings() {
             localStorage.setItem('app_fee', document.getElementById('app_fee').value);
             localStorage.setItem('payu_merchant_key', document.getElementById('payu_merchant_key').value);
@@ -1331,7 +1328,6 @@ admin_design = """
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Fee Amount (₹)</label>
-                                <!-- ADDED ID -->
                                 <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
@@ -1341,13 +1337,11 @@ admin_design = """
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
-                                <!-- ADDED ID -->
-                                <input type="password" id="payu_merchant_key" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payu_merchant_key" value="OLBUPA" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
-                                <!-- ADDED ID -->
-                                <input type="password" id="payu_merchant_salt" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payu_merchant_salt" value="63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
@@ -1356,18 +1350,15 @@ admin_design = """
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
-                                <!-- ADDED ID -->
-                                <input type="password" id="payout_api_key" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payout_api_key" value="0b223e8abf8a96a8b53ebba0c1e610dd6acb9dc0ed3d9b6754cd67f2a42b9b03" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Secret</label>
-                                <!-- ADDED ID -->
-                                <input type="password" id="payout_api_secret" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payout_api_secret" value="4e513dcbf8512d0ca462d356e09abeba7de8937582d8635919a7bab3db5b4562" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
                         <div class="mt-8 flex justify-end">
-                            <!-- UPDATED ONCLICK -->
                             <button type="button" onclick="saveSettings()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
                         </div>
                     </form>
