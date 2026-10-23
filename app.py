@@ -672,7 +672,7 @@ user_dashboard_design = """
             }
         }
 
-        // NEW: REAL PAYU REDIRECTION LOGIC
+        // REAL PAYU REDIRECTION LOGIC
         async function simulatePayUPayment() {
             alert('Redirecting to Real PayU Secure Payment Gateway...');
             
@@ -772,7 +772,7 @@ user_dashboard_design = """
                     <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border p-2 rounded" required></div>
                     <div>
-                        <label class="block text-sm font-semibold">Gender (ଲig)</label>
+                        <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
                         <select class="w-full border p-2 rounded"><option>Male</option><option>Female</option><option>Transgender</option></select>
                     </div>
                     <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border p-2 rounded" required></div>
@@ -1143,6 +1143,25 @@ admin_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
+        // NEW JAVASCRIPT: LOAD SETTINGS FROM LOCALSTORAGE
+        window.onload = function() {
+            if(localStorage.getItem('app_fee')) document.getElementById('app_fee').value = localStorage.getItem('app_fee');
+            if(localStorage.getItem('payu_merchant_key')) document.getElementById('payu_merchant_key').value = localStorage.getItem('payu_merchant_key');
+            if(localStorage.getItem('payu_merchant_salt')) document.getElementById('payu_merchant_salt').value = localStorage.getItem('payu_merchant_salt');
+            if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
+            if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
+        };
+
+        // NEW JAVASCRIPT: SAVE SETTINGS TO LOCALSTORAGE
+        function saveSettings() {
+            localStorage.setItem('app_fee', document.getElementById('app_fee').value);
+            localStorage.setItem('payu_merchant_key', document.getElementById('payu_merchant_key').value);
+            localStorage.setItem('payu_merchant_salt', document.getElementById('payu_merchant_salt').value);
+            localStorage.setItem('payout_api_key', document.getElementById('payout_api_key').value);
+            localStorage.setItem('payout_api_secret', document.getElementById('payout_api_secret').value);
+            alert('Settings Saved Successfully!');
+        }
+
         function switchTab(tabId, element) {
             let sections = document.querySelectorAll('.content-section');
             for(let i=0; i<sections.length; i++) { sections[i].classList.add('hidden'); }
@@ -1312,7 +1331,8 @@ admin_design = """
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Fee Amount (₹)</label>
-                                <input type="number" value="100" class="w-full px-4 py-2 border rounded-lg">
+                                <!-- ADDED ID -->
+                                <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
@@ -1321,11 +1341,13 @@ admin_design = """
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
-                                <input type="password" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
+                                <!-- ADDED ID -->
+                                <input type="password" id="payu_merchant_key" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
-                                <input type="password" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
+                                <!-- ADDED ID -->
+                                <input type="password" id="payu_merchant_salt" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
@@ -1334,16 +1356,19 @@ admin_design = """
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
-                                <input type="password" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
+                                <!-- ADDED ID -->
+                                <input type="password" id="payout_api_key" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Secret</label>
-                                <input type="password" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
+                                <!-- ADDED ID -->
+                                <input type="password" id="payout_api_secret" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
                         <div class="mt-8 flex justify-end">
-                            <button type="button" onclick="alert('Settings Saved Successfully!')" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
+                            <!-- UPDATED ONCLICK -->
+                            <button type="button" onclick="saveSettings()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
                         </div>
                     </form>
                 </div>
