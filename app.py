@@ -16,7 +16,6 @@ app.add_middleware(
 # ==========================================
 # 0. BACKEND DATABASE (DUMMY DATA)
 # ==========================================
-# Eithi tu asali database (MySQL/SQLite) connect kariparibu. Ebe pain eita gote demo database.
 income_database = {
     "E-INC/2025/628385": {
         "name": "AMARA JENA",
@@ -52,7 +51,6 @@ income_database = {
 # ==========================================
 @app.get("/api/get_income")
 async def get_income_data(cert_no: str):
-    # Ehi API cert_no check kariba au database ru thik data return kariba
     if cert_no in income_database:
         return income_database[cert_no]
     else:
@@ -450,12 +448,6 @@ user_dashboard_design = """
                     "Bally Jagachha": ["Bally GP", "Jagachha GP", "Chakpara"],
                     "Domjur": ["Begri", "Domjur GP", "Makardah"]
                 }
-            },
-            "Andhra Pradesh": {
-                "Visakhapatnam": {
-                    "Bheemunipatnam": ["Bheemili GP", "Chittivalasa", "Mulakuddu"],
-                    "Anandapuram": ["Anandapuram GP", "Gidijala", "Vellanki"]
-                }
             }
         };
 
@@ -642,18 +634,39 @@ user_dashboard_design = """
             }
         }
         
-        function submitFinalApp(e) {
+        // NEW FUNCTION: GO TO PAYMENT PAGE
+        function goToPaymentStep(e) {
             e.preventDefault();
-            alert('Payment Successful! System is verifying documents automatically...');
+            document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('section-payment-step').classList.remove('hidden');
+        }
+
+        // NEW FUNCTION: TOGGLE PAY BUTTON ON CHECKBOX
+        function togglePayButton() {
+            let cb = document.getElementById('tnc_checkbox');
+            let btn = document.getElementById('payu_button');
+            if(cb.checked) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // NEW FUNCTION: SIMULATE PAYU SECURE PAYMENT & REDIRECT
+        function simulatePayUPayment() {
+            alert('Redirecting to PayU Secure Payment Gateway...');
             setTimeout(() => {
-                alert('System Verification Passed. Sent to Admin for manual review.');
-                switchUserTab('status');
+                alert('Payment Successful! Generating Print Receipt and Application Details...');
+                document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+                document.getElementById('section-status').classList.remove('hidden');
             }, 1500);
         }
     </script>
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden">
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full">
+    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full print:hidden">
         <div class="p-5 border-b border-slate-700 text-center"><h2 class="text-xl font-bold">User Portal</h2></div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
@@ -666,7 +679,11 @@ user_dashboard_design = """
     </aside>
 
     <main class="flex-1 overflow-y-auto p-6">
-        <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow">
+        
+        <!-- ===================================== -->
+        <!-- APPLICATION FORM TAB -->
+        <!-- ===================================== -->
+        <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
             
             <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
                 <div class="mb-2 md:mb-0">
@@ -683,7 +700,8 @@ user_dashboard_design = """
             </div>
 
             <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
-            <form onsubmit="submitFinalApp(event)" class="space-y-6">
+            <!-- Changed function to goToPaymentStep -->
+            <form onsubmit="goToPaymentStep(event)" class="space-y-6">
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -919,20 +937,100 @@ user_dashboard_design = """
 
                 <div class="mt-8 flex justify-center gap-4">
                     <button type="button" class="bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded shadow hover:bg-gray-400">BACK</button>
-                    <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE</button>
+                    <!-- EBE EITA ELIGIBLE MARILE PAYMENT PAGE KU JIBA -->
+                    <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE / NEXT</button>
                 </div>
             </form>
         </div>
 
-        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow">
-            <h2 class="text-2xl font-bold mb-4">Application Status & Print</h2>
-            <div class="bg-gray-50 border p-4 rounded mb-4">
-                <p><strong>App No:</strong> APP-2026101</p>
-                <p><strong>Status:</strong> <span class="text-orange-600 font-bold">Pending Admin Verification</span></p>
+        <!-- ===================================== -->
+        <!-- NEW PAYMENT & TERMS SECTION -->
+        <!-- ===================================== -->
+        <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
+            <div class="max-w-3xl mx-auto border-2 border-orange-300 rounded-xl p-6 bg-orange-50">
+                <h2 class="text-2xl font-bold text-orange-700 mb-4 text-center border-b border-orange-300 pb-2"><i class="fa-solid fa-file-shield mr-2"></i> Application Declaration & Payment</h2>
+                
+                <div class="bg-white p-5 rounded border border-gray-200 shadow-inner mb-6 text-gray-700 leading-relaxed text-lg font-medium text-justify">
+                    <p>I declare that all information provided is true and my annual income is strictly below Rs. 50,000. If my income is found to exceed 50,000 or if any data is false, Admin holds the right to reject my application without prior notice. I agree to all terms and conditions.</p>
+                </div>
+
+                <label class="flex items-start gap-3 cursor-pointer p-3 bg-white rounded border border-gray-300 hover:bg-gray-50 transition mb-6 shadow-sm">
+                    <input type="checkbox" id="tnc_checkbox" onchange="togglePayButton()" class="w-6 h-6 mt-1 text-orange-600 focus:ring-orange-500 cursor-pointer">
+                    <span class="text-gray-800 font-bold">I Agree to the Terms & Conditions and Confirm the above Declaration. (ମୁଁ ସମସ୍ତ ସର୍ତ୍ତାବଳୀ ସହ ସହମତ)</span>
+                </label>
+
+                <div class="text-center">
+                    <p class="text-sm font-semibold text-gray-500 mb-2">Proceed to Secure Payment</p>
+                    <button type="button" id="payu_button" onclick="simulatePayUPayment()" disabled class="bg-green-600 text-white font-extrabold text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
+                        <i class="fa-solid fa-lock mr-2"></i> Pay Now with PayU
+                    </button>
+                    <div class="mt-4 flex justify-center items-center gap-4 text-gray-400 text-3xl">
+                        <i class="fa-brands fa-cc-visa"></i>
+                        <i class="fa-brands fa-cc-mastercard"></i>
+                        <i class="fa-solid fa-building-columns"></i>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" class="h-6 grayscale opacity-60">
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- ===================================== -->
+        <!-- STATUS & PRINT RECEIPT SECTION -->
+        <!-- ===================================== -->
+        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow">
+            <div class="print:hidden">
+                <h2 class="text-3xl font-bold mb-6 text-green-700 border-b pb-2"><i class="fa-solid fa-circle-check"></i> Application Submitted & Paid</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-5 rounded shadow-sm">
+                        <p class="text-gray-500 text-sm font-semibold uppercase">Application Number</p>
+                        <p class="text-2xl font-bold text-gray-800">APP-2026101</p>
+                        <p class="mt-2 text-sm"><strong>Status:</strong> <span class="bg-orange-200 text-orange-800 py-1 px-2 rounded font-bold text-xs">Pending Admin Verification</span></p>
+                    </div>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded shadow-sm">
+                        <p class="text-gray-500 text-sm font-semibold uppercase">Payment Reference (PayU)</p>
+                        <p class="text-xl font-bold text-gray-800">TXN-9843729910</p>
+                        <p class="mt-2 text-sm"><strong>Amount Paid:</strong> <span class="text-green-700 font-bold">₹100.00</span> (Success)</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+                    <button type="button" onclick="window.print()" class="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-gray-900 transition flex items-center justify-center">
+                        <i class="fa-solid fa-print mr-2 text-xl"></i> Print Payment Receipt
+                    </button>
+                    <button type="button" onclick="window.print()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition flex items-center justify-center">
+                        <i class="fa-solid fa-file-pdf mr-2 text-xl"></i> View & Print Application PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- PRINTABLE TEMPLATE (Only visible during Print) -->
+            <div class="hidden print:block border-2 border-gray-800 p-8 rounded-lg mt-10 relative">
+                <div class="absolute top-4 right-4 border border-gray-400 p-1 w-24 h-32 text-center text-xs text-gray-500 flex items-center justify-center">Passport Photo</div>
+                <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
+                    <h1 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h1>
+                    <p class="font-bold text-lg">Application & Payment Receipt</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+                    <div><strong>Application No:</strong> APP-2026101</div>
+                    <div><strong>Transaction ID:</strong> TXN-9843729910</div>
+                    <div><strong>Applicant Name:</strong> Kulu Sutar</div>
+                    <div><strong>Payment Status:</strong> SUCCESS (₹100)</div>
+                    <div><strong>Scheme Category:</strong> Old Age Pension</div>
+                    <div><strong>Date & Time:</strong> 23 Oct 2026</div>
+                </div>
+                <div class="border-t border-gray-400 pt-4 text-xs text-justify">
+                    <strong>Declaration:</strong> I declare that all information provided is true and my annual income is strictly below Rs. 50,000. If my income is found to exceed 50,000 or if any data is false, Admin holds the right to reject my application without prior notice. I agree to all terms and conditions.
+                </div>
+                <div class="mt-16 flex justify-between">
+                    <div class="border-t border-gray-800 pt-1 w-48 text-center font-bold">Applicant Signature</div>
+                    <div class="border-t border-gray-800 pt-1 w-48 text-center font-bold">Admin Authority (Seal)</div>
+                </div>
+            </div>
+
+        </div>
         
-        <div id="section-renew" class="content-section hidden bg-white p-6 rounded-xl shadow">
+        <div id="section-renew" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
             <h2 class="text-2xl font-bold mb-4 text-orange-600">3-Month Renewal</h2>
             <button onclick="alert('Data Fetched! Proceeding to Payment...');" class="bg-orange-600 text-white px-6 py-2 rounded font-bold">Renew Pension</button>
         </div>
@@ -942,7 +1040,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD (UPDATED WITH SETTINGS PAGE)
+# 6. FULL ADMIN DASHBOARD (NO CHANGES - 100% SAFE)
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1155,7 +1253,7 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- NEW SETTINGS SECTION -->
+            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
