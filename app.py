@@ -260,15 +260,7 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Andhra Pradesh": "Telugu", "Arunachal Pradesh": "English", "Assam": "Assamese",
-            "Bihar": "Hindi", "Chhattisgarh": "Hindi", "Goa": "Konkani", "Gujarat": "Gujarati",
-            "Haryana": "Hindi", "Himachal Pradesh": "Hindi", "Jharkhand": "Hindi",
-            "Karnataka": "Kannada", "Kerala": "Malayalam", "Madhya Pradesh": "Hindi",
-            "Maharashtra": "Marathi", "Manipur": "Manipuri", "Meghalaya": "English",
-            "Mizoram": "Mizo", "Nagaland": "English", "Odisha": "Odia", "Punjab": "Punjabi",
-            "Rajasthan": "Hindi", "Sikkim": "English", "Tamil Nadu": "Tamil",
-            "Telangana": "Telugu", "Tripura": "Bengali", "Uttar Pradesh": "Hindi",
-            "Uttarakhand": "Hindi", "West Bengal": "Bengali"
+            "Odisha": "Odia"
         };
 
         function updateLanguageOptions() {
@@ -319,24 +311,7 @@ user_register_design = """
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Haryana">Haryana</option>
-                        <option value="Jharkhand">Jharkhand</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                        <option value="Maharashtra">Maharashtra</option>
                         <option value="Odisha">Odisha</option>
-                        <option value="Punjab">Punjab</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -411,7 +386,7 @@ user_login_design = """
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD (UPDATED FOR NEW ADDRESS LOGIC)
+# 5. FULL USER DASHBOARD (UPDATED DATA FROM PDF)
 # ==========================================
 user_dashboard_design = """
 <!DOCTYPE html>
@@ -428,28 +403,36 @@ user_dashboard_design = """
 
         const locationData = {
             "Odisha": {
-                "Anugola": {}, "Balangir": {}, "Baleshwar": {}, "Baragada": {},
-                "Bhadrak": {
-                    "Banta": [], "Basudebpur Mpl": [], "Basudevpur": [], "Bhadrak": [],
-                    "Bhadrak Mpl": [], "Bhandaripokhari": [], "Chandabali": [],
-                    "Chandabali Nac": [],
-                    "Dhamanagar": [
-                        "Anandapur", "Arjunnpur", "Asurali", "Bamkura", "Bhaganpur",
-                        "Bhattasahi", "Dakpur", "Dalanga", "Dhusuri", "Dobal",
-                        "Fatepur", "Gadiali", "Garei Chudakati", "Gesindapur",
-                        "Hasanabad", "Kalyani", "Karada", "Kasimpur", "Katasani",
-                        "Khadipada", "Khaparpada", "Kothar", "Mustafapur", "Nadigan",
-                        "Padhani", "Palasahi", "Radhaballavapur", "Raipur",
-                        "Rayangdini", "Sahada", "Sahaspur"
-                    ],
-                    "Dhamanagar Nac": [], "Tihidi": []
-                },
-                "Boudh": {}, "Debagada": {}, "Dhenkanal": {}, "Gajapati": {},
-                "Ganjam": {}, "Jagatsinghpur": {}, "Jajpur": {}, "Jharsuguda": {},
-                "Kalahandi": {}, "Kandhamala": {}, "Kataka": {}, "Kendrapada": {},
-                "Kendujhar": {}, "Khordha": {}, "Koraput": {}, "Malkangiri": {},
-                "Mayurbhanj": {}, "Nabarangpur": {}, "Nayagada": {}, "Nuapada": {},
-                "Puri": {}, "Rayagada": {}, "Sambalpur": {}, "Subarnapur": {}, "Sundaragada": {}
+                "Angul": ["Banarpal", "Chhendiapada", "Athamallik", "Kisshorenagar", "Talcher", "Kaniha", "Pallahara", "Angul"],
+                "Balasore": ["Basta", "Remuna", "Jaleswar", "Bhograi", "Baliapal", "Nilagiri", "Oupada", "Sora", "Bahanaga", "Simulia", "Khaira", "Balasore"],
+                "Bargarh": ["Barpali", "Bheden", "Bhatli", "Ambabhona", "Atabira", "Padampur", "Paikmal", "Jharbhand", "Sohella", "Bijepur", "Bargarh"],
+                "Bhadrak": ["Bonth", "Chandabali", "Dhamanagar", "Tihidi", "Bhandaripokhari", "Bhadrak"],
+                "Bolangir": ["Deogam", "Gudvella", "Puintal", "Luisinga", "Agalapur", "Titilagarh", "Saintala", "Bangamunda", "Muribahal", "Turekela", "Patnagarh", "Belapada", "Khaprakhole", "Bolangir"],
+                "Boudh": ["Boudh", "Harbhanga", "Kantamal"],
+                "Cuttack": ["Cuttack Sadar", "Baranga", "Niali", "Kantapada", "Salepur", "Nischantakoili", "Mahanga", "Tangi-Choudwar", "Athagarh", "Tigiria", "Baramba", "Narasinghpur", "Banki", "Banki-Dampada", "Cuttack"],
+                "Deogarh": ["Barkote", "Reamal", "Tileibani", "Deogarh"],
+                "Dhenkanal": ["Dhenkanal (Sadar)", "Gondia", "Odapada", "Hindol", "Kamakhyanagar", "Parjang", "Kankadahad", "Bhuban", "Dhenkanal"],
+                "Gajapati": ["Paralakhemundi", "Kasinagar", "Gumma", "Mohana", "Nuagada", "R.Udayagiri", "Rayagad"],
+                "Ganjam": ["Patrapur", "Chikiti", "Rangeilunda", "Digipahandi", "Sanakhemundi", "Kukudakhandi", "Chhatrapur", "Ganjam", "Purusottampur", "Hinjilikatu", "Khallikote", "Beguniapada", "Kabisuryanagar", "Polsara", "Aska", "Sheragada", "Dharakote", "Sorada", "Bhanjanagar", "Belguntha", "Buguda", "Jagannath Prasad"],
+                "Jagatsinghpur": ["Biridi", "Naugaon", "Balikuda", "Raghunathpur", "Tirtol", "Ersama", "Kujang", "Jagatsinghpur"],
+                "Jajpur": ["Dasarathpur", "Binjharpur", "Dangadi", "Sukinda", "Korei", "Dharmasala", "Barchana", "Rasulpur", "Bari", "Jajpur"],
+                "Jharsuguda": ["Jharsuguda", "Lakhanpur", "Kirmira", "Kolabira", "Laikera"],
+                "Kalahandi": ["Bhawanipatna", "Kesinga", "Thuamul Rampur", "Narla", "Madanpur Rampur", "Karlamunda", "Lanjigarh", "Dharmagarh", "Golamunda", "Jaipatna", "Junagarh", "Kalampur", "Koksara"],
+                "Kendrapara": ["Derabish", "Marsaghai", "Mahakalapara", "Garadpur", "Pattamundai", "Rajkanika", "Rajnagar", "Aul", "Kendrapara"],
+                "Keonjhar": ["Saharapada", "Telkoi", "Ghatgaon", "Bansalpal", "Patna", "Harichandanpur", "Anandapur", "Ghasipura", "Hatadihi", "Champua", "Jhumpura", "Joda", "Keonjhar"],
+                "Khordha": ["Begunia", "Bolagad", "Bhubaneswar", "Jatni", "Balipatna", "Balianta", "Tangi", "Chilika", "Banapur", "Khurda"],
+                "Koraput": ["Dasamanthpur", "Semiliguda", "Nandapur", "Pottangi", "Lamptaput", "Narayanapatna", "Bandhugaon", "Laxmipur", "Kundra", "Boriguma", "Kotpad", "Boipariguda", "Koraput", "jeypore"],
+                "Malkanagiri": ["Korukonda", "Mathili", "Motu", "Kallimela", "Podia", "Givindpali", "Khairaput", "Kudmulgumma", "Malkanagiri"],
+                "Mayurbhanj": ["Samakhunta", "Suliapdad", "Betanati", "Badasahi", "Rasagobindapur", "Bangiriposhi", "Kuliana", "Sarasakana", "Udala", "Khunta", "Kaptipada", "Karanjia", "Thakurmunda", "Sukuruli", "Joshipur", "Raruan", "Jamda", "Bijatala", "Bisoi", "Gopabandhunagar", "Tiring", "Kusumi", "Moroda", "Bahalda", "Baripada", "Rairangapur"],
+                "Nawarangpur": ["Nandahandi", "Tentulikhuinti", "Papadahandi", "Kosagumuda", "Dabugaon", "Umerkote", "Jharigaon", "Chandahandi", "Raighar", "Nawarangpur"],
+                "Nayagarh": ["Odagaon", "Bhapur", "Khandapada", "Ranpur", "Daspalla", "Nuagaon", "Gania", "Nayagarh"],
+                "Nuapada": ["Boden", "Khariar", "Komna", "Sinapali", "Nuapada"],
+                "Phulbani": ["Phiringia", "Khajuripada", "K.Nuagaon", "Daringbadi", "Balliguda", "Kotgarh", "Tumudibandh", "G.Udayagiri", "Raikia", "Tikabali", "Chakapad", "Phulbani"],
+                "Puri": ["Brahmagiri", "Krushnaprasad", "Satyabadi", "Kanas", "Delang", "Pipili", "Nimapada", "Gop", "Kakatpur", "Astarang", "Puri Sadar"],
+                "Rayagada": ["Kolanara", "Kaalyansinghpur", "Kaashipur", "Padmapur", "Ramanaguda", "Gunupur", "Gudari", "Muniguda", "Bisam-Cuttack", "Chandrapur", "Rayagada"],
+                "Sambalpur": ["Dhankauda", "Maneswar", "Jujumora", "Rengali", "Rairakhola", "Nakatideul", "Kuchinda", "Bamara", "Jamanakira", "Pairakhal", "Sambalpur"],
+                "Sonepur": ["Tarva", "Birmaharajpur", "Ulunda", "Dunguripalli", "Binka", "Sonepur"],
+                "Sundargarh": ["Balisankara", "Subdega", "Lephripara", "Hemgiri", "Rajgangpur", "Panposh", "Tanngarapalli", "Kutra", "Lathikata", "Kuanrmunda", "Badagaon", "Nuagaon", "Bisra", "Gurundia", "Koira", "Lahunipada", "Banaigarh", "Sundargarh (Sadar)"]
             }
         };
 
@@ -458,14 +441,12 @@ user_dashboard_design = """
         };
 
         function populateDistricts() {
-            let state = "Odisha"; // Defaulting to Odisha as requested
+            let state = "Odisha"; 
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
-            let gpSelect = document.getElementById("panchayat");
             
             distSelect.innerHTML = "<option value=''>Select</option>";
             blockSelect.innerHTML = "<option value=''>Select</option>";
-            gpSelect.innerHTML = "<option value=''>Select</option>";
 
             if(state && locationData[state]) {
                 for(let dist in locationData[state]) {
@@ -478,30 +459,13 @@ user_dashboard_design = """
             let state = "Odisha";
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
-            let gpSelect = document.getElementById("panchayat");
             
             blockSelect.innerHTML = "<option value=''>Select</option>";
-            gpSelect.innerHTML = "<option value=''>Select</option>";
 
             if(state && dist && locationData[state][dist]) {
-                for(let block in locationData[state][dist]) {
-                    blockSelect.innerHTML += `<option value='${block}'>${block}</option>`;
-                }
-            }
-        }
-
-        function populateGPs() {
-            let state = "Odisha";
-            let dist = document.getElementById("district").value;
-            let block = document.getElementById("block").value;
-            let gpSelect = document.getElementById("panchayat");
-            
-            gpSelect.innerHTML = "<option value=''>Select</option>";
-
-            if(state && dist && block && locationData[state][dist][block]) {
-                let gps = locationData[state][dist][block];
-                for(let i=0; i<gps.length; i++) {
-                    gpSelect.innerHTML += `<option value='${gps[i]}'>${gps[i]}</option>`;
+                let blocks = locationData[state][dist];
+                for(let i=0; i<blocks.length; i++) {
+                    blockSelect.innerHTML += `<option value='${blocks[i]}'>${blocks[i]}</option>`;
                 }
             }
         }
@@ -773,7 +737,6 @@ user_dashboard_design = """
                     </div>
                 </div>
 
-                <!-- ADDRESS INFORMATION SECTION UPDATE -->
                 <div class="mt-6 border-t pt-4">
                     <h3 class="font-bold text-lg mb-4 text-gray-800">Address Information</h3>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
@@ -785,15 +748,13 @@ user_dashboard_design = """
                         </div>
                         <div>
                             <label class="block text-sm text-gray-500 mb-1">Block/ULB</label>
-                            <select id="block" onchange="populateGPs()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                            <select id="block" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
                                 <option value="">Select</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-500 mb-1">GP/Ward</label>
-                            <select id="panchayat" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                                <option value="">Select</option>
-                            </select>
+                            <label class="block text-sm text-gray-500 mb-1">GP/Ward <span class="text-red-500 text-xs">*</span></label>
+                            <input type="text" id="panchayat" placeholder="Enter GP/Ward" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
                         </div>
                         <div>
                             <label class="block text-sm text-gray-500 mb-1">Village <span class="text-red-500 text-xs">*</span></label>
@@ -1285,7 +1246,6 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
