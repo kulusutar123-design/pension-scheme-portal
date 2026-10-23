@@ -566,7 +566,6 @@ user_dashboard_design = """
         window.onload = function() {
             populateDistricts();
             
-            // LOCKING NAME, MOBILE & EMAIL FROM REGISTRATION
             let savedFullName = localStorage.getItem('user_full_name');
             let savedMobile = localStorage.getItem('user_mobile');
             let savedEmail = localStorage.getItem('user_email');
@@ -1780,13 +1779,13 @@ async def user_login_page():
     return user_login_design
 
 @app.get("/user/dashboard", response_class=HTMLResponse)
-async def user_dashboard_page():
-    return user_dashboard_page
+async def user_dashboard_route():
+    return user_dashboard_design
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_page():
     return admin_login_design
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard_page():
+async def admin_dashboard_route():
     return admin_design
