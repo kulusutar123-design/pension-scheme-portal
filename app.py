@@ -289,7 +289,34 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Odisha": "Odia"
+            "Odisha": "Odia",
+            "Andhra Pradesh": "Telugu",
+            "Arunachal Pradesh": "English",
+            "Assam": "Assamese",
+            "Bihar": "Hindi",
+            "Chhattisgarh": "Hindi",
+            "Goa": "Konkani",
+            "Gujarat": "Gujarati",
+            "Haryana": "Hindi",
+            "Himachal Pradesh": "Hindi",
+            "Jharkhand": "Hindi",
+            "Karnataka": "Kannada",
+            "Kerala": "Malayalam",
+            "Madhya Pradesh": "Hindi",
+            "Maharashtra": "Marathi",
+            "Manipur": "Manipuri",
+            "Meghalaya": "English",
+            "Mizoram": "Mizo",
+            "Nagaland": "English",
+            "Punjab": "Punjabi",
+            "Rajasthan": "Hindi",
+            "Sikkim": "English",
+            "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu",
+            "Tripura": "Bengali",
+            "Uttar Pradesh": "Hindi",
+            "Uttarakhand": "Hindi",
+            "West Bengal": "Bengali"
         };
 
         function updateLanguageOptions() {
@@ -327,20 +354,67 @@ user_register_design = """
                 document.getElementById('otpSuccess').classList.add('hidden');
             }
         }
+
+        function handleUserRegistration(event) {
+            event.preventDefault();
+            let pwd = document.getElementById('reg_pass').value;
+            let conf_pwd = document.getElementById('reg_conf_pass').value;
+            let fullName = document.getElementById('reg_full_name').value;
+            
+            if (pwd !== conf_pwd) {
+                alert('Password and Confirm Password do not match!');
+                return;
+            }
+            
+            let appNo = 'APP-2026101';
+            localStorage.setItem('user_app_no', appNo);
+            localStorage.setItem('user_password', pwd);
+            localStorage.setItem('user_full_name', fullName);
+            
+            alert('Registration Successful! Your Application No is: ' + appNo + '. Please Login.');
+            window.location.href = '/user/login';
+        }
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     <div class="w-full max-w-xl bg-white p-8 rounded-2xl shadow-xl border-t-4 border-green-600 mt-10">
         <h2 id="dynamic_heading" class="text-2xl font-bold text-center text-gray-800 mb-6">User Registration (ନୂଆ ଆବେଦନକାରୀ)</h2>
-        <form action="/user/login" method="GET" class="space-y-4">
+        <form onsubmit="handleUserRegistration(event)" class="space-y-4">
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
                         <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -351,7 +425,7 @@ user_register_design = """
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">Full Name</label>
-                    <input type="text" class="w-full px-4 py-2 border rounded-lg" required>
+                    <input type="text" id="reg_full_name" class="w-full px-4 py-2 border rounded-lg" required>
                 </div>
             </div>
 
@@ -370,10 +444,10 @@ user_register_design = """
                 <p id="otpError" class="hidden text-red-600 text-xs font-bold mt-1"><i class="fa-solid fa-xmark-circle"></i> Invalid OTP</p>
             </div>
             <div class="flex gap-4">
-                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Set Password</label><input type="password" class="w-full px-4 py-2 border rounded-lg" required></div>
-                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Confirm Password</label><input type="password" class="w-full px-4 py-2 border rounded-lg" required></div>
+                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Set Password</label><input type="password" id="reg_pass" class="w-full px-4 py-2 border rounded-lg" required></div>
+                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Confirm Password</label><input type="password" id="reg_conf_pass" class="w-full px-4 py-2 border rounded-lg" required></div>
             </div>
-            <button type="submit" id="submitBtn" disabled class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition" onclick="alert('Registration Successful! Your Application No is: APP-2026101.')">
+            <button type="submit" id="submitBtn" disabled class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition">
                 Register & Generate App No
             </button>
         </form>
@@ -393,19 +467,40 @@ user_login_design = """
     <title>User / Beneficiary Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        function handleUserLogin(event) {
+            event.preventDefault();
+            let appNo = document.getElementById('login_app_no').value.trim().toUpperCase();
+            let pass = document.getElementById('login_pass').value;
+            
+            let savedAppNo = localStorage.getItem('user_app_no');
+            let savedPass = localStorage.getItem('user_password');
+            
+            if (!savedPass || !savedAppNo) {
+                savedAppNo = 'APP-2026101';
+                savedPass = '12345';
+            }
+            
+            if (appNo === savedAppNo && pass === savedPass) {
+                window.location.href = '/user/dashboard';
+            } else {
+                alert('Access Denied: Invalid Application Number or Password!');
+            }
+        }
+    </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Beneficiary Login (ଲଗଇନ୍)</h2>
-        <form action="/user/dashboard" method="GET" class="space-y-4">
+        <form onsubmit="handleUserLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700">Application Number</label>
-                <input type="text" placeholder="APP-XXXXXX" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
+                <input type="text" id="login_app_no" placeholder="APP-XXXXXX" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-gray-700">Password</label>
-                <input type="password" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
+                <input type="password" id="login_pass" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
             </div>
             <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700">Login</button>
         </form>
@@ -467,6 +562,26 @@ user_dashboard_design = """
 
         window.onload = function() {
             populateDistricts();
+            
+            let savedFullName = localStorage.getItem('user_full_name');
+            if(savedFullName) {
+                let nameField = document.getElementById('full_name');
+                nameField.value = savedFullName;
+                nameField.setAttribute('readonly', 'readonly');
+                nameField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
+            }
+            
+            let isApplied = localStorage.getItem('user_has_applied');
+            if(isApplied === 'true') {
+                document.getElementById('apply_form_container').innerHTML = `
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded shadow-sm text-center">
+                        <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Application Already Submitted</h3>
+                        <p class="text-gray-600 mt-2">You have already submitted an application with this Aadhaar Number. Multiple applications are not allowed. Please check your status.</p>
+                        <button onclick="switchUserTab('status')" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Check Status</button>
+                    </div>
+                `;
+            }
         };
 
         function populateDistricts() {
@@ -474,12 +589,14 @@ user_dashboard_design = """
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
             
-            distSelect.innerHTML = "<option value=''>Select</option>";
-            blockSelect.innerHTML = "<option value=''>Select</option>";
+            if(distSelect && blockSelect) {
+                distSelect.innerHTML = "<option value=''>Select</option>";
+                blockSelect.innerHTML = "<option value=''>Select</option>";
 
-            if(state && locationData[state]) {
-                for(let dist in locationData[state]) {
-                    distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
+                if(state && locationData[state]) {
+                    for(let dist in locationData[state]) {
+                        distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
+                    }
                 }
             }
         }
@@ -489,12 +606,14 @@ user_dashboard_design = """
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
             
-            blockSelect.innerHTML = "<option value=''>Select</option>";
+            if(blockSelect) {
+                blockSelect.innerHTML = "<option value=''>Select</option>";
 
-            if(state && dist && locationData[state][dist]) {
-                let blocks = locationData[state][dist];
-                for(let i=0; i<blocks.length; i++) {
-                    blockSelect.innerHTML += `<option value='${blocks[i]}'>${blocks[i]}</option>`;
+                if(state && dist && locationData[state][dist]) {
+                    let blocks = locationData[state][dist];
+                    for(let i=0; i<blocks.length; i++) {
+                        blockSelect.innerHTML += `<option value='${blocks[i]}'>${blocks[i]}</option>`;
+                    }
                 }
             }
         }
@@ -537,6 +656,12 @@ user_dashboard_design = """
         function verifyAadhaar() {
             let fullName = document.getElementById('full_name').value;
             let aadhaarInput = document.getElementById('aadhaar_input').value;
+            
+            let savedAadhaar = localStorage.getItem('user_aadhaar');
+            if (savedAadhaar === aadhaarInput) {
+                alert('An application with this Aadhaar number already exists!');
+                return;
+            }
             
             if(!fullName) { alert("Please enter your Full Name at the top to fetch matching data."); return; }
             if(!aadhaarInput) { alert("Please enter Aadhaar Number."); return; }
@@ -590,7 +715,10 @@ user_dashboard_design = """
                     document.getElementById('inc_amount').value = data.amount;
                     document.getElementById('inc_relation').value = "Self";
 
-                    document.getElementById('full_name').value = data.name;
+                    let nameField = document.getElementById('full_name');
+                    if(!nameField.value) {
+                        nameField.value = data.name;
+                    }
                     document.getElementById('father_name').value = data.father;
                     document.getElementById('mother_name').value = data.mother;
                     
@@ -617,6 +745,10 @@ user_dashboard_design = """
         
         function goToPaymentStep(e) {
             e.preventDefault();
+            
+            let aadhaarInput = document.getElementById('aadhaar_input').value;
+            localStorage.setItem('user_aadhaar', aadhaarInput);
+            
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-payment-step').classList.remove('hidden');
         }
@@ -673,6 +805,8 @@ user_dashboard_design = """
                     hiddenField.setAttribute("value", params[key]);
                     form.appendChild(hiddenField);
                 }
+                
+                localStorage.setItem('user_has_applied', 'true');
 
                 document.body.appendChild(form);
                 form.submit(); 
@@ -700,259 +834,261 @@ user_dashboard_design = """
         
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
             
-            <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
-                <div class="mb-2 md:mb-0">
-                    <p class="text-sm font-semibold text-blue-800"><i class="fa-solid fa-earth-asia"></i> Registered State: <span id="display_reg_state" class="font-bold text-lg text-purple-700 border-b border-purple-300 pb-1">Odisha</span></p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <label class="text-sm font-bold text-gray-700"><i class="fa-solid fa-language text-blue-600"></i> Form Language:</label>
-                    <select id="form_language" class="border border-blue-300 p-2 rounded bg-white font-bold text-sm text-blue-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer" required>
-                        <option value="Odia">Odia</option>
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
-                    </select>
-                </div>
-            </div>
-
-            <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
-            <form onsubmit="goToPaymentStep(event)" class="space-y-6">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
-                        <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
+            <div id="apply_form_container">
+                <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
+                    <div class="mb-2 md:mb-0">
+                        <p class="text-sm font-semibold text-blue-800"><i class="fa-solid fa-earth-asia"></i> Registered State: <span id="display_reg_state" class="font-bold text-lg text-purple-700 border-b border-purple-300 pb-1">Odisha</span></p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
-                        <input type="file" class="w-full border-b border-gray-300 p-2 text-sm outline-none bg-transparent" accept="image/*" required>
-                    </div>
-                    <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
-                    <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
-                    <div>
-                        <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
-                        <select class="w-full border-b border-gray-300 p-2 outline-none bg-transparent"><option>Male</option><option>Female</option><option>Transgender</option></select>
-                    </div>
-                    <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
-                    <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border-b border-gray-300 p-2 outline-none bg-gray-50"></div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-6 border-t pt-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
-                        <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
-                            <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow">Widow (ବିଧବା)</option><option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Unmarried">Unmarried (ଅବିବାହିତା)</option><option value="Divorcee">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option><option value="Transgender">Transgender (କିନ୍ନର)</option>
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-bold text-gray-700"><i class="fa-solid fa-language text-blue-600"></i> Form Language:</label>
+                        <select id="form_language" class="border border-blue-300 p-2 rounded bg-white font-bold text-sm text-blue-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer" required>
+                            <option value="Odia">Odia</option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
                         </select>
-                        <div id="special_cert_box" class="hidden mt-4 bg-yellow-50 p-2 rounded border border-yellow-300">
-                            <label class="font-bold text-yellow-800 text-sm">Special Certificate (Widow/Disability PDF):</label>
-                            <input type="file" class="border p-1 mt-1 w-full bg-white text-sm" accept=".pdf">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="aadhaar_input" placeholder="[Aadhaar Redacted]" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required>
-                            <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white font-bold px-4 rounded hover:bg-blue-700">VALIDATE</button>
-                        </div>
-                        <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
-                            <i class="fa-solid fa-check text-green-500 text-2xl mt-1"></i>
-                            <div class="text-xs">
-                                <p class="font-semibold text-gray-800 text-sm">Aadhaar Verified Successfully.</p>
-                            </div>
-                        </div>
-                        <p id="aadhaar_status" class="text-xs mt-1 text-gray-500 mb-2">Manual Entry allowed if not linked</p>
-                        
-                        <label class="block text-sm font-semibold text-blue-600 mb-1">Upload Aadhaar PDF <i class="fa-solid fa-file-pdf"></i></label>
-                        <input type="file" class="w-full border p-1 rounded text-sm bg-gray-50" accept=".pdf" required>
                     </div>
                 </div>
 
-                <div class="mt-6 border-t pt-4">
-                    <h3 class="font-bold text-lg mb-4 text-gray-800">Address Information</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
+                <form onsubmit="goToPaymentStep(event)" class="space-y-6">
+                    
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm text-gray-500 mb-1">District</label>
-                            <select id="district" onchange="populateBlocks()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                                <option value="">Select</option>
-                            </select>
+                            <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
+                            <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-500 mb-1">Block/ULB</label>
-                            <select id="block" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                                <option value="">Select</option>
-                            </select>
+                            <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
+                            <input type="file" class="w-full border-b border-gray-300 p-2 text-sm outline-none bg-transparent" accept="image/*" required>
                         </div>
+                        <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
+                        <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
                         <div>
-                            <label class="block text-sm text-gray-500 mb-1">GP/Ward <span class="text-red-500 text-xs">*</span></label>
-                            <input type="text" id="panchayat" placeholder="Enter GP/Ward" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                            <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
+                            <select class="w-full border-b border-gray-300 p-2 outline-none bg-transparent"><option>Male</option><option>Female</option><option>Transgender</option></select>
                         </div>
-                        <div>
-                            <label class="block text-sm text-gray-500 mb-1">Village <span class="text-red-500 text-xs">*</span></label>
-                            <input type="text" placeholder="Enter Village" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-500 mb-1">Pin Code <span class="text-red-500 text-xs">*</span></label>
-                            <input type="text" placeholder="e.g. 751001" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                        </div>
+                        <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
+                        <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border-b border-gray-300 p-2 outline-none bg-gray-50"></div>
                     </div>
                     
-                    <div class="mt-6">
-                        <label class="block text-sm text-gray-500 mb-1">Address <span class="text-red-500 text-xs">*</span></label>
-                        <input type="text" id="manual_address" maxlength="200" oninput="updateAddressCharCount()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                        <p id="address_char_count" class="text-red-500 text-sm mt-1">200 characters remaining</p>
-                    </div>
-                </div>
-
-                <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
-                    <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-6 border-t pt-4">
                         <div>
-                            <select id="age_proof_type" onchange="updateAgeProof()" class="w-full border p-2 rounded bg-white" required>
-                                <option value="">Select Document...</option>
-                                <option value="PAN Card">PAN Card</option>
-                                <option value="Voter Card">Voter Card</option>
-                                <option value="Ration Card">Ration Card</option>
+                            <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
+                            <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
+                                <option value="Old Age">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow">Widow (ବିଧବା)</option><option value="Disability">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Unmarried">Unmarried (ଅବିବାହିତା)</option><option value="Divorcee">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option><option value="Transgender">Transgender (କିନ୍ନର)</option>
                             </select>
+                            <div id="special_cert_box" class="hidden mt-4 bg-yellow-50 p-2 rounded border border-yellow-300">
+                                <label class="font-bold text-yellow-800 text-sm">Special Certificate (Widow/Disability PDF):</label>
+                                <input type="file" class="border p-1 mt-1 w-full bg-white text-sm" accept=".pdf">
+                            </div>
                         </div>
                         <div>
-                            <input type="text" id="age_proof_number" class="w-full border p-2 rounded hidden bg-white font-bold" placeholder="Document Number" required>
-                        </div>
-                        <div id="age_proof_file_container" class="hidden">
-                            <input type="file" class="w-full border p-1 rounded bg-white text-sm" accept=".pdf, image/*" required>
+                            <label class="block text-sm font-semibold mb-2">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="aadhaar_input" placeholder="[Aadhaar Redacted]" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required>
+                                <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white font-bold px-4 rounded hover:bg-blue-700">VALIDATE</button>
+                            </div>
+                            <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
+                                <i class="fa-solid fa-check text-green-500 text-2xl mt-1"></i>
+                                <div class="text-xs">
+                                    <p class="font-semibold text-gray-800 text-sm">Aadhaar Verified Successfully.</p>
+                                </div>
+                            </div>
+                            <p id="aadhaar_status" class="text-xs mt-1 text-gray-500 mb-2">Manual Entry allowed if not linked</p>
+                            
+                            <label class="block text-sm font-semibold text-blue-600 mb-1">Upload Aadhaar PDF <i class="fa-solid fa-file-pdf"></i></label>
+                            <input type="file" class="w-full border p-1 rounded text-sm bg-gray-50" accept=".pdf" required>
                         </div>
                     </div>
-                </div>
 
-                <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
-                    <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700">Issuing Year <span class="text-red-500">*</span></label>
-                            <select id="income_year" class="w-full border p-2 rounded bg-white">
-                                <option>Select</option><option>2024-25</option><option>2025-26</option><option>2026-27</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700">Income Certificate No. <span class="text-red-500">*</span></label>
-                            <input type="text" id="income_cert_no" placeholder="e.g: e-INC/2020/12345" class="w-full border p-2 rounded bg-white placeholder-red-400">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700">Token No</label>
-                            <input type="text" id="income_token_no" class="w-full border p-2 rounded bg-white">
-                        </div>
-                        <div class="col-span-3 text-right">
-                            <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-6 py-2 rounded hover:bg-green-700 shadow"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fetch Data</button>
+                    <div class="mt-6 border-t pt-4">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">Address Information</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">District</label>
+                                <select id="district" onchange="populateBlocks()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Block/ULB</label>
+                                <select id="block" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">GP/Ward <span class="text-red-500 text-xs">*</span></label>
+                                <input type="text" id="panchayat" placeholder="Enter GP/Ward" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Village <span class="text-red-500 text-xs">*</span></label>
+                                <input type="text" placeholder="Enter Village" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Pin Code <span class="text-red-500 text-xs">*</span></label>
+                                <input type="text" placeholder="e.g. 751001" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                            </div>
                         </div>
                         
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
-                            <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">Applicant Father</label>
-                            <input type="text" id="inc_father" placeholder="Enter Father Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">Applicant Mother</label>
-                            <input type="text" id="inc_mother" placeholder="Enter Mother Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">Issuing District</label>
-                            <input type="text" id="inc_district" placeholder="Enter District" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-xs font-semibold text-gray-500">Issuing Authority</label>
-                            <input type="text" id="inc_authority" placeholder="Enter Authority" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">Issue Date</label>
-                            <input type="date" id="inc_date" class="w-full border border-gray-300 rounded p-2 font-bold text-gray-800 bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">Relationship</label>
-                            <select id="inc_relation" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                                <option>Select</option><option>Self</option><option>Daughter</option><option>Son</option><option>Wife</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500">Annual Income Detected</label>
-                            <input type="text" id="inc_amount" placeholder="e.g. Rs. 48,000/-" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-red-600 text-lg">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 border-t border-blue-200 pt-4">
-                        <label class="block text-sm font-semibold text-blue-700 mb-1"><i class="fa-solid fa-file-pdf"></i> Upload Income Certificate (PDF) <span class="text-red-500">*</span></label>
-                        <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf" required>
-                    </div>
-                </div>
-
-                <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
-                    
-                    <div class="bg-red-50 border border-red-200 p-4 rounded text-red-600 text-sm mb-6 space-y-2 italic shadow-sm">
-                        <p class="font-bold">Note:</p>
-                        <p>1. Kindly provide correct and active bank account number and IFSC code. Be very careful while furnishing bank-account information as for any wrong entry, Government will not be responsible for mis-credit of Scholarship amount. Applicant will be held responsible in case of diversion of public money on this ground.</p>
-                        <p>2. Please note that your Aadhaar Number will be used for crediting scholarship amount in the bank account linked/ seeded to your Aadhaar number in fast-track mode. To link/ seed your bank account with your Aadhaar, please visit you bank branch and submit a "bank consent form for receiving DBT".</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-6">
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">IFSC Code <span class="text-red-500">*</span></label>
-                            <div class="flex">
-                                <input type="text" id="ifsc_code" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent uppercase" placeholder="IFSC Code" required>
-                                <button type="button" onclick="fetchIFSC()" class="bg-blue-500 text-white px-4 py-2 text-sm font-bold shadow hover:bg-blue-600 transition whitespace-nowrap">FIND IFSC</button>
-                            </div>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-sm text-gray-500">Bank Name: <span id="bank_name_display" class="font-bold text-gray-800 text-base">--</span></p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-sm text-gray-500">Branch Name: <span id="branch_name_display" class="font-bold text-gray-800 text-base">--</span></p>
+                        <div class="mt-6">
+                            <label class="block text-sm text-gray-500 mb-1">Address <span class="text-red-500 text-xs">*</span></label>
+                            <input type="text" id="manual_address" maxlength="200" oninput="updateAddressCharCount()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
+                            <p id="address_char_count" class="text-red-500 text-sm mt-1">200 characters remaining</p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Account Holder Name</label>
-                            <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Account Number <span class="text-red-500">*</span></label>
-                            <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Re-type Account No. <span class="text-red-500">*</span></label>
-                            <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                        <div>
-                            <p class="text-sm text-gray-600 italic mb-2">Whether account number seeded with the Aadhaar number?</p>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="yes" class="w-4 h-4 text-blue-600"> Yes</label>
-                                <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="no" class="w-4 h-4 text-blue-600" checked> No</label>
+                    <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
+                        <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <select id="age_proof_type" onchange="updateAgeProof()" class="w-full border p-2 rounded bg-white" required>
+                                    <option value="">Select Document...</option>
+                                    <option value="PAN Card">PAN Card</option>
+                                    <option value="Voter Card">Voter Card</option>
+                                    <option value="Ration Card">Ration Card</option>
+                                </select>
                             </div>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 italic mb-2">Upload front page of passbook where the Account number and IFSC code given above is clearly visible <span class="text-red-500">*</span></p>
-                            <div class="flex border rounded overflow-hidden">
-                                <div class="px-3 py-2 bg-gray-50 text-gray-500 border-r w-full truncate">Upload Passbook Front Page</div>
-                                <input type="file" class="hidden" id="passbook_upload" accept=".pdf" required>
-                                <button type="button" onclick="document.getElementById('passbook_upload').click()" class="px-4 py-2 bg-white text-blue-600 font-bold hover:bg-gray-100">Browse</button>
+                            <div>
+                                <input type="text" id="age_proof_number" class="w-full border p-2 rounded hidden bg-white font-bold" placeholder="Document Number" required>
                             </div>
-                            <div class="flex justify-between items-center mt-2">
-                                <p class="text-red-600 text-xs">Note: Upload .pdf file upto 1MB file size.</p>
-                                <i class="fa-regular fa-file-pdf text-red-500 text-xl"></i>
+                            <div id="age_proof_file_container" class="hidden">
+                                <input type="file" class="w-full border p-1 rounded bg-white text-sm" accept=".pdf, image/*" required>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mt-8 flex justify-center gap-4">
-                    <button type="button" class="bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded shadow hover:bg-gray-400">BACK</button>
-                    <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE / NEXT</button>
-                </div>
-            </form>
+                    <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
+                        <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700">Issuing Year <span class="text-red-500">*</span></label>
+                                <select id="income_year" class="w-full border p-2 rounded bg-white">
+                                    <option>Select</option><option>2024-25</option><option>2025-26</option><option>2026-27</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700">Income Certificate No. <span class="text-red-500">*</span></label>
+                                <input type="text" id="income_cert_no" placeholder="e.g: e-INC/2020/12345" class="w-full border p-2 rounded bg-white placeholder-red-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700">Token No</label>
+                                <input type="text" id="income_token_no" class="w-full border p-2 rounded bg-white">
+                            </div>
+                            <div class="col-span-3 text-right">
+                                <button type="button" onclick="verifyIncome()" class="bg-green-600 text-white font-bold px-6 py-2 rounded hover:bg-green-700 shadow"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fetch Data</button>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
+                                <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">Applicant Father</label>
+                                <input type="text" id="inc_father" placeholder="Enter Father Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">Applicant Mother</label>
+                                <input type="text" id="inc_mother" placeholder="Enter Mother Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">Issuing District</label>
+                                <input type="text" id="inc_district" placeholder="Enter District" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-gray-500">Issuing Authority</label>
+                                <input type="text" id="inc_authority" placeholder="Enter Authority" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">Issue Date</label>
+                                <input type="date" id="inc_date" class="w-full border border-gray-300 rounded p-2 font-bold text-gray-800 bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">Relationship</label>
+                                <select id="inc_relation" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
+                                    <option>Select</option><option>Self</option><option>Daughter</option><option>Son</option><option>Wife</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500">Annual Income Detected</label>
+                                <input type="text" id="inc_amount" placeholder="e.g. Rs. 48,000/-" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-red-600 text-lg">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 border-t border-blue-200 pt-4">
+                            <label class="block text-sm font-semibold text-blue-700 mb-1"><i class="fa-solid fa-file-pdf"></i> Upload Income Certificate (PDF) <span class="text-red-500">*</span></label>
+                            <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf" required>
+                        </div>
+                    </div>
+
+                    <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
+                        
+                        <div class="bg-red-50 border border-red-200 p-4 rounded text-red-600 text-sm mb-6 space-y-2 italic shadow-sm">
+                            <p class="font-bold">Note:</p>
+                            <p>1. Kindly provide correct and active bank account number and IFSC code. Be very careful while furnishing bank-account information as for any wrong entry, Government will not be responsible for mis-credit of Scholarship amount. Applicant will be held responsible in case of diversion of public money on this ground.</p>
+                            <p>2. Please note that your Aadhaar Number will be used for crediting scholarship amount in the bank account linked/ seeded to your Aadhaar number in fast-track mode. To link/ seed your bank account with your Aadhaar, please visit you bank branch and submit a "bank consent form for receiving DBT".</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-6">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">IFSC Code <span class="text-red-500">*</span></label>
+                                <div class="flex">
+                                    <input type="text" id="ifsc_code" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent uppercase" placeholder="IFSC Code" required>
+                                    <button type="button" onclick="fetchIFSC()" class="bg-blue-500 text-white px-4 py-2 text-sm font-bold shadow hover:bg-blue-600 transition whitespace-nowrap">FIND IFSC</button>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500">Bank Name: <span id="bank_name_display" class="font-bold text-gray-800 text-base">--</span></p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-500">Branch Name: <span id="branch_name_display" class="font-bold text-gray-800 text-base">--</span></p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Account Holder Name</label>
+                                <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Account Number <span class="text-red-500">*</span></label>
+                                <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Re-type Account No. <span class="text-red-500">*</span></label>
+                                <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div>
+                                <p class="text-sm text-gray-600 italic mb-2">Whether account number seeded with the Aadhaar number?</p>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="yes" class="w-4 h-4 text-blue-600"> Yes</label>
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="no" class="w-4 h-4 text-blue-600" checked> No</label>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 italic mb-2">Upload front page of passbook where the Account number and IFSC code given above is clearly visible <span class="text-red-500">*</span></p>
+                                <div class="flex border rounded overflow-hidden">
+                                    <div class="px-3 py-2 bg-gray-50 text-gray-500 border-r w-full truncate">Upload Passbook Front Page</div>
+                                    <input type="file" class="hidden" id="passbook_upload" accept=".pdf" required>
+                                    <button type="button" onclick="document.getElementById('passbook_upload').click()" class="px-4 py-2 bg-white text-blue-600 font-bold hover:bg-gray-100">Browse</button>
+                                </div>
+                                <div class="flex justify-between items-center mt-2">
+                                    <p class="text-red-600 text-xs">Note: Upload .pdf file upto 1MB file size.</p>
+                                    <i class="fa-regular fa-file-pdf text-red-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center gap-4">
+                        <button type="button" class="bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded shadow hover:bg-gray-400">BACK</button>
+                        <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE / NEXT</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
@@ -1019,7 +1155,7 @@ user_dashboard_design = """
                 <div class="grid grid-cols-2 gap-4 text-sm mb-6">
                     <div><strong>Application No:</strong> APP-2026101</div>
                     <div><strong>Transaction ID:</strong> TXN-9843729910</div>
-                    <div><strong>Applicant Name:</strong> Kulu Sutar</div>
+                    <div><strong>Applicant Name:</strong> <script>document.write(localStorage.getItem('user_full_name') || 'Kulu Sutar');</script></div>
                     <div><strong>Payment Status:</strong> SUCCESS (₹100)</div>
                     <div><strong>Scheme Category:</strong> Old Age Pension</div>
                     <div><strong>Date & Time:</strong> 23 Oct 2026</div>
@@ -1045,7 +1181,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD (UPDATED STRICT LOGIN & VIEW OPTION)
+# 6. FULL ADMIN DASHBOARD
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1063,7 +1199,6 @@ admin_login_design = """
             else { passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }
         }
 
-        // STRICT LOGIN AUTHENTICATION
         function handleAdminLogin(event) {
             event.preventDefault();
             let adminId = document.getElementById('admin_id').value;
@@ -1228,7 +1363,6 @@ admin_design = """
 
         <div class="flex-1 overflow-y-auto p-6 bg-gray-50 print:hidden">
             
-            <!-- DASHBOARD -->
             <div id="section-dashboard" class="content-section">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
@@ -1250,7 +1384,7 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- SYSTEM VERIFICATION (LEVEL 1) -->
+            <!-- SYSTEM VERIFICATION -->
             <div id="section-sysverify" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
@@ -1269,7 +1403,6 @@ admin_design = """
                                 <tr id="row_app_9082" class="hover:bg-gray-50 border-b">
                                     <td class="py-4 px-4 font-medium text-blue-600">#APP-9082</td><td class="py-4 px-4 font-bold">Rama Chandra Das</td><td class="py-4 px-4">Old Age Pension</td>
                                     <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                        <!-- ADDED VIEW BUTTON -->
                                         <button onclick="viewFullApplication('#APP-9082')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
                                         <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
                                         <button class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
@@ -1308,7 +1441,7 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- FINAL ADMIN APPROVAL (LEVEL 2) -->
+            <!-- FINAL ADMIN APPROVAL -->
             <div id="section-adminapprove" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-blue-50 flex justify-between items-center">
@@ -1325,7 +1458,6 @@ admin_design = """
                                     <td class="py-4 px-4 font-medium text-blue-600">#APP-8051</td><td class="py-4 px-4 font-bold">Harihar Nayak</td>
                                     <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
                                     <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                        <!-- ADDED VIEW BUTTON -->
                                         <button onclick="viewFullApplication('#APP-8051')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
                                         <button onclick="alert('Application Finally Approved and Added to Beneficiary List!');" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
                                         <button onclick="rejectAppWithRemark()" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
@@ -1364,10 +1496,8 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- BENEFICIARIES -->
             <div id="section-beneficiaries" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <!-- EXCEL PDF ADDED -->
                     <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
                         <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
                         <div class="space-x-2">
@@ -1395,7 +1525,6 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- RENEWALS -->
             <div id="section-renewals" class="content-section hidden">
                  <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
                     <h2 class="font-bold text-lg mb-4">Renewal Status</h2>
@@ -1414,7 +1543,6 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- PAYMENTS -->
             <div id="section-payments" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-6">
                     <div class="flex justify-between items-center mb-6">
@@ -1427,7 +1555,6 @@ admin_design = """
                 </div>
             </div>
 
-            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
