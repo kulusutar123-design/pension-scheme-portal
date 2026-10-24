@@ -263,7 +263,7 @@ status_check_design = """
                     resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                     statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
                     statText.className = "text-orange-600 font-bold";
-                    statText.innerText = "Pending Verification";
+                    statText.innerText = "Pending System Verification";
                     statRemark.classList.add('hidden');
                 }
             } else {
@@ -1364,37 +1364,12 @@ user_dashboard_design = """
                     <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹<span class="display_app_fee"></span>)</p></div>
                 </div>
                 
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <div><p class="text-gray-500 text-xs">Full Name</p><p class="print_u_name font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Father's Name</p><p id="v_father_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p id="v_mother_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Gender</p><p id="v_gender_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Date of Birth</p><p id="v_dob_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p id="v_aadhaar_user" class="font-bold tracking-widest"></p></div>
-                </div>
-
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
-                    <div><p class="text-gray-500 text-xs">District</p><p id="v_dist_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Block</p><p id="v_block_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p id="v_gp_user" class="font-bold"></p></div>
-                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p id="v_address_user" class="font-bold"></p></div>
-                </div>
-
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
-                    <div><p class="text-gray-500 text-xs">Certificate No</p><p id="v_inc_cert_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Issued By</p><p id="v_inc_auth_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Detected Income</p><p id="v_inc_amount_user" class="font-bold text-red-600"></p></div>
-                </div>
-
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">4. Bank & DBT Information</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
-                    <div><p class="text-gray-500 text-xs">Bank Name</p><p id="v_bank_user" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Account No</p><p id="v_acc_user" class="font-bold tracking-wider"></p></div>
-                    <div><p class="text-gray-500 text-xs">IFSC Code</p><p id="v_ifsc_user" class="font-bold"></p></div>
+                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
+                    <p><strong>Name:</strong> <span class="print_u_name"></span></p>
+                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar') || 'N/A');</script></p>
+                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p>
+                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p>
                 </div>
             </div>
         </div>
@@ -1427,7 +1402,10 @@ admin_login_design = """
             let adminId = document.getElementById('admin_id').value;
             let adminPass = document.getElementById('password').value;
 
-            if(adminId === 'admin@kulusutar.in' && adminPass === 'Admin@123') {
+            let savedId = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
+            let savedPass = localStorage.getItem('admin_password') || 'Admin@123';
+
+            if(adminId === savedId && adminPass === savedPass) {
                 window.location.href = '/admin';
             } else {
                 alert('Access Denied: Invalid ID or Password! Please enter correct credentials.');
@@ -1478,6 +1456,7 @@ admin_design = """
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
             
             loadAdminData();
+            loadAdminProfile();
         };
 
         function saveSettings() {
@@ -1487,6 +1466,43 @@ admin_design = """
             localStorage.setItem('payout_api_key', document.getElementById('payout_api_key').value);
             localStorage.setItem('payout_api_secret', document.getElementById('payout_api_secret').value);
             alert('Settings Saved Successfully!');
+        }
+
+        function loadAdminProfile() {
+            let n = localStorage.getItem('admin_name');
+            if(n) {
+                document.getElementById('prof_admin_name').value = n;
+                document.getElementById('welcome_admin_name').innerText = n;
+            }
+            
+            let m = localStorage.getItem('admin_mobile');
+            if(m) document.getElementById('prof_admin_mobile').value = m;
+            
+            let e = localStorage.getItem('admin_email');
+            if(e) document.getElementById('prof_admin_email').value = e;
+        }
+
+        function saveAdminProfile() {
+            let n = document.getElementById('prof_admin_name').value;
+            let m = document.getElementById('prof_admin_mobile').value;
+            let e = document.getElementById('prof_admin_email').value;
+            let p1 = document.getElementById('prof_new_pass').value;
+            let p2 = document.getElementById('prof_conf_pass').value;
+            
+            if(p1 || p2) {
+                if(p1 !== p2) {
+                    alert("Passwords do not match!");
+                    return;
+                }
+                localStorage.setItem('admin_password', p1);
+            }
+            
+            localStorage.setItem('admin_name', n);
+            localStorage.setItem('admin_mobile', m);
+            localStorage.setItem('admin_email', e);
+            
+            alert("Admin Profile Saved Successfully! Login credentials updated.");
+            location.reload();
         }
 
         function switchTab(tabId, element) {
@@ -1504,6 +1520,7 @@ admin_design = """
 
             let titles = {
                 'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
+                'sysverify': '<i class="fa-solid fa-microchip text-blue-600 mr-2"></i> System Verification (Level 1)',
                 'adminapprove': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Final Admin Approval (Level 2)',
                 'rejected': '<i class="fa-solid fa-trash-can text-red-600 mr-2"></i> Rejected Applications Box',
                 'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
@@ -1524,12 +1541,27 @@ admin_design = """
             let isApplied = localStorage.getItem('user_has_applied');
             if(isApplied === 'true') {
                 document.getElementById('count_total').innerText = '1';
-                let status = localStorage.getItem('app_status') || 'admin_pending';
+                let status = localStorage.getItem('app_status') || 'sys_pending';
                 let name = localStorage.getItem('user_full_name');
                 let appNo = localStorage.getItem('user_app_no');
                 let scheme = localStorage.getItem('u_scheme');
 
-                if(status === 'admin_pending') {
+                if(status === 'sys_pending') {
+                    document.getElementById('count_pending').innerText = '1';
+                    document.getElementById('sys_verify_tbody').innerHTML = `
+                        <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
+                            <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
+                            <td class="py-4 px-4 font-bold text-green-800">${name}</td>
+                            <td class="py-4 px-4">${scheme}</td>
+                            <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                <button onclick="viewFullApplication()" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                                <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
+                                <button onclick="approveSys()" class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
+                                <button onclick="rejectApp()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                            </td>
+                        </tr>
+                    `;
+                } else if(status === 'admin_pending') {
                     document.getElementById('count_pending').innerText = '1';
                     document.getElementById('admin_approve_tbody').innerHTML = `
                         <tr class="hover:bg-green-50 border-b transition-all">
@@ -1574,6 +1606,20 @@ admin_design = """
             }
         }
 
+        function verifySysDoc() {
+            document.getElementById('modal_sys_name').innerText = localStorage.getItem('user_full_name') || 'N/A';
+            document.getElementById('sys_verification_modal').classList.remove('hidden');
+        }
+        function closeSysModal() {
+            document.getElementById('sys_verification_modal').classList.add('hidden');
+        }
+
+        function approveSys() {
+            localStorage.setItem('app_status', 'admin_pending');
+            alert("System Verified! Sent to Final Admin Approval.");
+            location.reload();
+        }
+
         function finalApprove() {
             localStorage.setItem('app_status', 'approved');
             alert("Application Finally Approved! Added to Beneficiaries.");
@@ -1586,6 +1632,7 @@ admin_design = """
                 localStorage.setItem('app_status', 'rejected');
                 localStorage.setItem('reject_reason', reason);
                 alert("Application Rejected and Moved to Rejected Box with Remark: " + reason);
+                document.getElementById('sys_verification_modal').classList.add('hidden');
                 location.reload();
             }
         }
@@ -1644,6 +1691,7 @@ admin_design = """
                 <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
                 
                 <li class="mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Verification Steps</span></li>
+                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verification</a></li>
                 <li><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Final Admin Approval</a></li>
                 <li><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-3 text-red-400 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
 
@@ -1665,7 +1713,7 @@ admin_design = """
         <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center print:hidden">
             <h1 id="header-title" class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
             <div class="flex items-center space-x-4">
-                <span class="text-sm font-medium">Welcome, <strong>Admin</strong></span>
+                <span class="text-sm font-medium">Welcome, <strong id="welcome_admin_name">Admin</strong></span>
             </div>
         </header>
 
@@ -1688,6 +1736,55 @@ admin_design = """
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-red-500 shadow-sm flex justify-between items-center">
                         <div><p class="text-sm text-gray-500 font-semibold">Total Rejected</p><h3 id="count_rejected" class="text-2xl font-bold text-red-700">0</h3></div>
                         <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-ban"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SYSTEM VERIFICATION -->
+            <div id="section-sysverify" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
+                        <div class="space-x-2">
+                            <button onclick="alert('Downloading Data to Excel...')" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
+                            <button onclick="alert('Downloading Data to PDF...')" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">System Action</th></tr>
+                            </thead>
+                            <tbody id="sys_verify_tbody" class="text-sm">
+                                <!-- DYNAMIC DATA -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VERIFICATION MODAL -->
+                <div id="sys_verification_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                    <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 relative">
+                        <button onclick="closeSysModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+                        <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Match Analysis</h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
+                                <span class="font-semibold text-gray-600">Applicant Form Name:</span><span id="modal_sys_name" class="font-bold text-gray-800"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                <span class="font-semibold text-gray-600">Aadhaar Card Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (99%)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                <span class="font-semibold text-gray-600">Income Cert Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (100%)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
+                                <span class="font-semibold text-gray-600">Age Proof Document Check:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Verified (>55 Yrs)</span>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end gap-3">
+                            <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600">Reject Data</button>
+                            <button onclick="closeSysModal()" class="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700">All Good (Close)</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1832,18 +1929,18 @@ admin_design = """
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-user-pen"></i> Update Admin Profile</h2>
                     <form class="space-y-5">
                         <div class="grid grid-cols-2 gap-6">
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label><input type="text" value="Super Admin" class="w-full px-4 py-2 border rounded-lg"></div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Mobile No.</label><input type="text" value="9876543210" class="w-full px-4 py-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label><input type="text" id="prof_admin_name" value="Super Admin" class="w-full px-4 py-2 border rounded-lg"></div>
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Mobile No.</label><input type="text" id="prof_admin_mobile" value="9876543210" class="w-full px-4 py-2 border rounded-lg"></div>
                         </div>
-                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Email ID (Login ID)</label><input type="email" value="admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg"></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Email ID (Login ID)</label><input type="email" id="prof_admin_email" value="admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg"></div>
                         <div class="border-t pt-5 mt-5">
                             <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-lock text-gray-500"></i> Change Password</h3>
                             <div class="grid grid-cols-2 gap-6">
-                                <div><label class="block text-sm text-gray-600 mb-1">New Password</label><input type="password" placeholder="Enter new password" class="w-full px-4 py-2 border rounded-lg"></div>
-                                <div><label class="block text-sm text-gray-600 mb-1">Confirm Password</label><input type="password" placeholder="Re-enter password" class="w-full px-4 py-2 border rounded-lg"></div>
+                                <div><label class="block text-sm text-gray-600 mb-1">New Password</label><input type="password" id="prof_new_pass" placeholder="Enter new password" class="w-full px-4 py-2 border rounded-lg"></div>
+                                <div><label class="block text-sm text-gray-600 mb-1">Confirm Password</label><input type="password" id="prof_conf_pass" placeholder="Re-enter password" class="w-full px-4 py-2 border rounded-lg"></div>
                             </div>
                         </div>
-                        <div class="mt-8 flex justify-end"><button type="button" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
+                        <div class="mt-8 flex justify-end"><button type="button" onclick="saveAdminProfile()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
                     </form>
                 </div>
             </div>
