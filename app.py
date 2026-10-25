@@ -71,7 +71,7 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
 
 
 # ==========================================
-# NUA PAYMENT SUCCESS / FAILURE ROUTES
+# PAYMENT SUCCESS / FAILURE ROUTES
 # ==========================================
 @app.post("/payment_success", response_class=HTMLResponse)
 @app.get("/payment_success", response_class=HTMLResponse)
@@ -431,6 +431,12 @@ user_register_design = """
             let mobileNo = document.getElementById('reg_mobile').value;
             let emailId = document.getElementById('reg_email').value;
             
+            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
+            if (!passRegex.test(pwd)) {
+                alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
+                return;
+            }
+
             if (pwd !== conf_pwd) {
                 alert('Password and Confirm Password do not match!');
                 return;
@@ -525,10 +531,14 @@ user_register_design = """
                 <p id="otpError" class="hidden text-red-600 text-xs font-bold mt-1"><i class="fa-solid fa-xmark-circle"></i> Invalid OTP</p>
             </div>
             <div class="flex gap-4">
-                <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Set Password</label><input type="password" id="reg_pass" class="w-full px-4 py-2 border rounded-lg" required></div>
+                <div class="w-1/2">
+                    <label class="block text-sm font-semibold text-gray-700">Set Password</label>
+                    <input type="password" id="reg_pass" class="w-full px-4 py-2 border rounded-lg" required>
+                    <p class="text-[10px] text-gray-500 mt-1">1 Capital, 1 Small, 1 Num, 1 Special (@#$)</p>
+                </div>
                 <div class="w-1/2"><label class="block text-sm font-semibold text-gray-700">Confirm Password</label><input type="password" id="reg_conf_pass" class="w-full px-4 py-2 border rounded-lg" required></div>
             </div>
-            <button type="submit" id="submitBtn" disabled class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition">
+            <button type="submit" id="submitBtn" disabled class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition mt-4">
                 Register & Generate App No
             </button>
         </form>
@@ -538,7 +548,7 @@ user_register_design = """
 """
 
 # ==========================================
-# 4. USER LOGIN PAGE
+# 4. USER LOGIN PAGE (WITH CAPTCHA & FORGOT PASSWORD)
 # ==========================================
 user_login_design = """
 <!DOCTYPE html>
@@ -549,27 +559,146 @@ user_login_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
+        let currentCaptcha = "";
+        let forgotOTP = "";
+        let otpTimerInterval;
+        let timeLeft = 300; // 5 minutes
+
+        window.onload = function() {
+            generateCaptcha();
+        };
+
+        function generateCaptcha() {
+            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            currentCaptcha = "";
+            for (let i = 0; i < 6; i++) {
+                currentCaptcha += chars[Math.floor(Math.random() * chars.length)];
+            }
+            document.getElementById('captcha_display').innerText = currentCaptcha;
+        }
+
         function handleUserLogin(event) {
             event.preventDefault();
             let appNo = document.getElementById('login_app_no').value.trim().toUpperCase();
             let pass = document.getElementById('login_pass').value;
+            let captchaInput = document.getElementById('login_captcha').value;
             
-            // Check Individual User credentials
+            if (captchaInput !== currentCaptcha) {
+                alert("Invalid Captcha! Please try again.");
+                generateCaptcha();
+                return;
+            }
+
             let savedPass = localStorage.getItem('user_password_' + appNo);
             
             if (savedPass && pass === savedPass) {
-                // Set Current User Session
                 localStorage.setItem('active_app_no', appNo);
                 window.location.href = '/user/dashboard';
             } else {
                 alert('Access Denied: Invalid Application Number or Password! Or Registration Not Found.');
+                generateCaptcha();
             }
+        }
+
+        function showForgotForm() {
+            document.getElementById('login_section').classList.add('hidden');
+            document.getElementById('forgot_section').classList.remove('hidden');
+        }
+
+        function backToLogin() {
+            document.getElementById('forgot_section').classList.add('hidden');
+            document.getElementById('login_section').classList.remove('hidden');
+            clearInterval(otpTimerInterval);
+        }
+
+        function sendForgotOTP() {
+            let appNo = document.getElementById('forgot_app_no').value.trim().toUpperCase();
+            let userEmail = localStorage.getItem('user_email_' + appNo);
+
+            if (!userEmail) {
+                alert("Application Number not found in system!");
+                return;
+            }
+
+            forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('forgot_otp_display').innerText = `Demo OTP sent to ${userEmail}: ` + forgotOTP;
+            document.getElementById('forgot_otp_display').classList.remove('hidden');
+            
+            document.getElementById('step2_forgot').classList.remove('hidden');
+            
+            startOtpTimer();
+        }
+
+        function startOtpTimer() {
+            clearInterval(otpTimerInterval);
+            timeLeft = 300;
+            updateTimerDisplay();
+            document.getElementById('timer_display').classList.remove('text-red-600');
+            
+            otpTimerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    forgotOTP = ""; // Invalidate OTP
+                    document.getElementById('timer_display').innerText = "OTP Invalid/Expired!";
+                    document.getElementById('timer_display').classList.add('text-red-600');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            if(timeLeft > 0) {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                document.getElementById('timer_display').innerText = "Expires in: 0" + m + ":" + (s < 10 ? "0" : "") + s;
+            }
+        }
+
+        function verifyForgotOTP() {
+            let entered = document.getElementById('forgot_otp_input').value;
+            if(timeLeft <= 0 || !forgotOTP) {
+                alert("OTP has expired! Please click Resend OTP.");
+                return;
+            }
+            if (entered === forgotOTP && entered !== "") {
+                clearInterval(otpTimerInterval);
+                document.getElementById('timer_display').innerText = "OTP Verified successfully!";
+                document.getElementById('timer_display').classList.add('text-green-600');
+                document.getElementById('step3_forgot').classList.remove('hidden');
+            } else {
+                alert("Invalid OTP!");
+            }
+        }
+
+        function saveNewPassword(event) {
+            event.preventDefault();
+            let appNo = document.getElementById('forgot_app_no').value.trim().toUpperCase();
+            let p1 = document.getElementById('new_pass').value;
+            let p2 = document.getElementById('conf_new_pass').value;
+
+            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
+            if (!passRegex.test(p1)) {
+                alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
+                return;
+            }
+
+            if(p1 !== p2) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            localStorage.setItem('user_password_' + appNo, p1);
+            alert("Password Changed Successfully! Please Login.");
+            backToLogin();
         }
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
-    <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600">
+    
+    <!-- LOGIN SECTION -->
+    <div id="login_section" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Beneficiary Login (ଲଗଇନ୍)</h2>
         <form onsubmit="handleUserLogin(event)" class="space-y-4">
             <div>
@@ -580,9 +709,65 @@ user_login_design = """
                 <label class="block text-sm font-semibold text-gray-700">Password</label>
                 <input type="password" id="login_pass" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
             </div>
-            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700">Login</button>
+            
+            <!-- CAPTCHA -->
+            <div class="mt-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Enter Captcha</label>
+                <div class="flex gap-2 mb-2">
+                    <div id="captcha_display" class="bg-gray-200 border-2 border-gray-400 font-mono text-xl tracking-widest px-4 py-2 font-bold text-gray-700 w-1/2 text-center line-through decoration-gray-500 rounded select-none"></div>
+                    <button type="button" onclick="generateCaptcha()" class="bg-blue-100 text-blue-700 px-3 rounded hover:bg-blue-200 transition"><i class="fa-solid fa-arrows-rotate"></i></button>
+                </div>
+                <input type="text" id="login_captcha" placeholder="Enter code" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
+            </div>
+
+            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 mt-4">Login</button>
+            <div class="text-center mt-3"><a href="#" onclick="showForgotForm()" class="text-sm text-purple-600 font-bold hover:underline">Forgot Password?</a></div>
         </form>
     </div>
+
+    <!-- FORGOT PASSWORD SECTION -->
+    <div id="forgot_section" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-red-500 hidden">
+        <h2 class="text-xl font-bold text-center text-gray-800 mb-6"><i class="fa-solid fa-unlock"></i> Forgot Password</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Enter Application Number</label>
+                <div class="flex gap-2 mt-1">
+                    <input type="text" id="forgot_app_no" placeholder="APP-XXXXXX" class="w-full px-4 py-2 border rounded-lg">
+                    <button onclick="sendForgotOTP()" class="bg-blue-600 text-white px-4 rounded-lg font-bold hover:bg-blue-700">Get OTP</button>
+                </div>
+            </div>
+
+            <div id="forgot_otp_display" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
+
+            <div id="step2_forgot" class="hidden border-t pt-4 mt-4">
+                <label class="block text-sm font-semibold text-gray-700">Enter 6-digit OTP</label>
+                <div class="flex gap-2 mt-1">
+                    <input type="text" id="forgot_otp_input" class="w-full px-4 py-2 border rounded-lg">
+                    <button onclick="verifyForgotOTP()" class="bg-green-600 text-white px-4 rounded-lg font-bold hover:bg-green-700">Verify</button>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <p id="timer_display" class="text-sm font-bold text-gray-600"></p>
+                    <button onclick="sendForgotOTP()" class="text-sm text-blue-600 font-bold hover:underline">Resend OTP</button>
+                </div>
+            </div>
+
+            <form id="step3_forgot" class="hidden border-t pt-4 mt-4 space-y-4" onsubmit="saveNewPassword(event)">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">New Password</label>
+                    <input type="password" id="new_pass" class="w-full px-4 py-2 border rounded-lg" required>
+                    <p class="text-[10px] text-gray-500 mt-1">1 Capital, 1 Small, 1 Num, 1 Special (@#$)</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Confirm Password</label>
+                    <input type="password" id="conf_new_pass" class="w-full px-4 py-2 border rounded-lg" required>
+                </div>
+                <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 shadow">Save Password & Login</button>
+            </form>
+        </div>
+        <div class="text-center mt-6"><button onclick="backToLogin()" class="text-sm text-gray-500 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i> Back to Login</button></div>
+    </div>
+
 </body>
 </html>
 """
@@ -1409,9 +1594,9 @@ user_dashboard_design = """
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
                 <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
                     <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Aadhaar:</strong> <span id="print_u_aadhaar"></span></p>
-                    <p><strong>District:</strong> <span id="print_u_dist"></span></p>
-                    <p><strong>Block:</strong> <span id="print_u_block"></span></p>
+                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar') || 'N/A');</script></p>
+                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p>
+                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p>
                 </div>
             </div>
         </div>
@@ -1421,7 +1606,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD
+# 6. FULL ADMIN DASHBOARD (WITH CAPTCHA & FORGOT PW)
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1432,6 +1617,24 @@ admin_login_design = """
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
+        let currentCaptcha = "";
+        let forgotOTP = "";
+        let otpTimerInterval;
+        let timeLeft = 300; // 5 minutes
+
+        window.onload = function() {
+            generateCaptcha();
+        };
+
+        function generateCaptcha() {
+            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            currentCaptcha = "";
+            for (let i = 0; i < 6; i++) {
+                currentCaptcha += chars[Math.floor(Math.random() * chars.length)];
+            }
+            document.getElementById('captcha_display').innerText = currentCaptcha;
+        }
+
         function togglePassword() {
             var passField = document.getElementById("password");
             var eyeIcon = document.getElementById("eye-icon");
@@ -1443,6 +1646,13 @@ admin_login_design = """
             event.preventDefault();
             let adminId = document.getElementById('admin_id').value;
             let adminPass = document.getElementById('password').value;
+            let captchaInput = document.getElementById('login_captcha').value;
+            
+            if (captchaInput !== currentCaptcha) {
+                alert("Invalid Captcha! Please try again.");
+                generateCaptcha();
+                return;
+            }
 
             let savedId = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
             let savedPass = localStorage.getItem('admin_password') || 'Admin@123';
@@ -1451,17 +1661,115 @@ admin_login_design = """
                 window.location.href = '/admin';
             } else {
                 alert('Access Denied: Invalid ID or Password! Please enter correct credentials.');
+                generateCaptcha();
             }
+        }
+
+        function showForgotForm() {
+            document.getElementById('admin_login_form').classList.add('hidden');
+            document.getElementById('admin_forgot_form').classList.remove('hidden');
+        }
+
+        function backToLogin() {
+            document.getElementById('admin_forgot_form').classList.add('hidden');
+            document.getElementById('admin_login_form').classList.remove('hidden');
+            clearInterval(otpTimerInterval);
+        }
+
+        function sendForgotOTP() {
+            let email = document.getElementById('forgot_email').value;
+            let mobile = document.getElementById('forgot_mobile').value;
+            let savedEmail = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
+            let savedMobile = localStorage.getItem('admin_mobile') || '9876543210';
+
+            if (email !== savedEmail || mobile !== savedMobile) {
+                alert("Email or Mobile Number does not match Admin Records!");
+                return;
+            }
+
+            forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('forgot_otp_display').innerText = `Demo OTP sent to ${email}: ` + forgotOTP;
+            document.getElementById('forgot_otp_display').classList.remove('hidden');
+            
+            document.getElementById('step2_forgot').classList.remove('hidden');
+            
+            startOtpTimer();
+        }
+
+        function startOtpTimer() {
+            clearInterval(otpTimerInterval);
+            timeLeft = 300;
+            updateTimerDisplay();
+            document.getElementById('timer_display').classList.remove('text-red-600');
+            
+            otpTimerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    forgotOTP = ""; // Invalidate OTP
+                    document.getElementById('timer_display').innerText = "OTP Invalid/Expired!";
+                    document.getElementById('timer_display').classList.add('text-red-600');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            if(timeLeft > 0) {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                document.getElementById('timer_display').innerText = "Expires in: 0" + m + ":" + (s < 10 ? "0" : "") + s;
+            }
+        }
+
+        function verifyForgotOTP() {
+            let entered = document.getElementById('forgot_otp_input').value;
+            if(timeLeft <= 0 || !forgotOTP) {
+                alert("OTP has expired! Please click Resend OTP.");
+                return;
+            }
+            if (entered === forgotOTP && entered !== "") {
+                clearInterval(otpTimerInterval);
+                document.getElementById('timer_display').innerText = "OTP Verified successfully!";
+                document.getElementById('timer_display').classList.add('text-green-600');
+                document.getElementById('step3_forgot').classList.remove('hidden');
+            } else {
+                alert("Invalid OTP!");
+            }
+        }
+
+        function saveNewPassword(event) {
+            event.preventDefault();
+            let p1 = document.getElementById('new_pass').value;
+            let p2 = document.getElementById('conf_new_pass').value;
+
+            // Password Policy Regex
+            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
+            if (!passRegex.test(p1)) {
+                alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
+                return;
+            }
+
+            if(p1 !== p2) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            localStorage.setItem('admin_password', p1);
+            alert("Admin Password Changed Successfully! Please Login.");
+            backToLogin();
         }
     </script>
 </head>
 <body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-700">
+    
+    <!-- LOGIN FORM -->
+    <div id="admin_login_form" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-700">
         <div class="text-center mb-8">
             <i class="fa-solid fa-user-shield text-5xl text-blue-700 mb-3"></i>
             <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
         </div>
-        <form onsubmit="handleAdminLogin(event)" class="space-y-6">
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Admin ID / Email</label>
                 <div class="relative"><i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-400"></i><input type="text" id="admin_id" placeholder="Enter ID or Email" class="w-full pl-10 pr-4 py-3 border rounded-lg" required></div>
@@ -1472,9 +1780,69 @@ admin_login_design = """
                     <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-blue-500"><i id="eye-icon" class="fa-solid fa-eye"></i></button>
                 </div>
             </div>
-            <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 shadow-md">Login to Dashboard</button>
+            
+            <!-- CAPTCHA SECTION -->
+            <div class="mt-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Enter Captcha</label>
+                <div class="flex gap-2 mb-2">
+                    <div id="captcha_display" class="bg-gray-200 border-2 border-gray-400 font-mono text-xl tracking-widest px-4 py-2 font-bold text-gray-700 w-1/2 text-center line-through decoration-gray-500 rounded select-none"></div>
+                    <button type="button" onclick="generateCaptcha()" class="bg-blue-100 text-blue-700 px-3 rounded hover:bg-blue-200 transition"><i class="fa-solid fa-arrows-rotate"></i></button>
+                </div>
+                <input type="text" id="login_captcha" placeholder="Enter code" class="w-full px-4 py-2 border rounded-lg" required>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 shadow-md mt-4">Login to Dashboard</button>
+            
+            <div class="text-center mt-3"><a href="#" onclick="showForgotForm()" class="text-sm text-blue-600 font-bold hover:underline">Forgot Password?</a></div>
         </form>
         <div class="text-center mt-6"><a href="/" class="text-sm text-gray-500 hover:text-blue-700"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Home</a></div>
+    </div>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <div id="admin_forgot_form" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-red-500 hidden">
+        <h2 class="text-xl font-bold text-center text-gray-800 mb-6"><i class="fa-solid fa-unlock"></i> Admin Forgot Password</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Admin Email ID</label>
+                <input type="email" id="forgot_email" placeholder="e.g. admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Mobile Number</label>
+                <div class="flex gap-2">
+                    <input type="text" id="forgot_mobile" placeholder="Registered Mobile" class="w-full px-4 py-2 border rounded-lg">
+                    <button onclick="sendForgotOTP()" class="bg-blue-600 text-white px-4 rounded-lg font-bold hover:bg-blue-700">Get OTP</button>
+                </div>
+            </div>
+
+            <div id="forgot_otp_display" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
+
+            <div id="step2_forgot" class="hidden border-t pt-4 mt-4">
+                <label class="block text-sm font-semibold text-gray-700">Enter 6-digit OTP</label>
+                <div class="flex gap-2 mt-1">
+                    <input type="text" id="forgot_otp_input" class="w-full px-4 py-2 border rounded-lg">
+                    <button onclick="verifyForgotOTP()" class="bg-green-600 text-white px-4 rounded-lg font-bold hover:bg-green-700">Verify</button>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <p id="timer_display" class="text-sm font-bold text-gray-600"></p>
+                    <button onclick="sendForgotOTP()" class="text-sm text-blue-600 font-bold hover:underline">Resend OTP</button>
+                </div>
+            </div>
+
+            <form id="step3_forgot" class="hidden border-t pt-4 mt-4 space-y-4" onsubmit="saveNewPassword(event)">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">New Password</label>
+                    <input type="password" id="new_pass" class="w-full px-4 py-2 border rounded-lg" required>
+                    <p class="text-[10px] text-gray-500 mt-1">1 Capital, 1 Small, 1 Num, 1 Special (@#$)</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Confirm Password</label>
+                    <input type="password" id="conf_new_pass" class="w-full px-4 py-2 border rounded-lg" required>
+                </div>
+                <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 shadow">Save Password & Login</button>
+            </form>
+        </div>
+        <div class="text-center mt-6"><button onclick="backToLogin()" class="text-sm text-gray-500 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i> Back to Login</button></div>
     </div>
 </body>
 </html>
@@ -1536,6 +1904,11 @@ admin_design = """
             let p2 = document.getElementById('prof_conf_pass').value;
             
             if(p1 || p2) {
+                let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
+                if (!passRegex.test(p1)) {
+                    alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
+                    return;
+                }
                 if(p1 !== p2) {
                     alert("Passwords do not match!");
                     return;
