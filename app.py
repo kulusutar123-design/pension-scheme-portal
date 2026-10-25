@@ -69,39 +69,6 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     
     return {"hash": hash_val, "key": key}
 
-
-# ==========================================
-# NUA PAYMENT SUCCESS / FAILURE ROUTES
-# ==========================================
-@app.post("/payment_success", response_class=HTMLResponse)
-@app.get("/payment_success", response_class=HTMLResponse)
-async def payment_success_route(request: Request):
-    return HTMLResponse(content="""
-    <html>
-    <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <script>
-            alert("Payment Successful! Apananka Pension Application Fee Paith Heyejaichi.");
-            window.location.href = "/user/dashboard";
-        </script>
-    </body>
-    </html>
-    """)
-
-@app.post("/payment_failure", response_class=HTMLResponse)
-@app.get("/payment_failure", response_class=HTMLResponse)
-async def payment_failure_route(request: Request):
-    return HTMLResponse(content="""
-    <html>
-    <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <script>
-            alert("Payment Failed! Kounasi Karana Basatah Payment Asafala Hela. Puni Thare Try Karantu.");
-            window.location.href = "/user/dashboard";
-        </script>
-    </body>
-    </html>
-    """)
-
-
 # ==========================================
 # 1. HOME PAGE DESIGN
 # ==========================================
@@ -269,7 +236,7 @@ status_check_design = """
             let isApplied = localStorage.getItem('user_has_applied');
             let savedAppNo = localStorage.getItem('user_app_no');
             let appStatus = localStorage.getItem('app_status');
-            let pensionSent = localStorage.getItem('pension_sent');
+            let utrSaved = localStorage.getItem('utr_number');
 
             if (appNo === savedAppNo && isApplied === 'true') {
                 if(appStatus === 'rejected') {
@@ -287,19 +254,18 @@ status_check_design = """
                     statText.innerText = "Pending Final Admin Approval";
                     statRemark.classList.add('hidden');
                 } else if (appStatus === 'approved') {
-                    if(pensionSent === 'true') {
-                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
-                        statIcon.className = "fa-solid fa-money-bill-wave text-green-600 mr-1";
-                        statText.className = "text-green-600 font-bold";
-                        statText.innerText = "Application Approved & Pension Sent (DBT Successful)";
-                        statRemark.classList.add('hidden');
-                    } else {
-                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
-                        statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
-                        statText.className = "text-green-600 font-bold";
-                        statText.innerText = "Application Approved (Active Beneficiary)";
-                        statRemark.classList.add('hidden');
-                    }
+                    resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
+                    statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
+                    statText.className = "text-green-600 font-bold";
+                    statText.innerText = "Application Approved (Active Beneficiary)";
+                    statRemark.classList.add('hidden');
+                } else if (appStatus === 'pension_sent') {
+                    resBox.className = "mt-6 border p-4 rounded-lg bg-green-100 border-green-400";
+                    statIcon.className = "fa-solid fa-money-bill-wave text-green-700 mr-1";
+                    statText.className = "text-green-700 font-bold";
+                    statText.innerText = "Payment Success!";
+                    statRemark.innerHTML = "<strong>Bank UTR No:</strong> " + (utrSaved || "Processing...");
+                    statRemark.classList.remove('hidden');
                 } else {
                     resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                     statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
@@ -354,34 +320,7 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Odisha": "Odia",
-            "Andhra Pradesh": "Telugu",
-            "Arunachal Pradesh": "English",
-            "Assam": "Assamese",
-            "Bihar": "Hindi",
-            "Chhattisgarh": "Hindi",
-            "Goa": "Konkani",
-            "Gujarat": "Gujarati",
-            "Haryana": "Hindi",
-            "Himachal Pradesh": "Hindi",
-            "Jharkhand": "Hindi",
-            "Karnataka": "Kannada",
-            "Kerala": "Malayalam",
-            "Madhya Pradesh": "Hindi",
-            "Maharashtra": "Marathi",
-            "Manipur": "Manipuri",
-            "Meghalaya": "English",
-            "Mizoram": "Mizo",
-            "Nagaland": "English",
-            "Punjab": "Punjabi",
-            "Rajasthan": "Hindi",
-            "Sikkim": "English",
-            "Tamil Nadu": "Tamil",
-            "Telangana": "Telugu",
-            "Tripura": "Bengali",
-            "Uttar Pradesh": "Hindi",
-            "Uttarakhand": "Hindi",
-            "West Bengal": "Bengali"
+            "Odisha": "Odia"
         };
 
         function updateLanguageOptions() {
@@ -459,33 +398,6 @@ user_register_design = """
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
                         <option value="Odisha">Odisha</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Goa">Goa</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Haryana">Haryana</option>
-                        <option value="Himachal Pradesh">Himachal Pradesh</option>
-                        <option value="Jharkhand">Jharkhand</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Manipur">Manipur</option>
-                        <option value="Meghalaya">Meghalaya</option>
-                        <option value="Mizoram">Mizoram</option>
-                        <option value="Nagaland">Nagaland</option>
-                        <option value="Punjab">Punjab</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Sikkim">Sikkim</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tripura">Tripura</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Uttarakhand">Uttarakhand</option>
-                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -672,6 +584,29 @@ user_dashboard_design = """
                         <h3 class="text-xl font-bold text-gray-800">Application Already Submitted</h3>
                         <p class="text-gray-600 mt-2">You have already submitted an application with this Aadhaar Number. Multiple applications are not allowed. Please check your status.</p>
                         <button onclick="switchUserTab('status')" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Check Status</button>
+                    </div>
+                `;
+            }
+
+            // RENEWAL LOGIC UPDATE
+            let penSent = localStorage.getItem('app_status');
+            if(penSent === 'pension_sent') {
+                let rname = localStorage.getItem('user_full_name');
+                let rapp = localStorage.getItem('user_app_no');
+                document.getElementById('section-renew').innerHTML = `
+                    <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
+                    <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 border-l-4 border-green-500">
+                        <p class="text-gray-600 font-semibold mb-2">Beneficiary Found: <strong class="text-gray-800">${rname} (${rapp})</strong></p>
+                        <p class="text-sm text-gray-500 mb-4">Your current pension is active. Proceed with Renewal to continue receiving benefits.</p>
+                        <button onclick="alert('Data Verified! Proceeding to Payment Gateway...');" class="bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow"><i class="fa-solid fa-credit-card"></i> Pay Renewal Fee</button>
+                    </div>
+                `;
+            } else {
+                 document.getElementById('section-renew').innerHTML = `
+                    <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
+                    <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 text-center">
+                        <i class="fa-solid fa-folder-open text-gray-300 text-5xl mb-3"></i>
+                        <p class="text-gray-500 font-semibold">No active pension found eligible for renewal yet.</p>
                     </div>
                 `;
             }
@@ -887,38 +822,19 @@ user_dashboard_design = """
             let email = document.getElementById('app_email').value || "user@example.com"; 
             let phone = document.getElementById('app_mobile').value || "9876543210";
             
-            // USE NEW SUCCESS ROUTE
             let surl = window.location.origin + "/payment_success";
             let furl = window.location.origin + "/payment_failure";
 
-            // AUTO SYSTEM VERIFICATION LOGIC
+            // AUTO SYSTEM VERIFICATION LOGIC (REAL)
             let incAmt = document.getElementById('inc_amount').value || "";
             let authName = document.getElementById('inc_issued_to').value || "";
             
             let autoRemark = "";
-            let autoStatus = "admin_pending"; 
-            
-            if (!incAmt || !incAmt.includes("Rs.")) {
-                autoStatus = "rejected";
-                autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
-            } else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {
-                autoStatus = "rejected";
-                autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
-            } else {
-                let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
-                if (numAmt > 50000) {
-                    autoStatus = "rejected";
-                    autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
-                }
-            }
+            let autoStatus = "sys_pending"; // SET AS PENDING FOR SYSTEM TO VERIFY
             
             localStorage.setItem('user_has_applied', 'true');
             localStorage.setItem('app_status', autoStatus);
-            if(autoStatus === 'rejected') {
-                localStorage.setItem('reject_reason', autoRemark);
-            }
-            localStorage.setItem('admin_sync_ready', 'true');
-
+            
             try {
                 let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
                 let data = await response.json();
@@ -1309,79 +1225,11 @@ user_dashboard_design = """
         </div>
 
         <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
-            <div>
-                <h2 class="text-3xl font-bold mb-6 text-green-700 border-b pb-2"><i class="fa-solid fa-circle-check"></i> Application Submitted & Paid</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-green-50 border-l-4 border-green-500 p-5 rounded shadow-sm">
-                        <p class="text-gray-500 text-sm font-semibold uppercase">Application Number</p>
-                        <p class="text-2xl font-bold text-gray-800"><span class="print_u_appno"></span></p>
-                        <p class="mt-2 text-sm"><strong>Status:</strong> <span class="bg-orange-200 text-orange-800 py-1 px-2 rounded font-bold text-xs">Pending Admin Verification</span></p>
-                    </div>
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded shadow-sm">
-                        <p class="text-gray-500 text-sm font-semibold uppercase">Payment Reference (PayU)</p>
-                        <p class="text-xl font-bold text-gray-800">TXN-9843729910</p>
-                        <p class="mt-2 text-sm"><strong>Amount Paid:</strong> <span class="text-green-700 font-bold">₹<span class="display_app_fee"></span></span> (Success)</p>
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-                    <button type="button" onclick="viewUserAppModal()" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-purple-700 transition flex items-center justify-center">
-                        <i class="fa-solid fa-eye mr-2 text-xl"></i> View Full Application Details
-                    </button>
-                    <button type="button" onclick="window.print()" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition flex items-center justify-center">
-                        <i class="fa-solid fa-print mr-2 text-xl"></i> Print Application & Receipt
-                    </button>
-                </div>
-            </div>
+            <!-- Content Managed dynamically by checkAppStatus -->
         </div>
         
-        <!-- PRINT TEMPLATE (HIDDEN ON SCREEN, VISIBLE ON PRINT) -->
-        <div class="hidden print:block w-full">
-            <div class="border border-gray-300 p-2 mb-8">
-                <div class="border-2 border-gray-800 p-6 relative rounded">
-                    <div class="absolute top-6 right-6 border border-gray-400 p-1 w-20 h-28 text-center text-[10px] text-gray-500 flex items-center justify-center">Passport Photo</div>
-                    <div class="text-center border-b-2 border-gray-800 pb-4 mb-6 pr-24">
-                        <h1 class="text-xl font-extrabold uppercase tracking-wide">PRIVATE SOCIAL SECURITY PENSION SCHEME</h1>
-                        <p class="font-bold text-md mt-1">Application & Payment Receipt</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 text-xs mb-6">
-                        <div><strong>Application No:</strong> <span class="print_u_appno"></span></div>
-                        <div><strong>Transaction ID:</strong> TXN-9843729910</div>
-                        <div><strong>Applicant Name:</strong> <span class="print_u_name"></span></div>
-                        <div><strong>Payment Status:</strong> SUCCESS (₹<span class="display_app_fee"></span>)</div>
-                        <div><strong>Scheme Category:</strong> <span class="print_u_scheme"></span></div>
-                        <div><strong>Date & Time:</strong> 23 Oct 2026</div>
-                    </div>
-                    <div class="border-t border-gray-400 pt-4 text-[10px] text-justify leading-tight mb-16">
-                        <strong>Declaration:</strong> I declare that all information provided is true and my annual income is strictly below Rs. 50,000. If my income is found to exceed 50,000 or if any data is false, Admin holds the right to reject my application without prior notice. I agree to all terms and conditions.
-                    </div>
-                    <div class="flex justify-between items-end mt-12">
-                        <div class="border-t border-gray-800 pt-1 w-40 text-center font-bold text-xs">Applicant Signature</div>
-                        <div class="border-t border-gray-800 pt-1 w-40 text-center font-bold text-xs">Admin Authority (Seal)</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="border border-gray-800 p-6 rounded print:page-break-before">
-                <h2 class="text-lg font-bold border-b border-gray-800 mb-4 pb-2">Full Application Details</h2>
-                <div class="grid grid-cols-2 gap-4 text-xs">
-                    <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Father's Name:</strong> <span id="print_u_father"></span></p>
-                    <p><strong>Mother's Name:</strong> <span id="print_u_mother"></span></p>
-                    <p><strong>Aadhaar No:</strong> <span id="print_u_aadhaar"></span></p>
-                    <p><strong>State:</strong> Odisha</p>
-                    <p><strong>District:</strong> <span id="print_u_dist"></span></p>
-                    <p><strong>Block:</strong> <span id="print_u_block"></span></p>
-                    <p><strong>GP / Ward:</strong> <span id="print_u_gp"></span></p>
-                    <div class="col-span-2"><p><strong>Full Address:</strong> <span id="print_u_address"></span></p></div>
-                </div>
-            </div>
-        </div>
-
         <div id="section-renew" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
-            <h2 class="text-2xl font-bold mb-4 text-orange-600">3-Month Renewal</h2>
-            <button onclick="alert('Data Fetched! Proceeding to Payment...');" class="bg-orange-600 text-white px-6 py-2 rounded font-bold">Renew Pension</button>
+            <!-- Dynamic Renewal HTML -->
         </div>
     </main>
 
@@ -1580,15 +1428,21 @@ admin_design = """
             document.getElementById('count_pending').innerText = '0';
             document.getElementById('count_approved').innerText = '0';
             document.getElementById('count_rejected').innerText = '0';
+            document.getElementById('total_wallet_val').innerText = '0';
 
             let isApplied = localStorage.getItem('user_has_applied');
             if(isApplied === 'true') {
                 document.getElementById('count_total').innerText = '1';
-                let status = localStorage.getItem('app_status') || 'admin_pending';
+                
+                let amt = localStorage.getItem('paid_amount') || '100';
+                document.getElementById('total_wallet_val').innerText = amt;
+                
+                let status = localStorage.getItem('app_status') || 'sys_pending';
                 let name = localStorage.getItem('user_full_name');
                 let appNo = localStorage.getItem('user_app_no');
                 let scheme = localStorage.getItem('u_scheme');
-                let accNo = localStorage.getItem('u_acc');
+                let bankName = localStorage.getItem('u_bank') || 'N/A';
+                let accNo = localStorage.getItem('u_acc') || 'N/A';
 
                 if(status === 'sys_pending') {
                     document.getElementById('count_pending').innerText = '1';
@@ -1599,8 +1453,7 @@ admin_design = """
                             <td class="py-4 px-4">${scheme}</td>
                             <td class="py-4 px-4 flex justify-center space-x-2 items-center">
                                 <button onclick="viewFullApplication()" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
-                                <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-magnifying-glass"></i> Sys Auto Check</button>
-                                <button onclick="approveSys()" class="bg-green-600 text-white px-3 py-1 rounded shadow hover:bg-green-700 text-xs font-bold"><i class="fa-solid fa-check"></i> Approve</button>
+                                <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Auto Verify & Send to Admin</button>
                                 <button onclick="rejectApp()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
                             </td>
                         </tr>
@@ -1619,14 +1472,26 @@ admin_design = """
                             </td>
                         </tr>
                     `;
-                } else if(status === 'approved') {
+                } else if(status === 'approved' || status === 'pension_sent') {
                     document.getElementById('count_approved').innerText = '1';
                     let sentFlag = localStorage.getItem('pension_sent');
                     let btnHtml = "";
                     if(sentFlag === 'true') {
-                        btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Pension Sent</button>`;
+                        btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Paid</button>`;
+                        
+                        // Populate Payment Tab
+                        let utr = localStorage.getItem('utr_number') || 'N/A';
+                        document.getElementById('payments_tbody').innerHTML = `
+                            <tr class="bg-gray-50 border-b">
+                                <td class="py-4 px-4 font-bold text-blue-600">#${appNo}</td>
+                                <td class="py-4 px-4 font-bold">${name}</td>
+                                <td class="py-4 px-4 font-semibold text-gray-700">${bankName} (A/C: ${accNo})</td>
+                                <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded font-bold">Success</span></td>
+                                <td class="py-4 px-4 font-mono font-bold text-gray-800">${utr}</td>
+                            </tr>
+                        `;
                     } else {
-                        btnHtml = `<button onclick="sendPensionDBT('${appNo}', '${name}', '1000', '${accNo}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-bill-transfer"></i> Send Pension (DBT)</button>`;
+                        btnHtml = `<button onclick="markManualPaid('${appNo}', '${name}', '${accNo}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-check-dollar"></i> Pay Pension (Manual)</button>`;
                     }
 
                     document.getElementById('beneficiaries_tbody').innerHTML = `
@@ -1660,7 +1525,13 @@ admin_design = """
         }
 
         function verifySysDoc() {
+            let authName = localStorage.getItem('u_inc_auth') || "";
+            let amount = localStorage.getItem('u_inc_amount') || "";
+            
             document.getElementById('modal_sys_name').innerText = localStorage.getItem('user_full_name') || 'N/A';
+            document.getElementById('modal_sys_inc_name').innerText = authName;
+            document.getElementById('modal_sys_inc_amt').innerText = amount;
+            
             document.getElementById('sys_verification_modal').classList.remove('hidden');
         }
         function closeSysModal() {
@@ -1669,7 +1540,7 @@ admin_design = """
 
         function approveSys() {
             localStorage.setItem('app_status', 'admin_pending');
-            alert("System Verified! Sent to Final Admin Approval.");
+            alert("System Validation Completed! Forwarded to Final Admin Approval Portal.");
             location.reload();
         }
 
@@ -1699,21 +1570,16 @@ admin_design = """
             }
         }
 
-        function sendPensionDBT(appNo, name, amount, accNo) {
-            let apiKey = localStorage.getItem('payout_api_key');
-            if(!apiKey) {
-                alert("ERROR: Payout API Key is missing! Please configure Decentro/RazorpayX keys in API & Settings first.");
-                return;
-            }
-            
-            let confirmMsg = `Connecting to Secure Payout Gateway...\\nAre you sure you want to transfer Pension of ₹${amount} to ${name} (A/C: ${accNo})?`;
-            if(confirm(confirmMsg)) {
-                setTimeout(() => {
-                    let txnId = "DBT-" + Math.floor(Math.random()*1000000000);
-                    alert(`SUCCESS! ₹${amount} Transferred via IMPS/NEFT to ${name}.\\nTransaction ID: ${txnId}`);
-                    localStorage.setItem('pension_sent', 'true');
-                    location.reload();
-                }, 1500);
+        function markManualPaid(appNo, name, accNo) {
+            let utr = prompt(`Enter Payment UTR/Transaction Number for ${name} (A/C: ${accNo}):`);
+            if(utr != null && utr.trim() !== "") {
+                localStorage.setItem('utr_number', utr);
+                localStorage.setItem('pension_sent', 'true');
+                localStorage.setItem('app_status', 'pension_sent');
+                alert(`Manual Payment Verified! UTR ${utr} saved. Customer will now see Payment Success status.`);
+                location.reload();
+            } else {
+                alert("UTR Number is required to confirm manual payment.");
             }
         }
 
@@ -1792,16 +1658,20 @@ admin_design = """
             
             <div id="section-dashboard" class="content-section">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl border border-l-4 border-purple-500 shadow-sm flex justify-between items-center md:col-span-2">
+                        <div><p class="text-sm text-gray-500 font-semibold">Total Wallet Collection (Reg. Fees)</p><h3 class="text-3xl font-bold text-purple-700">₹<span id="total_wallet_val">0</span></h3></div>
+                        <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
                         <div><p class="text-sm text-gray-500 font-semibold">Total Applications</p><h3 id="count_total" class="text-2xl font-bold text-blue-700">0</h3></div>
                         <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-file-lines"></i></div>
                     </div>
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-green-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Approved Pension (Active)</p><h3 id="count_approved" class="text-2xl font-bold text-green-700">0</h3></div>
+                        <div><p class="text-sm text-gray-500 font-semibold">Active Beneficiary</p><h3 id="count_approved" class="text-2xl font-bold text-green-700">0</h3></div>
                         <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-check-circle"></i></div>
                     </div>
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-orange-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Pending Verification</p><h3 id="count_pending" class="text-2xl font-bold text-orange-700">0</h3></div>
+                        <div><p class="text-sm text-gray-500 font-semibold">Pending Approvals</p><h3 id="count_pending" class="text-2xl font-bold text-orange-700">0</h3></div>
                         <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-hourglass-half"></i></div>
                     </div>
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-red-500 shadow-sm flex justify-between items-center">
@@ -1817,8 +1687,7 @@ admin_design = """
                     <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
                         <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
                         <div class="space-x-2">
-                            <button onclick="alert('Downloading Data to Excel...')" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
-                            <button onclick="alert('Downloading Data to PDF...')" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                            <button class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto p-4">
@@ -1837,24 +1706,27 @@ admin_design = """
                 <div id="sys_verification_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
                     <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 relative">
                         <button onclick="closeSysModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
-                        <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Match Analysis</h3>
+                        <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Automatic Verification Match</h3>
                         <div class="space-y-4 text-sm">
                             <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
                                 <span class="font-semibold text-gray-600">Applicant Form Name:</span><span id="modal_sys_name" class="font-bold text-gray-800"></span>
                             </div>
                             <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
-                                <span class="font-semibold text-gray-600">Aadhaar Card Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (99%)</span>
+                                <span class="font-semibold text-gray-600">Aadhaar Verification:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Authenticated</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
+                                <span class="font-semibold text-gray-600">Income Cert Name Found:</span><span id="modal_sys_inc_name" class="font-bold text-gray-800"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
+                                <span class="font-semibold text-gray-600">Income Cert Amount:</span><span id="modal_sys_inc_amt" class="font-bold text-gray-800"></span>
                             </div>
                             <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
-                                <span class="font-semibold text-gray-600">Income Cert Name Match:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Match (100%)</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
-                                <span class="font-semibold text-gray-600">Age Proof Document Check:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Verified (>55 Yrs)</span>
+                                <span class="font-semibold text-gray-600">Overall System Status:</span><span class="font-bold text-green-700"><i class="fa-solid fa-check-double mr-1"></i> Data Consistent. Ready for Admin.</span>
                             </div>
                         </div>
                         <div class="mt-6 flex justify-end gap-3">
                             <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600">Reject Data</button>
-                            <button onclick="closeSysModal()" class="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700">All Good (Close)</button>
+                            <button onclick="approveSys()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700">All Good (Send to Admin Portal)</button>
                         </div>
                     </div>
                 </div>
@@ -1900,13 +1772,13 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- BENEFICIARIES -->
             <div id="section-beneficiaries" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
                         <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
                         <div class="space-x-2">
-                            <button onclick="alert('Downloading User Data to Excel...')" class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
-                            <button onclick="alert('Downloading User Data to PDF...')" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                            <button class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto p-4">
@@ -1922,32 +1794,45 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- RENEWALS -->
             <div id="section-renewals" class="content-section hidden">
                  <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
-                    <h2 class="font-bold text-lg mb-4">Renewal Status</h2>
+                    <h2 class="font-bold text-lg mb-4">Renewal Status Tracker</h2>
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-gray-100 text-gray-600 text-sm">
-                            <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status / Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
+                            <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Renewal Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
                         </thead>
                         <tbody class="text-sm">
-                            <tr class="bg-red-50 hover:bg-red-100 border-b">
-                                <td class="py-4 px-4 font-medium text-red-700">#BEN-089</td><td class="py-4 px-4 font-bold text-red-700">Bimala Das</td>
-                                <td class="py-4 px-4"><span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> Overdue (3+ Months)</span></td>
-                                <td class="py-4 px-4 text-center"><button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-hand-paper"></i> Stop Pension</button></td>
+                            <tr class="bg-red-50 hover:bg-red-100 border-b hidden" id="dynamic_renewal_row">
+                                <td class="py-4 px-4 font-medium text-red-700" id="dr_appno"></td>
+                                <td class="py-4 px-4 font-bold text-red-700" id="dr_name"></td>
+                                <td class="py-4 px-4"><span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> Renewal Pending</span></td>
+                                <td class="py-4 px-4 text-center"><button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop Pension</button></td>
                             </tr>
+                            <tr id="dr_empty" class="border-b"><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries are currently pending renewal.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- PAYMENTS -->
             <div id="section-payments" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="font-bold text-lg">Monthly Payment Records</h2>
+                        <h2 class="font-bold text-lg">Monthly Payment & UTR Records</h2>
                         <div class="space-x-2">
-                            <button onclick="alert('Downloading Payments Data to Excel...')" class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
-                            <button onclick="alert('Downloading Payments Data to PDF...')" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-700"><i class="fa-solid fa-file-pdf mr-1"></i> PDF</button>
+                            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
                         </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Beneficiary Name</th><th class="py-3 px-4 border-b">Bank A/C Details</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b">Bank UTR / Txn No.</th></tr>
+                            </thead>
+                            <tbody id="payments_tbody" class="text-sm">
+                                <tr><td colspan="5" class="text-center py-6 text-gray-500 font-semibold">No payments successfully recorded yet.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
