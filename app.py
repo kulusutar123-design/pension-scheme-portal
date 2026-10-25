@@ -266,12 +266,14 @@ status_check_design = """
 
             resBox.classList.remove('hidden');
             
+            // Check Individual Data Only
             let isApplied = localStorage.getItem('user_has_applied_' + appNo);
             let appStatus = localStorage.getItem('app_status_' + appNo);
             let pensionSent = localStorage.getItem('pension_sent_' + appNo);
             let utrSaved = localStorage.getItem('utr_number_' + appNo);
+            let hasAccount = localStorage.getItem('user_password_' + appNo);
 
-            if (isApplied === 'true') {
+            if (hasAccount && isApplied === 'true') {
                 if(appStatus === 'rejected') {
                     let reason = localStorage.getItem('reject_reason_' + appNo) || "Admin rejected without remark.";
                     resBox.className = "mt-6 border p-4 rounded-lg bg-red-50 border-red-200";
@@ -654,9 +656,11 @@ user_dashboard_design = """
             
             if(savedFullName) {
                 let nameField = document.getElementById('full_name');
-                nameField.value = savedFullName;
-                nameField.setAttribute('readonly', 'readonly');
-                nameField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
+                if(nameField) {
+                    nameField.value = savedFullName;
+                    nameField.setAttribute('readonly', 'readonly');
+                    nameField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
+                }
             }
             if(savedMobile) {
                 let mobField = document.getElementById('app_mobile');
@@ -682,7 +686,10 @@ user_dashboard_design = """
                         <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-4xl mb-4"></i>
                         <h3 class="text-xl font-bold text-gray-800">Application Already Submitted</h3>
                         <p class="text-gray-600 mt-2">You have already submitted an application with this Aadhaar Number. Multiple applications are not allowed. Please check your status.</p>
-                        <button onclick="switchUserTab('status')" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Check Status</button>
+                        <div class="mt-4 flex justify-center gap-4">
+                            <button onclick="switchUserTab('status')" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 font-bold">Check Status</button>
+                            <button onclick="resetApplicationForm()" class="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-rotate-left"></i> Reset / Fill New Form</button>
+                        </div>
                     </div>
                 `;
             }
@@ -709,6 +716,15 @@ user_dashboard_design = """
                 `;
             }
         };
+
+        function resetApplicationForm() {
+            let appNo = localStorage.getItem('active_app_no');
+            if(confirm('Are you sure you want to reset and fill a new form for this ID? Previous application data will be overwritten.')) {
+                localStorage.setItem('user_has_applied_' + appNo, 'false');
+                localStorage.removeItem('app_status_' + appNo);
+                location.reload();
+            }
+        }
 
         function populateDistricts() {
             let state = "Odisha"; 
