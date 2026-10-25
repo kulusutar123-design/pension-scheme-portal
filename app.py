@@ -69,6 +69,7 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     
     return {"hash": hash_val, "key": key}
 
+
 # ==========================================
 # 1. HOME PAGE DESIGN
 # ==========================================
@@ -236,7 +237,7 @@ status_check_design = """
             let isApplied = localStorage.getItem('user_has_applied');
             let savedAppNo = localStorage.getItem('user_app_no');
             let appStatus = localStorage.getItem('app_status');
-            let utrSaved = localStorage.getItem('utr_number');
+            let pensionSent = localStorage.getItem('pension_sent');
 
             if (appNo === savedAppNo && isApplied === 'true') {
                 if(appStatus === 'rejected') {
@@ -254,18 +255,19 @@ status_check_design = """
                     statText.innerText = "Pending Final Admin Approval";
                     statRemark.classList.add('hidden');
                 } else if (appStatus === 'approved') {
-                    resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
-                    statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
-                    statText.className = "text-green-600 font-bold";
-                    statText.innerText = "Application Approved (Active Beneficiary)";
-                    statRemark.classList.add('hidden');
-                } else if (appStatus === 'pension_sent') {
-                    resBox.className = "mt-6 border p-4 rounded-lg bg-green-100 border-green-400";
-                    statIcon.className = "fa-solid fa-money-bill-wave text-green-700 mr-1";
-                    statText.className = "text-green-700 font-bold";
-                    statText.innerText = "Payment Success!";
-                    statRemark.innerHTML = "<strong>Bank UTR No:</strong> " + (utrSaved || "Processing...");
-                    statRemark.classList.remove('hidden');
+                    if(pensionSent === 'true') {
+                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
+                        statIcon.className = "fa-solid fa-money-bill-wave text-green-600 mr-1";
+                        statText.className = "text-green-600 font-bold";
+                        statText.innerText = "Application Approved & Pension Sent (DBT Successful)";
+                        statRemark.classList.add('hidden');
+                    } else {
+                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
+                        statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
+                        statText.className = "text-green-600 font-bold";
+                        statText.innerText = "Application Approved (Active Beneficiary)";
+                        statRemark.classList.add('hidden');
+                    }
                 } else {
                     resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                     statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
@@ -320,7 +322,34 @@ user_register_design = """
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {
-            "Odisha": "Odia"
+            "Odisha": "Odia",
+            "Andhra Pradesh": "Telugu",
+            "Arunachal Pradesh": "English",
+            "Assam": "Assamese",
+            "Bihar": "Hindi",
+            "Chhattisgarh": "Hindi",
+            "Goa": "Konkani",
+            "Gujarat": "Gujarati",
+            "Haryana": "Hindi",
+            "Himachal Pradesh": "Hindi",
+            "Jharkhand": "Hindi",
+            "Karnataka": "Kannada",
+            "Kerala": "Malayalam",
+            "Madhya Pradesh": "Hindi",
+            "Maharashtra": "Marathi",
+            "Manipur": "Manipuri",
+            "Meghalaya": "English",
+            "Mizoram": "Mizo",
+            "Nagaland": "English",
+            "Punjab": "Punjabi",
+            "Rajasthan": "Hindi",
+            "Sikkim": "English",
+            "Tamil Nadu": "Tamil",
+            "Telangana": "Telugu",
+            "Tripura": "Bengali",
+            "Uttar Pradesh": "Hindi",
+            "Uttarakhand": "Hindi",
+            "West Bengal": "Bengali"
         };
 
         function updateLanguageOptions() {
@@ -397,7 +426,34 @@ user_register_design = """
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
                         <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
                 <div>
@@ -790,7 +846,7 @@ user_dashboard_design = """
             localStorage.setItem('u_inc_auth', document.getElementById('inc_authority').value);
             localStorage.setItem('u_inc_amount', document.getElementById('inc_amount').value);
             localStorage.setItem('u_ifsc', document.getElementById('ifsc_code').value);
-            localStorage.setItem('u_bank', document.getElementById('bank_name_display').value);
+            localStorage.setItem('u_bank', document.getElementById('bank_name_display').value); // Dynamic Bank saved
             localStorage.setItem('u_acc', document.getElementById('acc_no').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
