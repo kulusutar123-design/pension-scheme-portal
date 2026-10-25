@@ -299,9 +299,9 @@ html_design = f"""
     </header>
 
     <!-- NUA TRANSPARENT RUNNING NOTICE BOARD -->
-    <div id="notice_container" class="hidden bg-blue-900/80 backdrop-blur-md text-white px-4 py-2 border-b-2 border-blue-500 shadow-md flex items-center">
-        <span class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-sm mr-3 uppercase tracking-wider animate-pulse whitespace-nowrap"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
-        <marquee id="notice_marquee" class="font-semibold text-sm tracking-wide"></marquee>
+    <div id="notice_container" class="hidden bg-white/30 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border-b border-white/40 text-blue-900 px-4 py-3 flex items-center w-full">
+        <span class="bg-gradient-to-r from-red-600 to-red-500 text-white text-sm font-extrabold px-4 py-1.5 rounded-full shadow-lg mr-4 uppercase tracking-widest animate-pulse whitespace-nowrap"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
+        <marquee id="notice_marquee" scrollamount="8" behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();" class="font-extrabold text-lg tracking-wide w-full flex-1"></marquee>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {{
