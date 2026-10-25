@@ -195,9 +195,47 @@ async def payment_failure_route(request: Request):
     """)
 
 # ==========================================
-# CLOUD SYNC PLACEHOLDER FOR PYTHON
+# CLOUD SYNC SCRIPT (INJECTED IN ALL HTML)
 # ==========================================
-sync_placeholder = "<!-- CLOUD_SYNC_PLACEHOLDER -->"
+cloud_sync_script = """
+    <!-- 100% WORKING CROSS-DEVICE SYNC SCRIPT -->
+    <script>
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/get_all_storage', false); 
+            xhr.send(null);
+            if (xhr.status === 200) {
+                var serverData = JSON.parse(xhr.responseText);
+                var origSet = Object.getOwnPropertyDescriptor(Storage.prototype, 'setItem').value;
+                for (var key in serverData) {
+                    origSet.call(localStorage, key, serverData[key]);
+                }
+            }
+        } catch(e) { console.error("Sync failed", e); }
+
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {
+            originalSetItem.apply(this, arguments);
+            try {
+                var saveXhr = new XMLHttpRequest();
+                saveXhr.open('POST', '/api/sync_storage', true);
+                saveXhr.setRequestHeader('Content-Type', 'application/json');
+                saveXhr.send(JSON.stringify({key: key, value: String(value)}));
+            } catch(e) {}
+        };
+        
+        const originalRemoveItem = localStorage.removeItem;
+        localStorage.removeItem = function(key) {
+            originalRemoveItem.apply(this, arguments);
+            try {
+                var delXhr = new XMLHttpRequest();
+                delXhr.open('POST', '/api/delete_storage', true);
+                delXhr.setRequestHeader('Content-Type', 'application/json');
+                delXhr.send(JSON.stringify({key: key}));
+            } catch(e) {}
+        };
+    </script>
+"""
 
 # ==========================================
 # 1. HOME PAGE DESIGN
@@ -210,7 +248,7 @@ html_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Private Social Security Pension Scheme</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -260,10 +298,10 @@ html_design = f"""
         </div>
     </header>
 
-    <!-- NUA TRANSPARENT RUNNING NOTICE BOARD (THIN & COLORFUL GLASS) -->
-    <div id="notice_container" class="hidden bg-white/10 backdrop-blur-xl shadow-sm border-b border-white/20 px-2 flex items-center w-full h-6">
-        <span class="bg-gradient-to-r from-red-600 to-pink-600 text-white text-[10px] font-bold px-2 rounded shadow mr-2 uppercase animate-pulse whitespace-nowrap leading-none"><i class="fa-solid fa-bell"></i> Notice</span>
-        <marquee id="notice_marquee" scrollamount="5" behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();" class="font-bold text-xs text-blue-900 tracking-wide w-full flex-1 pt-1"></marquee>
+    <!-- THIN TRANSPARENT GLASS NOTICE BOARD -->
+    <div id="notice_container" class="hidden bg-white/10 backdrop-blur-md shadow-sm border-b border-white/20 px-2 py-1 flex items-center w-full h-7">
+        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm mr-2 uppercase animate-pulse whitespace-nowrap flex items-center"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
+        <marquee id="notice_marquee" scrollamount="4" behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();" class="font-bold text-[12px] text-blue-900 tracking-wide w-full flex-1"></marquee>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {{
@@ -316,7 +354,7 @@ html_design = f"""
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା।"</p></div>
                 <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy."</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है।"</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल, 100%। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है।"</p></div>
             </div>
         </div>
     </section>
@@ -383,7 +421,7 @@ status_check_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Application Status</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -485,7 +523,7 @@ user_register_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New User Registration</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -747,7 +785,7 @@ user_login_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User / Beneficiary Login</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -991,7 +1029,7 @@ user_dashboard_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -1827,7 +1865,7 @@ admin_login_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Private Pension Scheme</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -2085,7 +2123,7 @@ admin_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Private Pension Scheme</title>
-    {sync_placeholder}
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -2805,66 +2843,34 @@ admin_design = f"""
 # 7. EXPLICIT ROUTES DEFINITION 
 # ==========================================
 
-def inject_sync_script(html_str):
-    db_data = json.dumps(read_db())
-    script = f"""
-    <script>
-        var serverData = {db_data};
-        for (var key in serverData) {{
-            localStorage.setItem(key, serverData[key]);
-        }}
-        
-        const originalSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {{
-            originalSetItem.apply(this, arguments);
-            fetch('/api/sync_storage', {{
-                method: 'POST',
-                headers: {{ 'Content-Type': 'application/json' }},
-                body: JSON.stringify({{key: key, value: value}})
-            }}).catch(e => {{}});
-        }};
-        
-        const originalRemoveItem = localStorage.removeItem;
-        localStorage.removeItem = function(key) {{
-            originalRemoveItem.apply(this, arguments);
-            fetch('/api/delete_storage', {{
-                method: 'POST',
-                headers: {{ 'Content-Type': 'application/json' }},
-                body: JSON.stringify({{key: key}})
-            }}).catch(e => {{}});
-        }};
-    </script>
-    """
-    return html_str.replace(sync_placeholder, script)
-
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    return inject_sync_script(html_design)
+    return html_design
 
 @app.get("/status/check", response_class=HTMLResponse)
 async def status_check_page():
-    return inject_sync_script(status_check_design)
+    return status_check_design
 
 @app.post("/status/check", response_class=HTMLResponse)
 async def status_check_page_post(request: Request):
-    return inject_sync_script(status_check_design)
+    return status_check_design
 
 @app.get("/user/register", response_class=HTMLResponse)
 async def user_register_page():
-    return inject_sync_script(user_register_design)
+    return user_register_design
 
 @app.get("/user/login", response_class=HTMLResponse)
 async def user_login_page():
-    return inject_sync_script(user_login_design)
+    return user_login_design
 
 @app.get("/user/dashboard", response_class=HTMLResponse)
 async def user_dashboard_route():
-    return inject_sync_script(user_dashboard_design)
+    return user_dashboard_design
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_page():
-    return inject_sync_script(admin_login_design)
+    return admin_login_design
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard_route():
-    return inject_sync_script(admin_design)
+    return admin_design
