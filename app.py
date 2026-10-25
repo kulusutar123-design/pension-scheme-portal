@@ -193,6 +193,21 @@ html_design = """
         </div>
     </header>
 
+    <!-- NUA TRANSPARENT RUNNING NOTICE BOARD -->
+    <div id="notice_container" class="hidden bg-blue-900/80 backdrop-blur-md text-white px-4 py-2 border-b-2 border-blue-500 shadow-md flex items-center">
+        <span class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-sm mr-3 uppercase tracking-wider animate-pulse whitespace-nowrap"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
+        <marquee id="notice_marquee" class="font-semibold text-sm tracking-wide"></marquee>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let notice = localStorage.getItem('notice_text');
+            if(notice && notice.trim() !== "") {
+                document.getElementById('notice_container').classList.remove('hidden');
+                document.getElementById('notice_marquee').innerText = notice;
+            }
+        });
+    </script>
+
     <section id="home" class="hero-bg py-16 px-4 border-b">
         <div class="container mx-auto">
             <div class="max-w-2xl bg-white/95 p-8 rounded-xl shadow-xl border-l-8 border-blue-600 backdrop-blur-sm">
@@ -312,7 +327,6 @@ status_check_design = """
 
             resBox.classList.remove('hidden');
             
-            // Check Individual Data Only
             let isApplied = localStorage.getItem('user_has_applied_' + appNo);
             let appStatus = localStorage.getItem('app_status_' + appNo);
             let pensionSent = localStorage.getItem('pension_sent_' + appNo);
@@ -433,6 +447,34 @@ user_register_design = """
             "West Bengal": "Bengali"
         };
 
+        // ADMIN DATE CONTROL LOGIC
+        window.addEventListener('DOMContentLoaded', () => {
+            let startDate = localStorage.getItem('reg_start_date');
+            let closeDate = localStorage.getItem('reg_close_date');
+            
+            let isOpen = true;
+            if(startDate && closeDate) {
+                let start = new Date(startDate).setHours(0,0,0,0);
+                let end = new Date(closeDate).setHours(23,59,59,999);
+                let now = new Date().getTime();
+                if(now < start || now > end) {
+                    isOpen = false;
+                }
+            }
+            
+            if(!isOpen) {
+                document.body.innerHTML = `
+                <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+                    <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full border-t-4 border-red-600">
+                        <i class="fa-solid fa-lock text-red-500 text-6xl mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Registration Closed</h2>
+                        <p class="text-gray-600 mb-6 font-semibold">New pension registrations are currently closed by Administration. Please check back later.</p>
+                        <a href="/" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 font-bold"><i class="fa-solid fa-home"></i> Back to Home</a>
+                    </div>
+                </div>`;
+            }
+        });
+
         function updateLanguageOptions() {
             let state = document.getElementById('state_select').value;
             let langSelect = document.getElementById('language_select');
@@ -516,15 +558,18 @@ user_register_design = """
                 return;
             }
             
+            // Generate a Unique Application Number for EACH user
             let randomNum = Math.floor(100000 + Math.random() * 900000);
             let appNo = 'APP-' + randomNum;
             
+            // Save Individual User Data with App No prefix
             localStorage.setItem('user_password_' + appNo, pwd);
             localStorage.setItem('user_full_name_' + appNo, fullName);
             localStorage.setItem('user_mobile_' + appNo, mobileNo);
             localStorage.setItem('user_email_' + appNo, emailId);
-            localStorage.setItem('user_has_applied_' + appNo, 'false'); 
+            localStorage.setItem('user_has_applied_' + appNo, 'false'); // Status
             
+            // Add App No to Master List for Admin
             let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
             appList.push(appNo);
             localStorage.setItem('app_list', JSON.stringify(appList));
@@ -1693,7 +1738,7 @@ user_dashboard_design = """
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD (WITH CAPTCHA & FORGOT PW)
+# 6. FULL ADMIN DASHBOARD
 # ==========================================
 admin_login_design = """
 <!DOCTYPE html>
@@ -1810,7 +1855,7 @@ admin_login_design = """
                 updateTimerDisplay();
                 if (timeLeft <= 0) {
                     clearInterval(otpTimerInterval);
-                    forgotOTP = ""; // Invalidate OTP
+                    forgotOTP = ""; 
                     document.getElementById('timer_display').innerText = "OTP Invalid/Expired!";
                     document.getElementById('timer_display').classList.add('text-red-600');
                 }
@@ -1846,7 +1891,6 @@ admin_login_design = """
             let p1 = document.getElementById('new_pass').value;
             let p2 = document.getElementById('conf_new_pass').value;
 
-            // Password Policy Regex
             let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
             if (!passRegex.test(p1)) {
                 alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
@@ -1970,6 +2014,11 @@ admin_design = """
             if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
             
+            // LOAD NEW SETTINGS
+            if(localStorage.getItem('reg_start_date')) document.getElementById('reg_start_date').value = localStorage.getItem('reg_start_date');
+            if(localStorage.getItem('reg_close_date')) document.getElementById('reg_close_date').value = localStorage.getItem('reg_close_date');
+            if(localStorage.getItem('notice_text')) document.getElementById('notice_text').value = localStorage.getItem('notice_text');
+
             loadAdminData();
             loadAdminProfile();
         };
@@ -1982,6 +2031,12 @@ admin_design = """
             localStorage.setItem('rzp_key_secret', document.getElementById('rzp_key_secret').value);
             localStorage.setItem('payout_api_key', document.getElementById('payout_api_key').value);
             localStorage.setItem('payout_api_secret', document.getElementById('payout_api_secret').value);
+            
+            // SAVE NEW SETTINGS
+            localStorage.setItem('reg_start_date', document.getElementById('reg_start_date').value);
+            localStorage.setItem('reg_close_date', document.getElementById('reg_close_date').value);
+            localStorage.setItem('notice_text', document.getElementById('notice_text').value);
+
             alert('Settings Saved Successfully!');
         }
 
@@ -2306,7 +2361,7 @@ admin_design = """
                 <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals Tracker</a></li>
                 <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payment Records</a></li>
                 
-                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('settings', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-gears w-6 mr-2"></i> API & Settings</a></li>
+                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('settings', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-gears w-6 mr-2"></i> Portal & API Settings</a></li>
                 <li><a href="#" onclick="switchTab('profile', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-user-gear w-6 mr-2"></i> Admin Profile</a></li>
             </ul>
         </nav>
@@ -2500,11 +2555,30 @@ admin_design = """
                 </div>
             </div>
 
+            <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border p-8">
-                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> System & API Settings</h2>
+                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> Portal Settings & API Configuration</h2>
                     <form>
-                        <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
+                        
+                        <!-- REGISTRATION DATE CONTROL & NOTICE BOARD -->
+                        <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-calendar-alt text-red-600"></i> Registration Dates & Notice Board</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-50 p-4 rounded border border-red-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Start Date</label>
+                                <input type="date" id="reg_start_date" class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Close Date</label>
+                                <input type="date" id="reg_close_date" class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Home Page Running Notice (Marquee Text)</label>
+                                <textarea id="notice_text" rows="2" placeholder="Enter notice here... It will scroll on the home page." class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Fee Amount (₹)</label>
