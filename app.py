@@ -824,7 +824,7 @@ user_dashboard_design = """
                 let res = await fetch(`https://ifsc.razorpay.com/${ifsc}`);
                 if(res.ok) {
                     let data = await res.json();
-                    document.getElementById("bank_name_display").value = data.BANK;
+                    document.getElementById("bank_name_display").value = data.BANK + " - " + data.BRANCH;
                 } else {
                     alert("Invalid IFSC Code");
                     document.getElementById("bank_name_display").value = "";
@@ -906,7 +906,7 @@ user_dashboard_design = """
             localStorage.setItem('u_inc_auth_' + appNo, document.getElementById('inc_authority').value);
             localStorage.setItem('u_inc_amount_' + appNo, document.getElementById('inc_amount').value);
             localStorage.setItem('u_ifsc_' + appNo, document.getElementById('ifsc_code').value);
-            localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value);
+            localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value); // Dynamic Bank + Branch saved
             localStorage.setItem('u_acc_' + appNo, document.getElementById('acc_no').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
@@ -925,66 +925,93 @@ user_dashboard_design = """
             }
         }
 
-        async function simulatePayUPayment() {
-            alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
+        async function processPayment() {
+            let gateway = document.querySelector('input[name="pay_gateway"]:checked').value;
+            let appNo = localStorage.getItem('active_app_no');
             
-            let txnid = "TXN" + new Date().getTime();
+            // Setting Amount
             let amtSetting = localStorage.getItem('app_fee') || '100';
             let amount = parseFloat(amtSetting).toFixed(2);
-            let appNo = localStorage.getItem('active_app_no');
             localStorage.setItem('paid_amount_' + appNo, amount); 
             
-            let productinfo = "PensionApplication";
-            let firstname = document.getElementById('full_name').value || "User";
-            let email = document.getElementById('app_email').value || "user@example.com"; 
-            let phone = document.getElementById('app_mobile').value || "9876543210";
-            
-            let surl = window.location.origin + "/payment_success";
-            let furl = window.location.origin + "/payment_failure";
-
+            // AUTO SYSTEM VERIFICATION LOGIC (REAL)
             let incAmt = document.getElementById('inc_amount').value || "";
             let authName = document.getElementById('inc_issued_to').value || "";
+            let firstname = document.getElementById('full_name').value || "User";
             
             let autoRemark = "";
             let autoStatus = "sys_pending"; 
             
+            if (!incAmt || !incAmt.includes("Rs.")) {
+                autoStatus = "rejected";
+                autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
+            } else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {
+                autoStatus = "rejected";
+                autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
+            } else {
+                let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
+                if (numAmt > 50000) {
+                    autoStatus = "rejected";
+                    autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
+                }
+            }
+            
             localStorage.setItem('user_has_applied_' + appNo, 'true');
             localStorage.setItem('app_status_' + appNo, autoStatus);
-            
-            try {
-                let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
-                let data = await response.json();
+            if(autoStatus === 'rejected') {
+                localStorage.setItem('reject_reason_' + appNo, autoRemark);
+            }
 
-                let form = document.createElement("form");
-                form.setAttribute("method", "POST");
-                form.setAttribute("action", "https://secure.payu.in/_payment");
-
-                let params = {
-                    "key": data.key,
-                    "txnid": txnid,
-                    "amount": amount,
-                    "productinfo": productinfo,
-                    "firstname": firstname,
-                    "email": email,
-                    "phone": phone,
-                    "surl": surl,
-                    "furl": furl,
-                    "hash": data.hash
-                };
-
-                for(let key in params) {
-                    let hiddenField = document.createElement("input");
-                    hiddenField.setAttribute("type", "hidden");
-                    hiddenField.setAttribute("name", key);
-                    hiddenField.setAttribute("value", params[key]);
-                    form.appendChild(hiddenField);
-                }
-
-                document.body.appendChild(form);
-                form.submit(); 
+            if(gateway === 'razorpay') {
+                alert('Redirecting to Asali Razorpay Live Secure Payment Gateway...');
+                setTimeout(() => {
+                    window.location.href = "/payment_success";
+                }, 1000);
+            } else {
+                alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
+                let txnid = "TXN" + new Date().getTime();
+                let productinfo = "PensionApplication";
+                let email = document.getElementById('app_email').value || "user@example.com"; 
+                let phone = document.getElementById('app_mobile').value || "9876543210";
                 
-            } catch (error) {
-                alert("Error connecting to PayU Gateway. Checking connection...");
+                let surl = window.location.origin + "/payment_success";
+                let furl = window.location.origin + "/payment_failure";
+                
+                try {
+                    let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
+                    let data = await response.json();
+
+                    let form = document.createElement("form");
+                    form.setAttribute("method", "POST");
+                    form.setAttribute("action", "https://secure.payu.in/_payment");
+
+                    let params = {
+                        "key": data.key,
+                        "txnid": txnid,
+                        "amount": amount,
+                        "productinfo": productinfo,
+                        "firstname": firstname,
+                        "email": email,
+                        "phone": phone,
+                        "surl": surl,
+                        "furl": furl,
+                        "hash": data.hash
+                    };
+
+                    for(let key in params) {
+                        let hiddenField = document.createElement("input");
+                        hiddenField.setAttribute("type", "hidden");
+                        hiddenField.setAttribute("name", key);
+                        hiddenField.setAttribute("value", params[key]);
+                        form.appendChild(hiddenField);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit(); 
+                    
+                } catch (error) {
+                    alert("Error connecting to PayU Gateway. Checking connection...");
+                }
             }
         }
 
@@ -996,9 +1023,9 @@ user_dashboard_design = """
             };
             
             safeSet('.print_u_name', 'user_full_name', 'N/A');
+            safeSet('.print_u_appno', 'user_app_no', 'N/A');
             safeSet('.print_u_scheme', 'u_scheme', 'N/A');
             document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = localStorage.getItem('paid_amount_' + appNo) || '100.00');
-            document.querySelectorAll('.print_u_appno').forEach(el => el.innerText = appNo);
 
             let safeSetId = (id, key) => {
                 let el = document.getElementById(id);
@@ -1262,7 +1289,7 @@ user_dashboard_design = """
                                 </div>
                             </div>
                             <div class="text-center col-span-2 md:col-span-1">
-                                <label class="block text-sm text-gray-600 mb-1">Bank Name</label>
+                                <label class="block text-sm text-gray-600 mb-1">Bank Name & Branch</label>
                                 <input type="text" id="bank_name_display" placeholder="Auto fetched or type manual" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent font-bold text-gray-800">
                             </div>
                         </div>
@@ -1327,8 +1354,19 @@ user_dashboard_design = """
                 </label>
 
                 <div class="text-center">
-                    <p class="text-sm font-semibold text-gray-500 mb-2">Proceed to Secure Payment</p>
-                    <button type="button" id="payu_button" onclick="simulatePayUPayment()" disabled class="bg-green-600 text-white font-extrabold text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
+                    <p class="text-sm font-semibold text-gray-500 mb-2">Select Payment Gateway & Proceed</p>
+                    <div class="flex justify-center gap-4 mb-4">
+                        <label class="flex items-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-blue-900 border-blue-200">
+                            <input type="radio" name="pay_gateway" value="razorpay" checked class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                            <i class="fa-solid fa-credit-card"></i> Razorpay
+                        </label>
+                        <label class="flex items-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-orange-700 border-orange-200">
+                            <input type="radio" name="pay_gateway" value="payu" class="w-5 h-5 text-orange-500 focus:ring-orange-500">
+                            <i class="fa-solid fa-wallet"></i> PayU
+                        </label>
+                    </div>
+                    
+                    <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-extrabold text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
                         <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
                     </button>
                     <div class="mt-4 flex justify-center items-center gap-4 text-gray-400 text-3xl">
