@@ -71,6 +71,38 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
 
 
 # ==========================================
+# NUA PAYMENT SUCCESS / FAILURE ROUTES
+# ==========================================
+@app.post("/payment_success", response_class=HTMLResponse)
+@app.get("/payment_success", response_class=HTMLResponse)
+async def payment_success_route(request: Request):
+    return HTMLResponse(content="""
+    <html>
+    <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <script>
+            alert("Payment Successful! Apananka Pension Application Fee Paith Heyejaichi.");
+            window.location.href = "/user/dashboard";
+        </script>
+    </body>
+    </html>
+    """)
+
+@app.post("/payment_failure", response_class=HTMLResponse)
+@app.get("/payment_failure", response_class=HTMLResponse)
+async def payment_failure_route(request: Request):
+    return HTMLResponse(content="""
+    <html>
+    <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <script>
+            alert("Payment Failed! Kounasi Karana Basatah Payment Asafala Hela. Puni Thare Try Karantu.");
+            window.location.href = "/user/dashboard";
+        </script>
+    </body>
+    </html>
+    """)
+
+
+# ==========================================
 # 1. HOME PAGE DESIGN
 # ==========================================
 html_design = """
@@ -234,14 +266,14 @@ status_check_design = """
 
             resBox.classList.remove('hidden');
             
-            let isApplied = localStorage.getItem('user_has_applied');
-            let savedAppNo = localStorage.getItem('user_app_no');
-            let appStatus = localStorage.getItem('app_status');
-            let pensionSent = localStorage.getItem('pension_sent');
+            let isApplied = localStorage.getItem('user_has_applied_' + appNo);
+            let appStatus = localStorage.getItem('app_status_' + appNo);
+            let pensionSent = localStorage.getItem('pension_sent_' + appNo);
+            let utrSaved = localStorage.getItem('utr_number_' + appNo);
 
-            if (appNo === savedAppNo && isApplied === 'true') {
+            if (isApplied === 'true') {
                 if(appStatus === 'rejected') {
-                    let reason = localStorage.getItem('reject_reason') || "Admin rejected without remark.";
+                    let reason = localStorage.getItem('reject_reason_' + appNo) || "Admin rejected without remark.";
                     resBox.className = "mt-6 border p-4 rounded-lg bg-red-50 border-red-200";
                     statIcon.className = "fa-solid fa-circle-xmark text-red-600 mr-1";
                     statText.className = "text-red-600 font-bold";
@@ -254,13 +286,14 @@ status_check_design = """
                     statText.className = "text-blue-600 font-bold";
                     statText.innerText = "Pending Final Admin Approval";
                     statRemark.classList.add('hidden');
-                } else if (appStatus === 'approved') {
+                } else if (appStatus === 'approved' || appStatus === 'pension_sent') {
                     if(pensionSent === 'true') {
-                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
-                        statIcon.className = "fa-solid fa-money-bill-wave text-green-600 mr-1";
-                        statText.className = "text-green-600 font-bold";
-                        statText.innerText = "Application Approved & Pension Sent (DBT Successful)";
-                        statRemark.classList.add('hidden');
+                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-100 border-green-400";
+                        statIcon.className = "fa-solid fa-money-bill-wave text-green-700 mr-1";
+                        statText.className = "text-green-700 font-bold";
+                        statText.innerText = "Payment Success!";
+                        statRemark.innerHTML = "<strong>Bank UTR No:</strong> " + (utrSaved || "Processing...");
+                        statRemark.classList.remove('hidden');
                     } else {
                         resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
                         statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
@@ -401,14 +434,21 @@ user_register_design = """
                 return;
             }
             
+            // Generate a Unique Application Number for EACH user
             let randomNum = Math.floor(100000 + Math.random() * 900000);
             let appNo = 'APP-' + randomNum;
             
-            localStorage.setItem('user_app_no', appNo);
-            localStorage.setItem('user_password', pwd);
-            localStorage.setItem('user_full_name', fullName);
-            localStorage.setItem('user_mobile', mobileNo);
-            localStorage.setItem('user_email', emailId);
+            // Save Individual User Data with App No prefix
+            localStorage.setItem('user_password_' + appNo, pwd);
+            localStorage.setItem('user_full_name_' + appNo, fullName);
+            localStorage.setItem('user_mobile_' + appNo, mobileNo);
+            localStorage.setItem('user_email_' + appNo, emailId);
+            localStorage.setItem('user_has_applied_' + appNo, 'false'); // Status
+            
+            // Add App No to Master List for Admin
+            let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
+            appList.push(appNo);
+            localStorage.setItem('app_list', JSON.stringify(appList));
             
             alert('Registration Successful! Your Unique Application No is: ' + appNo + '. Please Login using this ID.');
             window.location.href = '/user/login';
@@ -512,18 +552,15 @@ user_login_design = """
             let appNo = document.getElementById('login_app_no').value.trim().toUpperCase();
             let pass = document.getElementById('login_pass').value;
             
-            let savedAppNo = localStorage.getItem('user_app_no');
-            let savedPass = localStorage.getItem('user_password');
+            // Check Individual User credentials
+            let savedPass = localStorage.getItem('user_password_' + appNo);
             
-            if (!savedPass || !savedAppNo) {
-                alert('No Registration Found! Please register first.');
-                return;
-            }
-            
-            if (appNo === savedAppNo && pass === savedPass) {
+            if (savedPass && pass === savedPass) {
+                // Set Current User Session
+                localStorage.setItem('active_app_no', appNo);
                 window.location.href = '/user/dashboard';
             } else {
-                alert('Access Denied: Invalid Application Number or Password!');
+                alert('Access Denied: Invalid Application Number or Password! Or Registration Not Found.');
             }
         }
     </script>
@@ -600,14 +637,20 @@ user_dashboard_design = """
         };
 
         window.onload = function() {
+            let appNo = localStorage.getItem('active_app_no');
+            if(!appNo) {
+                window.location.href = '/user/login';
+                return;
+            }
+            
             populateDistricts();
             
             let dynamicFee = localStorage.getItem('app_fee') || '100';
             document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = dynamicFee);
             
-            let savedFullName = localStorage.getItem('user_full_name');
-            let savedMobile = localStorage.getItem('user_mobile');
-            let savedEmail = localStorage.getItem('user_email');
+            let savedFullName = localStorage.getItem('user_full_name_' + appNo);
+            let savedMobile = localStorage.getItem('user_mobile_' + appNo);
+            let savedEmail = localStorage.getItem('user_email_' + appNo);
             
             if(savedFullName) {
                 let nameField = document.getElementById('full_name');
@@ -632,7 +675,7 @@ user_dashboard_design = """
                 }
             }
             
-            let isApplied = localStorage.getItem('user_has_applied');
+            let isApplied = localStorage.getItem('user_has_applied_' + appNo);
             if(isApplied === 'true') {
                 document.getElementById('apply_form_container').innerHTML = `
                     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded shadow-sm text-center">
@@ -645,14 +688,13 @@ user_dashboard_design = """
             }
 
             // RENEWAL LOGIC UPDATE
-            let penSent = localStorage.getItem('app_status');
+            let penSent = localStorage.getItem('app_status_' + appNo);
             if(penSent === 'pension_sent') {
-                let rname = localStorage.getItem('user_full_name');
-                let rapp = localStorage.getItem('user_app_no');
+                let rname = savedFullName;
                 document.getElementById('section-renew').innerHTML = `
                     <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
                     <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 border-l-4 border-green-500">
-                        <p class="text-gray-600 font-semibold mb-2">Beneficiary Found: <strong class="text-gray-800">${rname} (${rapp})</strong></p>
+                        <p class="text-gray-600 font-semibold mb-2">Beneficiary Found: <strong class="text-gray-800">${rname} (${appNo})</strong></p>
                         <p class="text-sm text-gray-500 mb-4">Your current pension is active. Proceed with Renewal to continue receiving benefits.</p>
                         <button onclick="alert('Data Verified! Proceeding to Payment Gateway...');" class="bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow"><i class="fa-solid fa-credit-card"></i> Pay Renewal Fee</button>
                     </div>
@@ -741,10 +783,11 @@ user_dashboard_design = """
         }
 
         function verifyAadhaar() {
+            let appNo = localStorage.getItem('active_app_no');
             let fullName = document.getElementById('full_name').value;
             let aadhaarInput = document.getElementById('aadhaar_input').value;
             
-            let savedAadhaar = localStorage.getItem('user_aadhaar');
+            let savedAadhaar = localStorage.getItem('user_aadhaar_' + appNo);
             if (savedAadhaar === aadhaarInput) {
                 alert('An application with this Aadhaar number already exists!');
                 return;
@@ -830,24 +873,25 @@ user_dashboard_design = """
         
         function goToPaymentStep(e) {
             e.preventDefault();
+            let appNo = localStorage.getItem('active_app_no');
             
-            localStorage.setItem('user_aadhaar', document.getElementById('aadhaar_input').value);
-            localStorage.setItem('u_father', document.getElementById('father_name').value);
-            localStorage.setItem('u_mother', document.getElementById('mother_name').value);
-            localStorage.setItem('u_scheme', document.getElementById('scheme').value);
-            localStorage.setItem('u_dist', document.getElementById('district').value);
-            localStorage.setItem('u_block', document.getElementById('block').value);
-            localStorage.setItem('u_gp', document.getElementById('panchayat').value);
-            localStorage.setItem('u_address', document.getElementById('manual_address').value);
+            localStorage.setItem('user_aadhaar_' + appNo, document.getElementById('aadhaar_input').value);
+            localStorage.setItem('u_father_' + appNo, document.getElementById('father_name').value);
+            localStorage.setItem('u_mother_' + appNo, document.getElementById('mother_name').value);
+            localStorage.setItem('u_scheme_' + appNo, document.getElementById('scheme').value);
+            localStorage.setItem('u_dist_' + appNo, document.getElementById('district').value);
+            localStorage.setItem('u_block_' + appNo, document.getElementById('block').value);
+            localStorage.setItem('u_gp_' + appNo, document.getElementById('panchayat').value);
+            localStorage.setItem('u_address_' + appNo, document.getElementById('manual_address').value);
             
-            localStorage.setItem('u_gender', document.getElementById('gender_select').value);
-            localStorage.setItem('u_dob', document.getElementById('dob').value);
-            localStorage.setItem('u_inc_cert', document.getElementById('income_cert_no').value);
-            localStorage.setItem('u_inc_auth', document.getElementById('inc_authority').value);
-            localStorage.setItem('u_inc_amount', document.getElementById('inc_amount').value);
-            localStorage.setItem('u_ifsc', document.getElementById('ifsc_code').value);
-            localStorage.setItem('u_bank', document.getElementById('bank_name_display').value); // Dynamic Bank saved
-            localStorage.setItem('u_acc', document.getElementById('acc_no').value);
+            localStorage.setItem('u_gender_' + appNo, document.getElementById('gender_select').value);
+            localStorage.setItem('u_dob_' + appNo, document.getElementById('dob').value);
+            localStorage.setItem('u_inc_cert_' + appNo, document.getElementById('income_cert_no').value);
+            localStorage.setItem('u_inc_auth_' + appNo, document.getElementById('inc_authority').value);
+            localStorage.setItem('u_inc_amount_' + appNo, document.getElementById('inc_amount').value);
+            localStorage.setItem('u_ifsc_' + appNo, document.getElementById('ifsc_code').value);
+            localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value);
+            localStorage.setItem('u_acc_' + appNo, document.getElementById('acc_no').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-payment-step').classList.remove('hidden');
@@ -871,7 +915,8 @@ user_dashboard_design = """
             let txnid = "TXN" + new Date().getTime();
             let amtSetting = localStorage.getItem('app_fee') || '100';
             let amount = parseFloat(amtSetting).toFixed(2);
-            localStorage.setItem('paid_amount', amount); 
+            let appNo = localStorage.getItem('active_app_no');
+            localStorage.setItem('paid_amount_' + appNo, amount); 
             
             let productinfo = "PensionApplication";
             let firstname = document.getElementById('full_name').value || "User";
@@ -881,15 +926,14 @@ user_dashboard_design = """
             let surl = window.location.origin + "/payment_success";
             let furl = window.location.origin + "/payment_failure";
 
-            // AUTO SYSTEM VERIFICATION LOGIC (REAL)
             let incAmt = document.getElementById('inc_amount').value || "";
             let authName = document.getElementById('inc_issued_to').value || "";
             
             let autoRemark = "";
-            let autoStatus = "sys_pending"; // SET AS PENDING FOR SYSTEM TO VERIFY
+            let autoStatus = "sys_pending"; 
             
-            localStorage.setItem('user_has_applied', 'true');
-            localStorage.setItem('app_status', autoStatus);
+            localStorage.setItem('user_has_applied_' + appNo, 'true');
+            localStorage.setItem('app_status_' + appNo, autoStatus);
             
             try {
                 let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
@@ -929,19 +973,20 @@ user_dashboard_design = """
         }
 
         function loadPrintData() {
+            let appNo = localStorage.getItem('active_app_no');
             let safeSet = (className, key, defaultVal) => {
-                let val = localStorage.getItem(key) || defaultVal;
+                let val = localStorage.getItem(key + '_' + appNo) || defaultVal;
                 document.querySelectorAll(className).forEach(el => el.innerText = val);
             };
             
             safeSet('.print_u_name', 'user_full_name', 'N/A');
-            safeSet('.print_u_appno', 'user_app_no', 'N/A');
             safeSet('.print_u_scheme', 'u_scheme', 'N/A');
-            safeSet('.display_app_fee', 'paid_amount', '100.00');
+            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = localStorage.getItem('paid_amount_' + appNo) || '100.00');
+            document.querySelectorAll('.print_u_appno').forEach(el => el.innerText = appNo);
 
             let safeSetId = (id, key) => {
                 let el = document.getElementById(id);
-                if(el) el.innerText = localStorage.getItem(key) || 'N/A';
+                if(el) el.innerText = localStorage.getItem(key + '_' + appNo) || 'N/A';
             };
             
             safeSetId('print_u_father', 'u_father');
@@ -1302,7 +1347,7 @@ user_dashboard_design = """
             <div class="flex-1 overflow-y-auto p-8">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
                     <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700"><span class="print_u_appno"></span></p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="font-bold text-base print_u_scheme"></p></div>
+                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="print_u_scheme font-bold text-base"></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹<span class="display_app_fee"></span>)</p></div>
                 </div>
@@ -1310,9 +1355,9 @@ user_dashboard_design = """
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
                 <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
                     <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar') || 'N/A');</script></p>
-                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p>
-                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p>
+                    <p><strong>Aadhaar:</strong> <span id="print_u_aadhaar"></span></p>
+                    <p><strong>District:</strong> <span id="print_u_dist"></span></p>
+                    <p><strong>Block:</strong> <span id="print_u_block"></span></p>
                 </div>
             </div>
         </div>
@@ -1480,148 +1525,166 @@ admin_design = """
         }
 
         function loadAdminData() {
-            document.getElementById('count_total').innerText = '0';
-            document.getElementById('count_pending').innerText = '0';
-            document.getElementById('count_approved').innerText = '0';
-            document.getElementById('count_rejected').innerText = '0';
-            document.getElementById('total_wallet_val').innerText = '0';
+            let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
+            let total = 0; let pending = 0; let approved = 0; let rejected = 0; let wallet = 0;
+            
+            let sysHtml = ''; let adminHtml = ''; let benHtml = ''; let rejHtml = ''; let payHtml = '';
 
-            let isApplied = localStorage.getItem('user_has_applied');
-            if(isApplied === 'true') {
-                document.getElementById('count_total').innerText = '1';
-                
-                let amt = localStorage.getItem('paid_amount') || '100';
-                document.getElementById('total_wallet_val').innerText = amt;
-                
-                let status = localStorage.getItem('app_status') || 'sys_pending';
-                let name = localStorage.getItem('user_full_name');
-                let appNo = localStorage.getItem('user_app_no');
-                let scheme = localStorage.getItem('u_scheme');
-                let bankName = localStorage.getItem('u_bank') || 'N/A';
-                let accNo = localStorage.getItem('u_acc') || 'N/A';
+            appList.forEach(appNo => {
+                let isApplied = localStorage.getItem('user_has_applied_' + appNo);
+                if(isApplied === 'true') {
+                    total++;
+                    let amt = parseFloat(localStorage.getItem('paid_amount_' + appNo) || '100');
+                    wallet += amt;
 
-                if(status === 'sys_pending') {
-                    document.getElementById('count_pending').innerText = '1';
-                    document.getElementById('sys_verify_tbody').innerHTML = `
-                        <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
-                            <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
-                            <td class="py-4 px-4 font-bold text-green-800">${name}</td>
-                            <td class="py-4 px-4">${scheme}</td>
-                            <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                <button onclick="viewFullApplication()" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
-                                <button onclick="verifySysDoc()" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Auto Verify & Send to Admin</button>
-                                <button onclick="rejectApp()" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
-                            </td>
-                        </tr>
-                    `;
-                } else if(status === 'admin_pending') {
-                    document.getElementById('count_pending').innerText = '1';
-                    document.getElementById('admin_approve_tbody').innerHTML = `
-                        <tr class="hover:bg-green-50 border-b transition-all">
-                            <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">SYS OK</span></td>
-                            <td class="py-4 px-4 font-bold text-blue-800">${name}</td>
-                            <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
-                            <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                <button onclick="viewFullApplication()" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
-                                <button onclick="finalApprove()" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
-                                <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
-                            </td>
-                        </tr>
-                    `;
-                } else if(status === 'approved' || status === 'pension_sent') {
-                    document.getElementById('count_approved').innerText = '1';
-                    let sentFlag = localStorage.getItem('pension_sent');
-                    let btnHtml = "";
-                    if(sentFlag === 'true') {
-                        btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Paid</button>`;
-                        
-                        // Populate Payment Tab
-                        let utr = localStorage.getItem('utr_number') || 'N/A';
-                        document.getElementById('payments_tbody').innerHTML = `
-                            <tr class="bg-gray-50 border-b">
-                                <td class="py-4 px-4 font-bold text-blue-600">#${appNo}</td>
-                                <td class="py-4 px-4 font-bold">${name}</td>
-                                <td class="py-4 px-4 font-semibold text-gray-700">${bankName} (A/C: ${accNo})</td>
-                                <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded font-bold">Success</span></td>
-                                <td class="py-4 px-4 font-mono font-bold text-gray-800">${utr}</td>
+                    let status = localStorage.getItem('app_status_' + appNo) || 'sys_pending';
+                    let name = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
+                    let scheme = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
+                    let bankName = localStorage.getItem('u_bank_' + appNo) || 'N/A';
+                    let accNo = localStorage.getItem('u_acc_' + appNo) || 'N/A';
+
+                    if(status === 'sys_pending') {
+                        pending++;
+                        sysHtml += `
+                            <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
+                                <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
+                                <td class="py-4 px-4 font-bold text-green-800">${name}</td>
+                                <td class="py-4 px-4">${scheme}</td>
+                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                    <button onclick="viewFullApplication('${appNo}')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                                    <button onclick="verifySysDoc('${appNo}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify & Send</button>
+                                    <button onclick="rejectApp('${appNo}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </td>
                             </tr>
                         `;
-                    } else {
-                        btnHtml = `<button onclick="markManualPaid('${appNo}', '${name}', '${accNo}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-check-dollar"></i> Pay Pension (Manual)</button>`;
-                    }
+                    } else if(status === 'admin_pending') {
+                        pending++;
+                        adminHtml += `
+                            <tr class="hover:bg-green-50 border-b transition-all">
+                                <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">SYS OK</span></td>
+                                <td class="py-4 px-4 font-bold text-blue-800">${name}</td>
+                                <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
+                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                    <button onclick="viewFullApplication('${appNo}')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
+                                    <button onclick="finalApprove('${appNo}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
+                                    <button onclick="rejectApp('${appNo}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
+                                </td>
+                            </tr>
+                        `;
+                    } else if(status === 'approved' || status === 'pension_sent') {
+                        approved++;
+                        let sentFlag = localStorage.getItem('pension_sent_' + appNo);
+                        let btnHtml = "";
+                        if(sentFlag === 'true') {
+                            btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Paid</button>`;
+                            
+                            let utr = localStorage.getItem('utr_number_' + appNo) || 'N/A';
+                            payHtml += `
+                                <tr class="bg-gray-50 border-b">
+                                    <td class="py-4 px-4 font-bold text-blue-600">#${appNo}</td>
+                                    <td class="py-4 px-4 font-bold">${name}</td>
+                                    <td class="py-4 px-4 font-semibold text-gray-700">${bankName} (A/C: ${accNo})</td>
+                                    <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded font-bold">Success</span></td>
+                                    <td class="py-4 px-4 font-mono font-bold text-gray-800">${utr}</td>
+                                </tr>
+                            `;
+                        } else {
+                            btnHtml = `
+                                <button onclick="markManualPaid('${appNo}', '${name}', '${accNo}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-check-dollar"></i> Manual Pay</button>
+                                <button onclick="sendPensionDBT('${appNo}', '${name}', '1000', '${accNo}')" class="bg-indigo-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-indigo-700 mt-1"><i class="fa-solid fa-bolt"></i> DBT Auto</button>
+                            `;
+                        }
 
-                    document.getElementById('beneficiaries_tbody').innerHTML = `
-                        <tr class="hover:bg-gray-50 border-b">
-                            <td class="py-4 px-4 font-medium text-blue-600">#${appNo}</td>
-                            <td class="py-4 px-4 font-bold">${name}</td>
-                            <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
-                            <td class="py-4 px-4 text-center space-x-2 flex items-center justify-center">
-                                ${btnHtml}
-                                <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-orange-600"><i class="fa-solid fa-pause"></i> Hold</button>
-                                <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop</button>
-                            </td>
-                        </tr>
-                    `;
-                } else if(status === 'rejected') {
-                    document.getElementById('count_rejected').innerText = '1';
-                    let reason = localStorage.getItem('reject_reason') || 'System Auto-Rejected';
-                    document.getElementById('rejected_tbody').innerHTML = `
-                        <tr id="rej_row_real" class="hover:bg-red-50 border-b">
-                            <td class="py-4 px-4 font-medium text-red-600">#${appNo}</td>
-                            <td class="py-4 px-4 font-bold text-gray-800">${name}</td>
-                            <td class="py-4 px-4 text-gray-600 font-semibold">System/Admin</td>
-                            <td class="py-4 px-4 text-gray-600 italic">${reason}</td>
-                            <td class="py-4 px-4 text-center">
-                                <button onclick="deleteRejectedRow('rej_row_real')" class="bg-gray-200 text-red-600 px-3 py-1 rounded shadow hover:bg-red-600 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete Data</button>
-                            </td>
-                        </tr>
-                    `;
+                        benHtml += `
+                            <tr class="hover:bg-gray-50 border-b">
+                                <td class="py-4 px-4 font-medium text-blue-600">#${appNo}</td>
+                                <td class="py-4 px-4 font-bold">${name}</td>
+                                <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
+                                <td class="py-4 px-4 text-center space-x-2 flex flex-col items-center justify-center gap-1">
+                                    ${btnHtml}
+                                    <div class="flex gap-2">
+                                        <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-orange-600"><i class="fa-solid fa-pause"></i> Hold</button>
+                                        <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else if(status === 'rejected') {
+                        rejected++;
+                        let reason = localStorage.getItem('reject_reason_' + appNo) || 'System Auto-Rejected';
+                        rejHtml += `
+                            <tr id="rej_row_${appNo}" class="hover:bg-red-50 border-b">
+                                <td class="py-4 px-4 font-medium text-red-600">#${appNo}</td>
+                                <td class="py-4 px-4 font-bold text-gray-800">${name}</td>
+                                <td class="py-4 px-4 text-gray-600 font-semibold">System/Admin</td>
+                                <td class="py-4 px-4 text-gray-600 italic">${reason}</td>
+                                <td class="py-4 px-4 text-center">
+                                    <button onclick="deleteRejectedRow('${appNo}')" class="bg-gray-200 text-red-600 px-3 py-1 rounded shadow hover:bg-red-600 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    }
                 }
-            }
+            });
+
+            document.getElementById('count_total').innerText = total;
+            document.getElementById('count_pending').innerText = pending;
+            document.getElementById('count_approved').innerText = approved;
+            document.getElementById('count_rejected').innerText = rejected;
+            document.getElementById('total_wallet_val').innerText = wallet;
+
+            if(sysHtml) document.getElementById('sys_verify_tbody').innerHTML = sysHtml;
+            if(adminHtml) document.getElementById('admin_approve_tbody').innerHTML = adminHtml;
+            if(benHtml) document.getElementById('beneficiaries_tbody').innerHTML = benHtml;
+            if(rejHtml) document.getElementById('rejected_tbody').innerHTML = rejHtml;
+            if(payHtml) document.getElementById('payments_tbody').innerHTML = payHtml;
         }
 
-        function verifySysDoc() {
-            let authName = localStorage.getItem('u_inc_auth') || "";
-            let amount = localStorage.getItem('u_inc_amount') || "";
+        function verifySysDoc(appNo) {
+            window.current_modal_appNo = appNo;
+            let authName = localStorage.getItem('u_inc_auth_' + appNo) || "";
+            let amount = localStorage.getItem('u_inc_amount_' + appNo) || "";
             
-            document.getElementById('modal_sys_name').innerText = localStorage.getItem('user_full_name') || 'N/A';
+            document.getElementById('modal_sys_name').innerText = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
             document.getElementById('modal_sys_inc_name').innerText = authName;
             document.getElementById('modal_sys_inc_amt').innerText = amount;
             
             document.getElementById('sys_verification_modal').classList.remove('hidden');
         }
+        
         function closeSysModal() {
             document.getElementById('sys_verification_modal').classList.add('hidden');
         }
 
-        function approveSys() {
-            localStorage.setItem('app_status', 'admin_pending');
+        function approveSys(appNo) {
+            let targetApp = appNo || window.current_modal_appNo;
+            localStorage.setItem('app_status_' + targetApp, 'admin_pending');
             alert("System Validation Completed! Forwarded to Final Admin Approval Portal.");
             location.reload();
         }
 
-        function finalApprove() {
-            localStorage.setItem('app_status', 'approved');
+        function finalApprove(appNo) {
+            localStorage.setItem('app_status_' + appNo, 'approved');
             alert("Application Finally Approved! Added to Beneficiaries.");
             location.reload();
         }
 
-        function rejectApp() {
+        function rejectApp(appNo) {
+            let targetApp = appNo || window.current_modal_appNo;
             let reason = prompt("Please enter the reason for rejection (Remark):");
             if (reason != null && reason != "") {
-                localStorage.setItem('app_status', 'rejected');
-                localStorage.setItem('reject_reason', reason);
+                localStorage.setItem('app_status_' + targetApp, 'rejected');
+                localStorage.setItem('reject_reason_' + targetApp, reason);
                 alert("Application Rejected and Moved to Rejected Box with Remark: " + reason);
                 document.getElementById('sys_verification_modal').classList.add('hidden');
                 location.reload();
             }
         }
 
-        function deleteRejectedRow(rowId) {
+        function deleteRejectedRow(appNo) {
             if(confirm("Are you sure you want to permanently delete this rejected application data?")) {
-                document.getElementById(rowId).classList.add('hidden');
-                localStorage.removeItem('user_has_applied');
-                localStorage.removeItem('app_status');
+                localStorage.removeItem('user_has_applied_' + appNo);
+                localStorage.removeItem('app_status_' + appNo);
                 location.reload();
             }
         }
@@ -1629,9 +1692,9 @@ admin_design = """
         function markManualPaid(appNo, name, accNo) {
             let utr = prompt(`Enter Payment UTR/Transaction Number for ${name} (A/C: ${accNo}):`);
             if(utr != null && utr.trim() !== "") {
-                localStorage.setItem('utr_number', utr);
-                localStorage.setItem('pension_sent', 'true');
-                localStorage.setItem('app_status', 'pension_sent');
+                localStorage.setItem('utr_number_' + appNo, utr);
+                localStorage.setItem('pension_sent_' + appNo, 'true');
+                localStorage.setItem('app_status_' + appNo, 'pension_sent');
                 alert(`Manual Payment Verified! UTR ${utr} saved. Customer will now see Payment Success status.`);
                 location.reload();
             } else {
@@ -1639,29 +1702,49 @@ admin_design = """
             }
         }
 
-        function viewFullApplication() {
-            document.getElementById('v_appno').innerText = localStorage.getItem('user_app_no') || 'N/A';
-            document.getElementById('v_scheme').innerText = localStorage.getItem('u_scheme') || 'N/A';
-            document.getElementById('v_name').innerText = localStorage.getItem('user_full_name') || 'N/A';
-            document.getElementById('v_father').innerText = localStorage.getItem('u_father') || 'N/A';
-            document.getElementById('v_mother').innerText = localStorage.getItem('u_mother') || 'N/A';
-            document.getElementById('v_aadhaar').innerText = localStorage.getItem('user_aadhaar') || 'N/A';
-            document.getElementById('v_dist').innerText = localStorage.getItem('u_dist') || 'N/A';
-            document.getElementById('v_block').innerText = localStorage.getItem('u_block') || 'N/A';
-            document.getElementById('v_gp').innerText = localStorage.getItem('u_gp') || 'N/A';
-            document.getElementById('v_address').innerText = localStorage.getItem('u_address') || 'N/A';
+        function sendPensionDBT(appNo, name, amount, accNo) {
+            let apiKey = localStorage.getItem('payout_api_key');
+            if(!apiKey) {
+                alert("ERROR: Payout API Key is missing! Please configure Decentro/RazorpayX keys in API & Settings first.");
+                return;
+            }
             
-            document.getElementById('v_dob').innerText = localStorage.getItem('u_dob') || 'N/A';
-            document.getElementById('v_gender').innerText = localStorage.getItem('u_gender') || 'N/A';
-            document.getElementById('v_inc_cert').innerText = localStorage.getItem('u_inc_cert') || 'N/A';
-            document.getElementById('v_inc_auth').innerText = localStorage.getItem('u_inc_auth') || 'N/A';
-            document.getElementById('v_inc_amount').innerText = localStorage.getItem('u_inc_amount') || 'N/A';
+            let confirmMsg = `Connecting to Secure Payout Gateway...\\nAre you sure you want to transfer Pension of ₹${amount} to ${name} (A/C: ${accNo})?`;
+            if(confirm(confirmMsg)) {
+                setTimeout(() => {
+                    let txnId = "DBT-" + Math.floor(Math.random()*1000000000);
+                    alert(`SUCCESS! ₹${amount} Transferred via IMPS/NEFT to ${name}.\\nTransaction ID: ${txnId}`);
+                    localStorage.setItem('utr_number_' + appNo, txnId);
+                    localStorage.setItem('pension_sent_' + appNo, 'true');
+                    localStorage.setItem('app_status_' + appNo, 'pension_sent');
+                    location.reload();
+                }, 1500);
+            }
+        }
+
+        function viewFullApplication(appNo) {
+            document.getElementById('v_appno').innerText = appNo;
+            document.getElementById('v_scheme').innerText = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
+            document.getElementById('v_name').innerText = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
+            document.getElementById('v_father').innerText = localStorage.getItem('u_father_' + appNo) || 'N/A';
+            document.getElementById('v_mother').innerText = localStorage.getItem('u_mother_' + appNo) || 'N/A';
+            document.getElementById('v_aadhaar').innerText = localStorage.getItem('user_aadhaar_' + appNo) || 'N/A';
+            document.getElementById('v_dist').innerText = localStorage.getItem('u_dist_' + appNo) || 'N/A';
+            document.getElementById('v_block').innerText = localStorage.getItem('u_block_' + appNo) || 'N/A';
+            document.getElementById('v_gp').innerText = localStorage.getItem('u_gp_' + appNo) || 'N/A';
+            document.getElementById('v_address').innerText = localStorage.getItem('u_address_' + appNo) || 'N/A';
             
-            document.getElementById('v_bank').innerText = localStorage.getItem('u_bank') || 'N/A';
-            document.getElementById('v_acc').innerText = localStorage.getItem('u_acc') || 'N/A';
-            document.getElementById('v_ifsc').innerText = localStorage.getItem('u_ifsc') || 'N/A';
+            document.getElementById('v_dob').innerText = localStorage.getItem('u_dob_' + appNo) || 'N/A';
+            document.getElementById('v_gender').innerText = localStorage.getItem('u_gender_' + appNo) || 'N/A';
+            document.getElementById('v_inc_cert').innerText = localStorage.getItem('u_inc_cert_' + appNo) || 'N/A';
+            document.getElementById('v_inc_auth').innerText = localStorage.getItem('u_inc_auth_' + appNo) || 'N/A';
+            document.getElementById('v_inc_amount').innerText = localStorage.getItem('u_inc_amount_' + appNo) || 'N/A';
             
-            let fee = localStorage.getItem('paid_amount') || '100';
+            document.getElementById('v_bank').innerText = localStorage.getItem('u_bank_' + appNo) || 'N/A';
+            document.getElementById('v_acc').innerText = localStorage.getItem('u_acc_' + appNo) || 'N/A';
+            document.getElementById('v_ifsc').innerText = localStorage.getItem('u_ifsc_' + appNo) || 'N/A';
+            
+            let fee = localStorage.getItem('paid_amount_' + appNo) || '100';
             document.getElementById('v_fee').innerText = "Paid (₹" + fee + ")";
 
             document.getElementById('full_app_view_modal').classList.remove('hidden');
@@ -1752,7 +1835,7 @@ admin_design = """
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">System Action</th></tr>
                             </thead>
                             <tbody id="sys_verify_tbody" class="text-sm">
-                                <!-- DYNAMIC DATA -->
+                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No pending applications found.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1801,7 +1884,7 @@ admin_design = """
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Sys Status</th><th class="py-3 px-4 border-b text-center">Final Action</th></tr>
                             </thead>
                             <tbody id="admin_approve_tbody" class="text-sm">
-                                <!-- DYNAMIC DATA -->
+                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No applications pending for final approval.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1821,7 +1904,7 @@ admin_design = """
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Rejected By</th><th class="py-3 px-4 border-b w-1/3">Remark / Reason</th><th class="py-3 px-4 border-b text-center">Delete</th></tr>
                             </thead>
                             <tbody id="rejected_tbody" class="text-sm">
-                                <!-- DYNAMIC DATA -->
+                                <tr><td colspan="5" class="text-center py-6 text-gray-500 font-semibold">No rejected applications found.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1843,7 +1926,7 @@ admin_design = """
                                 <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b text-center">Admin Action</th></tr>
                             </thead>
                             <tbody id="beneficiaries_tbody" class="text-sm">
-                                <!-- DYNAMIC DATA -->
+                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries found.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1859,12 +1942,6 @@ admin_design = """
                             <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Renewal Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
                         </thead>
                         <tbody class="text-sm">
-                            <tr class="bg-red-50 hover:bg-red-100 border-b hidden" id="dynamic_renewal_row">
-                                <td class="py-4 px-4 font-medium text-red-700" id="dr_appno"></td>
-                                <td class="py-4 px-4 font-bold text-red-700" id="dr_name"></td>
-                                <td class="py-4 px-4"><span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs font-bold animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> Renewal Pending</span></td>
-                                <td class="py-4 px-4 text-center"><button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop Pension</button></td>
-                            </tr>
                             <tr id="dr_empty" class="border-b"><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries are currently pending renewal.</td></tr>
                         </tbody>
                     </table>
