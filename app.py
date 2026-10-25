@@ -1,7 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import hashlib
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = FastAPI()
 
@@ -59,15 +63,57 @@ async def get_income_data(cert_no: str):
 
 @app.get("/api/payu_hash")
 async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstname: str, email: str):
-    # Asali (Live) money ke liye yahan apni Live Key aur Live Salt dalna hoga
     key = "OLBUPA" 
     salt = "63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" 
     
-    # Hash formula: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5|udf6|udf7|udf8|udf9|udf10|salt
     hash_string = f"{key}|{txnid}|{amount}|{productinfo}|{firstname}|{email}|||||||||||{salt}"
     hash_val = hashlib.sha512(hash_string.encode('utf-8')).hexdigest().lower()
     
     return {"hash": hash_val, "key": key}
+
+
+# ==========================================
+# NUA: LIVE GMAIL OTP SENDER API
+# ==========================================
+class EmailRequest(BaseModel):
+    email: str
+    otp: str
+    subject: str
+
+@app.post("/api/send_email")
+async def send_email_api(req: EmailRequest):
+    # LIVE GMAIL CREDENTIALS ADDED HERE
+    SENDER_EMAIL = "dhana6942@gmail.com" 
+    SENDER_PASSWORD = "blhqjmyucjsokxki" 
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = req.email
+        msg['Subject'] = req.subject
+
+        body = f"""Dear User,
+
+Your One Time Password (OTP) for the Private Social Security Pension Scheme is: {req.otp}
+
+This OTP is valid for 5 minutes. Please do not share this secure code with anyone to keep your account 100% safe.
+
+Regards,
+Admin Team
+Private Social Security Pension Scheme"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Connect to Gmail SMTP Server securely
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 # ==========================================
@@ -405,11 +451,39 @@ user_register_design = """
         }
 
         let currentOTP = "";
-        function generateOTP() {
+        
+        async function generateOTP() {
+            let emailId = document.getElementById('reg_email').value;
+            if(!emailId) {
+                alert("Please enter Email ID first to get OTP.");
+                return;
+            }
+            
             currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('otpDisplay').innerText = "Demo OTP received: " + currentOTP;
+            document.getElementById('otpDisplay').innerText = `Sending Real OTP to ${emailId}... (Demo OTP: ${currentOTP})`;
+            document.getElementById('otpDisplay').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse mt-2";
             document.getElementById('otpDisplay').classList.remove('hidden');
+            
+            try {
+                let response = await fetch('/api/send_email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailId, otp: currentOTP, subject: "Your Registration OTP - Pension Portal" })
+                });
+                let data = await response.json();
+                if(data.status === 'success') {
+                    document.getElementById('otpDisplay').innerText = `Real OTP sent to ${emailId}! (Demo OTP for testing: ${currentOTP})`;
+                    document.getElementById('otpDisplay').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm mt-2";
+                } else {
+                    document.getElementById('otpDisplay').innerText = `Failed to send email. Setup your Gmail App Password. (Demo OTP: ${currentOTP})`;
+                    document.getElementById('otpDisplay').className = "text-center bg-red-100 text-red-800 font-bold p-2 rounded text-sm mt-2";
+                    console.log("Error:", data.message);
+                }
+            } catch(e) {
+                alert("Server error connecting to Email API.");
+            }
         }
+        
         function verifyOTP() {
             let enteredOTP = document.getElementById('otpInput').value;
             if (enteredOTP === currentOTP && enteredOTP !== "") {
@@ -442,18 +516,15 @@ user_register_design = """
                 return;
             }
             
-            // Generate a Unique Application Number for EACH user
             let randomNum = Math.floor(100000 + Math.random() * 900000);
             let appNo = 'APP-' + randomNum;
             
-            // Save Individual User Data with App No prefix
             localStorage.setItem('user_password_' + appNo, pwd);
             localStorage.setItem('user_full_name_' + appNo, fullName);
             localStorage.setItem('user_mobile_' + appNo, mobileNo);
             localStorage.setItem('user_email_' + appNo, emailId);
-            localStorage.setItem('user_has_applied_' + appNo, 'false'); // Status
+            localStorage.setItem('user_has_applied_' + appNo, 'false'); 
             
-            // Add App No to Master List for Admin
             let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
             appList.push(appNo);
             localStorage.setItem('app_list', JSON.stringify(appList));
@@ -523,8 +594,8 @@ user_register_design = """
                     <div class="flex"><input type="email" id="reg_email" class="w-full px-4 py-2 border rounded-l-lg" required><button type="button" class="bg-blue-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="generateOTP()">Get OTP</button></div>
                 </div>
             </div>
-            <div id="otpDisplay" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
-            <div>
+            <div id="otpDisplay" class="hidden"></div>
+            <div class="mt-2">
                 <label class="block text-sm font-semibold text-gray-700">Enter OTP</label>
                 <div class="flex"><input type="text" id="otpInput" class="w-full px-4 py-2 border rounded-l-lg" required><button type="button" class="bg-green-600 text-white px-3 rounded-r-lg text-sm font-bold" onclick="verifyOTP()">Verify</button></div>
                 <p id="otpSuccess" class="hidden text-green-600 text-xs font-bold mt-1"><i class="fa-solid fa-check-circle"></i> OTP Verified</p>
@@ -611,7 +682,7 @@ user_login_design = """
             clearInterval(otpTimerInterval);
         }
 
-        function sendForgotOTP() {
+        async function sendForgotOTP() {
             let appNo = document.getElementById('forgot_app_no').value.trim().toUpperCase();
             let userEmail = localStorage.getItem('user_email_' + appNo);
 
@@ -621,12 +692,28 @@ user_login_design = """
             }
 
             forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Demo OTP sent to ${userEmail}: ` + forgotOTP;
+            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${userEmail}... (Demo OTP: ${forgotOTP})`;
+            document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
             document.getElementById('forgot_otp_display').classList.remove('hidden');
             
-            document.getElementById('step2_forgot').classList.remove('hidden');
-            
-            startOtpTimer();
+            try {
+                let response = await fetch('/api/send_email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, otp: forgotOTP, subject: "Your Password Reset OTP - Pension Portal" })
+                });
+                let data = await response.json();
+                if(data.status === 'success') {
+                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${userEmail}! (Demo OTP: ${forgotOTP})`;
+                    document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
+                    document.getElementById('step2_forgot').classList.remove('hidden');
+                    startOtpTimer();
+                } else {
+                    alert("Email sending failed. Setup your Gmail App Password in code.");
+                }
+            } catch(e) {
+                alert("Server Error in sending email.");
+            }
         }
 
         function startOtpTimer() {
@@ -738,7 +825,7 @@ user_login_design = """
                 </div>
             </div>
 
-            <div id="forgot_otp_display" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
+            <div id="forgot_otp_display" class="hidden"></div>
 
             <div id="step2_forgot" class="hidden border-t pt-4 mt-4">
                 <label class="block text-sm font-semibold text-gray-700">Enter 6-digit OTP</label>
@@ -1594,9 +1681,9 @@ user_dashboard_design = """
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
                 <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
                     <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar') || 'N/A');</script></p>
-                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist') || 'N/A');</script></p>
-                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block') || 'N/A');</script></p>
+                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar_' + localStorage.getItem('active_app_no')) || 'N/A');</script></p>
+                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist_' + localStorage.getItem('active_app_no')) || 'N/A');</script></p>
+                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block_' + localStorage.getItem('active_app_no')) || 'N/A');</script></p>
                 </div>
             </div>
         </div>
@@ -1676,7 +1763,7 @@ admin_login_design = """
             clearInterval(otpTimerInterval);
         }
 
-        function sendForgotOTP() {
+        async function sendForgotOTP() {
             let email = document.getElementById('forgot_email').value;
             let mobile = document.getElementById('forgot_mobile').value;
             let savedEmail = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
@@ -1688,12 +1775,28 @@ admin_login_design = """
             }
 
             forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Demo OTP sent to ${email}: ` + forgotOTP;
+            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${email}... (Demo OTP: ${forgotOTP})`;
+            document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
             document.getElementById('forgot_otp_display').classList.remove('hidden');
             
-            document.getElementById('step2_forgot').classList.remove('hidden');
-            
-            startOtpTimer();
+            try {
+                let response = await fetch('/api/send_email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, otp: forgotOTP, subject: "Admin Panel - Password Reset OTP" })
+                });
+                let data = await response.json();
+                if(data.status === 'success') {
+                    document.getElementById('forgot_otp_display').innerText = `Real OTP successfully sent to Admin Email! (Demo OTP: ${forgotOTP})`;
+                    document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
+                    document.getElementById('step2_forgot').classList.remove('hidden');
+                    startOtpTimer();
+                } else {
+                    alert("Email sending failed. Setup your Gmail App Password in code.");
+                }
+            } catch(e) {
+                alert("Server error connecting to Email API.");
+            }
         }
 
         function startOtpTimer() {
@@ -1815,7 +1918,7 @@ admin_login_design = """
                 </div>
             </div>
 
-            <div id="forgot_otp_display" class="hidden text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse"></div>
+            <div id="forgot_otp_display" class="hidden"></div>
 
             <div id="step2_forgot" class="hidden border-t pt-4 mt-4">
                 <label class="block text-sm font-semibold text-gray-700">Enter 6-digit OTP</label>
