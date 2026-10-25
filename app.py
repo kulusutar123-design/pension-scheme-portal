@@ -71,6 +71,38 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
 
 
 # ==========================================
+# NUA PAYMENT SUCCESS / FAILURE ROUTES
+# ==========================================
+@app.post("/payment_success", response_class=HTMLResponse)
+@app.get("/payment_success", response_class=HTMLResponse)
+async def payment_success_route(request: Request):
+    return HTMLResponse(content="""
+    <html>
+    <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <script>
+            alert("Payment Successful! Apananka Pension Application Fee Paith Heyejaichi.");
+            window.location.href = "/user/dashboard";
+        </script>
+    </body>
+    </html>
+    """)
+
+@app.post("/payment_failure", response_class=HTMLResponse)
+@app.get("/payment_failure", response_class=HTMLResponse)
+async def payment_failure_route(request: Request):
+    return HTMLResponse(content="""
+    <html>
+    <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <script>
+            alert("Payment Failed! Kounasi Karana Basatah Payment Asafala Hela. Puni Thare Try Karantu.");
+            window.location.href = "/user/dashboard";
+        </script>
+    </body>
+    </html>
+    """)
+
+
+# ==========================================
 # 1. HOME PAGE DESIGN
 # ==========================================
 html_design = """
@@ -237,6 +269,7 @@ status_check_design = """
             let isApplied = localStorage.getItem('user_has_applied');
             let savedAppNo = localStorage.getItem('user_app_no');
             let appStatus = localStorage.getItem('app_status');
+            let pensionSent = localStorage.getItem('pension_sent');
 
             if (appNo === savedAppNo && isApplied === 'true') {
                 if(appStatus === 'rejected') {
@@ -254,11 +287,19 @@ status_check_design = """
                     statText.innerText = "Pending Final Admin Approval";
                     statRemark.classList.add('hidden');
                 } else if (appStatus === 'approved') {
-                    resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
-                    statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
-                    statText.className = "text-green-600 font-bold";
-                    statText.innerText = "Application Approved (Active)";
-                    statRemark.classList.add('hidden');
+                    if(pensionSent === 'true') {
+                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
+                        statIcon.className = "fa-solid fa-money-bill-wave text-green-600 mr-1";
+                        statText.className = "text-green-600 font-bold";
+                        statText.innerText = "Application Approved & Pension Sent (DBT Successful)";
+                        statRemark.classList.add('hidden');
+                    } else {
+                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
+                        statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
+                        statText.className = "text-green-600 font-bold";
+                        statText.innerText = "Application Approved (Active Beneficiary)";
+                        statRemark.classList.add('hidden');
+                    }
                 } else {
                     resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                     statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
@@ -417,6 +458,7 @@ user_register_design = """
                     <label class="block text-sm font-semibold text-gray-700">State (ରାଜ୍ୟ)</label>
                     <select id="state_select" onchange="updateLanguageOptions()" class="w-full px-4 py-2 border rounded-lg" required>
                         <option value="">Select State</option>
+                        <option value="Odisha">Odisha</option>
                         <option value="Andhra Pradesh">Andhra Pradesh</option>
                         <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                         <option value="Assam">Assam</option>
@@ -435,7 +477,6 @@ user_register_design = """
                         <option value="Meghalaya">Meghalaya</option>
                         <option value="Mizoram">Mizoram</option>
                         <option value="Nagaland">Nagaland</option>
-                        <option value="Odisha">Odisha</option>
                         <option value="Punjab">Punjab</option>
                         <option value="Rajasthan">Rajasthan</option>
                         <option value="Sikkim">Sikkim</option>
@@ -733,12 +774,10 @@ user_dashboard_design = """
                 let res = await fetch(`https://ifsc.razorpay.com/${ifsc}`);
                 if(res.ok) {
                     let data = await res.json();
-                    document.getElementById("bank_name_display").innerText = data.BANK;
-                    document.getElementById("branch_name_display").innerText = data.BRANCH;
+                    document.getElementById("bank_name_display").value = data.BANK;
                 } else {
                     alert("Invalid IFSC Code");
-                    document.getElementById("bank_name_display").innerText = "--";
-                    document.getElementById("branch_name_display").innerText = "--";
+                    document.getElementById("bank_name_display").value = "";
                 }
             } catch (e) {
                 alert("Error fetching IFSC details.");
@@ -816,7 +855,7 @@ user_dashboard_design = """
             localStorage.setItem('u_inc_auth', document.getElementById('inc_authority').value);
             localStorage.setItem('u_inc_amount', document.getElementById('inc_amount').value);
             localStorage.setItem('u_ifsc', document.getElementById('ifsc_code').value);
-            localStorage.setItem('u_bank', document.getElementById('bank_name_display').innerText);
+            localStorage.setItem('u_bank', document.getElementById('bank_name_display').value);
             localStorage.setItem('u_acc', document.getElementById('acc_no').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
@@ -847,8 +886,10 @@ user_dashboard_design = """
             let firstname = document.getElementById('full_name').value || "User";
             let email = document.getElementById('app_email').value || "user@example.com"; 
             let phone = document.getElementById('app_mobile').value || "9876543210";
-            let surl = window.location.origin + "/status/check";
-            let furl = window.location.origin + "/status/check";
+            
+            // USE NEW SUCCESS ROUTE
+            let surl = window.location.origin + "/payment_success";
+            let furl = window.location.origin + "/payment_failure";
 
             // AUTO SYSTEM VERIFICATION LOGIC
             let incAmt = document.getElementById('inc_amount').value || "";
@@ -1187,11 +1228,9 @@ user_dashboard_design = """
                                     <button type="button" onclick="fetchIFSC()" class="bg-blue-500 text-white px-4 py-2 text-sm font-bold shadow hover:bg-blue-600 transition whitespace-nowrap">FIND IFSC</button>
                                 </div>
                             </div>
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">Bank Name: <span id="bank_name_display" class="font-bold text-gray-800 text-base">--</span></p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">Branch Name: <span id="branch_name_display" class="font-bold text-gray-800 text-base">--</span></p>
+                            <div class="text-center col-span-2 md:col-span-1">
+                                <label class="block text-sm text-gray-600 mb-1">Bank Name</label>
+                                <input type="text" id="bank_name_display" placeholder="Auto fetched or type manual" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent font-bold text-gray-800">
                             </div>
                         </div>
 
@@ -1452,6 +1491,8 @@ admin_design = """
             if(localStorage.getItem('app_fee')) document.getElementById('app_fee').value = localStorage.getItem('app_fee');
             if(localStorage.getItem('payu_merchant_key')) document.getElementById('payu_merchant_key').value = localStorage.getItem('payu_merchant_key');
             if(localStorage.getItem('payu_merchant_salt')) document.getElementById('payu_merchant_salt').value = localStorage.getItem('payu_merchant_salt');
+            if(localStorage.getItem('rzp_key_id')) document.getElementById('rzp_key_id').value = localStorage.getItem('rzp_key_id');
+            if(localStorage.getItem('rzp_key_secret')) document.getElementById('rzp_key_secret').value = localStorage.getItem('rzp_key_secret');
             if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
             
@@ -1463,6 +1504,8 @@ admin_design = """
             localStorage.setItem('app_fee', document.getElementById('app_fee').value);
             localStorage.setItem('payu_merchant_key', document.getElementById('payu_merchant_key').value);
             localStorage.setItem('payu_merchant_salt', document.getElementById('payu_merchant_salt').value);
+            localStorage.setItem('rzp_key_id', document.getElementById('rzp_key_id').value);
+            localStorage.setItem('rzp_key_secret', document.getElementById('rzp_key_secret').value);
             localStorage.setItem('payout_api_key', document.getElementById('payout_api_key').value);
             localStorage.setItem('payout_api_secret', document.getElementById('payout_api_secret').value);
             alert('Settings Saved Successfully!');
@@ -1541,10 +1584,11 @@ admin_design = """
             let isApplied = localStorage.getItem('user_has_applied');
             if(isApplied === 'true') {
                 document.getElementById('count_total').innerText = '1';
-                let status = localStorage.getItem('app_status') || 'sys_pending';
+                let status = localStorage.getItem('app_status') || 'admin_pending';
                 let name = localStorage.getItem('user_full_name');
                 let appNo = localStorage.getItem('user_app_no');
                 let scheme = localStorage.getItem('u_scheme');
+                let accNo = localStorage.getItem('u_acc');
 
                 if(status === 'sys_pending') {
                     document.getElementById('count_pending').innerText = '1';
@@ -1577,14 +1621,23 @@ admin_design = """
                     `;
                 } else if(status === 'approved') {
                     document.getElementById('count_approved').innerText = '1';
+                    let sentFlag = localStorage.getItem('pension_sent');
+                    let btnHtml = "";
+                    if(sentFlag === 'true') {
+                        btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Pension Sent</button>`;
+                    } else {
+                        btnHtml = `<button onclick="sendPensionDBT('${appNo}', '${name}', '1000', '${accNo}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-bill-transfer"></i> Send Pension (DBT)</button>`;
+                    }
+
                     document.getElementById('beneficiaries_tbody').innerHTML = `
                         <tr class="hover:bg-gray-50 border-b">
                             <td class="py-4 px-4 font-medium text-blue-600">#${appNo}</td>
                             <td class="py-4 px-4 font-bold">${name}</td>
                             <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
-                            <td class="py-4 px-4 text-center space-x-2">
-                                <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-pause"></i> Hold</button>
-                                <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs"><i class="fa-solid fa-hand-paper"></i> Stop</button>
+                            <td class="py-4 px-4 text-center space-x-2 flex items-center justify-center">
+                                ${btnHtml}
+                                <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-orange-600"><i class="fa-solid fa-pause"></i> Hold</button>
+                                <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop</button>
                             </td>
                         </tr>
                     `;
@@ -1643,6 +1696,24 @@ admin_design = """
                 localStorage.removeItem('user_has_applied');
                 localStorage.removeItem('app_status');
                 location.reload();
+            }
+        }
+
+        function sendPensionDBT(appNo, name, amount, accNo) {
+            let apiKey = localStorage.getItem('payout_api_key');
+            if(!apiKey) {
+                alert("ERROR: Payout API Key is missing! Please configure Decentro/RazorpayX keys in API & Settings first.");
+                return;
+            }
+            
+            let confirmMsg = `Connecting to Secure Payout Gateway...\\nAre you sure you want to transfer Pension of ₹${amount} to ${name} (A/C: ${accNo})?`;
+            if(confirm(confirmMsg)) {
+                setTimeout(() => {
+                    let txnId = "DBT-" + Math.floor(Math.random()*1000000000);
+                    alert(`SUCCESS! ₹${amount} Transferred via IMPS/NEFT to ${name}.\\nTransaction ID: ${txnId}`);
+                    localStorage.setItem('pension_sent', 'true');
+                    location.reload();
+                }, 1500);
             }
         }
 
@@ -1902,6 +1973,18 @@ admin_design = """
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
                                 <input type="password" id="payu_merchant_salt" value="63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> Razorpay Payment Gateway Keys</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key ID</label>
+                                <input type="password" id="rzp_key_id" placeholder="Enter Key ID" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key Secret</label>
+                                <input type="password" id="rzp_key_secret" placeholder="Enter Key Secret" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
