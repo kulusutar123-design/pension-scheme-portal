@@ -195,47 +195,9 @@ async def payment_failure_route(request: Request):
     """)
 
 # ==========================================
-# CLOUD SYNC SCRIPT (INJECTED IN ALL HTML)
+# CLOUD SYNC PLACEHOLDER FOR PYTHON
 # ==========================================
-cloud_sync_script = """
-    <!-- BACKEND CLOUD DATABASE SYNC SCRIPT -->
-    <script>
-        try {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/api/get_all_storage', false); 
-            xhr.send(null);
-            if (xhr.status === 200) {
-                var serverData = JSON.parse(xhr.responseText);
-                for (var key in serverData) {
-                    localStorage.setItem(key, serverData[key]);
-                }
-            }
-        } catch(e) { console.error("DB Sync Failed", e); }
-
-        const originalSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
-            originalSetItem.apply(this, arguments);
-            try {
-                var saveXhr = new XMLHttpRequest();
-                saveXhr.open('POST', '/api/sync_storage', true);
-                saveXhr.setRequestHeader('Content-Type', 'application/json');
-                saveXhr.send(JSON.stringify({key: key, value: value}));
-            } catch(e) {}
-        };
-        
-        const originalRemoveItem = localStorage.removeItem;
-        localStorage.removeItem = function(key) {
-            originalRemoveItem.apply(this, arguments);
-            try {
-                var delXhr = new XMLHttpRequest();
-                delXhr.open('POST', '/api/delete_storage', true);
-                delXhr.setRequestHeader('Content-Type', 'application/json');
-                delXhr.send(JSON.stringify({key: key}));
-            } catch(e) {}
-        };
-    </script>
-"""
-
+sync_placeholder = "<!-- CLOUD_SYNC_PLACEHOLDER -->"
 
 # ==========================================
 # 1. HOME PAGE DESIGN
@@ -248,7 +210,7 @@ html_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Private Social Security Pension Scheme</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -298,10 +260,10 @@ html_design = f"""
         </div>
     </header>
 
-    <!-- NUA TRANSPARENT RUNNING NOTICE BOARD -->
-    <div id="notice_container" class="hidden bg-blue-900/80 backdrop-blur-md text-white px-4 py-2 border-b-2 border-blue-500 shadow-md flex items-center">
-        <span class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-sm mr-3 uppercase tracking-wider animate-pulse whitespace-nowrap"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
-        <marquee id="notice_marquee" class="font-semibold text-sm tracking-wide"></marquee>
+    <!-- NUA TRANSPARENT RUNNING NOTICE BOARD (THIN & COLORFUL GLASS) -->
+    <div id="notice_container" class="hidden bg-white/10 backdrop-blur-xl shadow-sm border-b border-white/20 px-2 flex items-center w-full h-6">
+        <span class="bg-gradient-to-r from-red-600 to-pink-600 text-white text-[10px] font-bold px-2 rounded shadow mr-2 uppercase animate-pulse whitespace-nowrap leading-none"><i class="fa-solid fa-bell"></i> Notice</span>
+        <marquee id="notice_marquee" scrollamount="5" behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();" class="font-bold text-xs text-blue-900 tracking-wide w-full flex-1 pt-1"></marquee>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {{
@@ -421,7 +383,7 @@ status_check_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Application Status</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -523,7 +485,7 @@ user_register_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New User Registration</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -785,7 +747,7 @@ user_login_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User / Beneficiary Login</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -1029,7 +991,7 @@ user_dashboard_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -1865,7 +1827,7 @@ admin_login_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Private Pension Scheme</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -2123,7 +2085,7 @@ admin_design = f"""
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Private Pension Scheme</title>
-    {cloud_sync_script}
+    {sync_placeholder}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -2843,34 +2805,66 @@ admin_design = f"""
 # 7. EXPLICIT ROUTES DEFINITION 
 # ==========================================
 
+def inject_sync_script(html_str):
+    db_data = json.dumps(read_db())
+    script = f"""
+    <script>
+        var serverData = {db_data};
+        for (var key in serverData) {{
+            localStorage.setItem(key, serverData[key]);
+        }}
+        
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {{
+            originalSetItem.apply(this, arguments);
+            fetch('/api/sync_storage', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{key: key, value: value}})
+            }}).catch(e => {{}});
+        }};
+        
+        const originalRemoveItem = localStorage.removeItem;
+        localStorage.removeItem = function(key) {{
+            originalRemoveItem.apply(this, arguments);
+            fetch('/api/delete_storage', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{key: key}})
+            }}).catch(e => {{}});
+        }};
+    </script>
+    """
+    return html_str.replace(sync_placeholder, script)
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    return html_design
+    return inject_sync_script(html_design)
 
 @app.get("/status/check", response_class=HTMLResponse)
 async def status_check_page():
-    return status_check_design
+    return inject_sync_script(status_check_design)
 
 @app.post("/status/check", response_class=HTMLResponse)
 async def status_check_page_post(request: Request):
-    return status_check_design
+    return inject_sync_script(status_check_design)
 
 @app.get("/user/register", response_class=HTMLResponse)
 async def user_register_page():
-    return user_register_design
+    return inject_sync_script(user_register_design)
 
 @app.get("/user/login", response_class=HTMLResponse)
 async def user_login_page():
-    return user_login_design
+    return inject_sync_script(user_login_design)
 
 @app.get("/user/dashboard", response_class=HTMLResponse)
 async def user_dashboard_route():
-    return user_dashboard_design
+    return inject_sync_script(user_dashboard_design)
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_page():
-    return admin_login_design
+    return inject_sync_script(admin_login_design)
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard_route():
-    return admin_design
+    return inject_sync_script(admin_design)
