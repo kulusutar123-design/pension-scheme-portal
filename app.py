@@ -6,6 +6,8 @@ import hashlib
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import json
+import os
 
 app = FastAPI()
 
@@ -19,7 +21,46 @@ app.add_middleware(
 )
 
 # ==========================================
-# 0. BACKEND DATABASE (DUMMY DATA)
+# 0. BACKEND CLOUD DATABASE SYSTEM (NEW - FOR CROSS BROWSER)
+# ==========================================
+DB_FILE = "server_database.json"
+
+def read_db():
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, "r") as f:
+            try:
+                return json.load(f)
+            except:
+                return {}
+    return {}
+
+def write_db(data):
+    with open(DB_FILE, "w") as f:
+        json.dump(data, f)
+
+@app.get("/api/get_all_storage")
+async def get_all_storage():
+    return read_db()
+
+@app.post("/api/sync_storage")
+async def sync_storage(req: Request):
+    data = await req.json()
+    db = read_db()
+    db[data["key"]] = data["value"]
+    write_db(db)
+    return {"status": "saved"}
+
+@app.post("/api/delete_storage")
+async def delete_storage(req: Request):
+    data = await req.json()
+    db = read_db()
+    if data["key"] in db:
+        del db[data["key"]]
+        write_db(db)
+    return {"status": "deleted"}
+
+# ==========================================
+# 0. BACKEND DATABASE (DUMMY DATA - ORIGINAL)
 # ==========================================
 income_database = {
     "E-INC/2025/628385": {
@@ -71,7 +112,6 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     
     return {"hash": hash_val, "key": key}
 
-
 # ==========================================
 # NUA: LIVE GMAIL OTP SENDER API
 # ==========================================
@@ -82,7 +122,6 @@ class EmailRequest(BaseModel):
 
 @app.post("/api/send_email")
 async def send_email_api(req: EmailRequest):
-    # LIVE GMAIL CREDENTIALS ADDED HERE
     SENDER_EMAIL = "dhana6942@gmail.com" 
     SENDER_PASSWORD = "blhqjmyucjsokxki" 
 
@@ -104,7 +143,6 @@ Private Social Security Pension Scheme"""
         
         msg.attach(MIMEText(body, 'plain'))
 
-        # Connect to Gmail SMTP Server securely
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
@@ -114,7 +152,6 @@ Private Social Security Pension Scheme"""
         return {"status": "success"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
 
 # ==========================================
 # PAYMENT SUCCESS / FAILURE ROUTES
@@ -157,11 +194,53 @@ async def payment_failure_route(request: Request):
     </html>
     """)
 
+# ==========================================
+# CLOUD SYNC SCRIPT (INJECTED IN ALL HTML)
+# ==========================================
+cloud_sync_script = """
+    <!-- BACKEND CLOUD DATABASE SYNC SCRIPT -->
+    <script>
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/get_all_storage', false); 
+            xhr.send(null);
+            if (xhr.status === 200) {
+                var serverData = JSON.parse(xhr.responseText);
+                for (var key in serverData) {
+                    localStorage.setItem(key, serverData[key]);
+                }
+            }
+        } catch(e) { console.error("DB Sync Failed", e); }
+
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {
+            originalSetItem.apply(this, arguments);
+            try {
+                var saveXhr = new XMLHttpRequest();
+                saveXhr.open('POST', '/api/sync_storage', true);
+                saveXhr.setRequestHeader('Content-Type', 'application/json');
+                saveXhr.send(JSON.stringify({key: key, value: value}));
+            } catch(e) {}
+        };
+        
+        const originalRemoveItem = localStorage.removeItem;
+        localStorage.removeItem = function(key) {
+            originalRemoveItem.apply(this, arguments);
+            try {
+                var delXhr = new XMLHttpRequest();
+                delXhr.open('POST', '/api/delete_storage', true);
+                delXhr.setRequestHeader('Content-Type', 'application/json');
+                delXhr.send(JSON.stringify({key: key}));
+            } catch(e) {}
+        };
+    </script>
+"""
+
 
 # ==========================================
 # 1. HOME PAGE DESIGN
 # ==========================================
-html_design = """
+html_design = f"""
 <!DOCTYPE html>
 <html lang="en" style="-webkit-scroll-behavior: smooth; -moz-scroll-behavior: smooth; scroll-behavior: smooth;">
 <head>
@@ -169,18 +248,19 @@ html_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Private Social Security Pension Scheme</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .hero-bg {
+        .hero-bg {{
             background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-image: -moz-linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-image: -o-linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
-        }
-        .card-hover:hover {
+        }}
+        .card-hover:hover {{
             -webkit-transform: translateY(-8px);
             -moz-transform: translateY(-8px);
             -ms-transform: translateY(-8px);
@@ -195,7 +275,7 @@ html_design = """
             -moz-transition: all 0.3s ease;
             -o-transition: all 0.3s ease;
             transition: all 0.3s ease;
-        }
+        }}
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
@@ -224,13 +304,13 @@ html_design = """
         <marquee id="notice_marquee" class="font-semibold text-sm tracking-wide"></marquee>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {{
             let notice = localStorage.getItem('notice_text');
-            if(notice && notice.trim() !== "") {
+            if(notice && notice.trim() !== "") {{
                 document.getElementById('notice_container').classList.remove('hidden');
                 document.getElementById('notice_marquee').innerText = notice;
-            }
-        });
+            }}
+        }});
     </script>
 
     <section id="home" class="hero-bg py-16 px-4 border-b">
@@ -333,7 +413,7 @@ html_design = """
 # ==========================================
 # 2. STATUS CHECK PAGE
 # ==========================================
-status_check_design = """
+status_check_design = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -341,10 +421,11 @@ status_check_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Application Status</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        function checkAppStatus(e) {
+        function checkAppStatus(e) {{
             e.preventDefault();
             let appNo = document.getElementById('appNoInput').value.trim().toUpperCase();
             let resBox = document.getElementById('statusResult');
@@ -360,8 +441,8 @@ status_check_design = """
             let utrSaved = localStorage.getItem('utr_number_' + appNo);
             let hasAccount = localStorage.getItem('user_password_' + appNo);
 
-            if (hasAccount && isApplied === 'true') {
-                if(appStatus === 'rejected') {
+            if (hasAccount && isApplied === 'true') {{
+                if(appStatus === 'rejected') {{
                     let reason = localStorage.getItem('reject_reason_' + appNo) || "Admin rejected without remark.";
                     resBox.className = "mt-6 border p-4 rounded-lg bg-red-50 border-red-200";
                     statIcon.className = "fa-solid fa-circle-xmark text-red-600 mr-1";
@@ -369,42 +450,42 @@ status_check_design = """
                     statText.innerText = "Rejected by System/Admin";
                     statRemark.innerHTML = "<strong>Remark:</strong> " + reason;
                     statRemark.classList.remove('hidden');
-                } else if (appStatus === 'admin_pending') {
+                }} else if (appStatus === 'admin_pending') {{
                     resBox.className = "mt-6 border p-4 rounded-lg bg-blue-50 border-blue-200";
                     statIcon.className = "fa-solid fa-user-check text-blue-600 mr-1";
                     statText.className = "text-blue-600 font-bold";
                     statText.innerText = "Pending Final Admin Approval";
                     statRemark.classList.add('hidden');
-                } else if (appStatus === 'approved' || appStatus === 'pension_sent') {
-                    if(pensionSent === 'true') {
+                }} else if (appStatus === 'approved' || appStatus === 'pension_sent') {{
+                    if(pensionSent === 'true') {{
                         resBox.className = "mt-6 border p-4 rounded-lg bg-green-100 border-green-400";
                         statIcon.className = "fa-solid fa-money-bill-wave text-green-700 mr-1";
                         statText.className = "text-green-700 font-bold";
                         statText.innerText = "Payment Success!";
                         statRemark.innerHTML = "<strong>Bank UTR No:</strong> " + (utrSaved || "Processing...");
                         statRemark.classList.remove('hidden');
-                    } else {
+                    }} else {{
                         resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
                         statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
                         statText.className = "text-green-600 font-bold";
                         statText.innerText = "Application Approved (Active Beneficiary)";
                         statRemark.classList.add('hidden');
-                    }
-                } else {
+                    }}
+                }} else {{
                     resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                     statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
                     statText.className = "text-orange-600 font-bold";
                     statText.innerText = "Pending System Verification";
                     statRemark.classList.add('hidden');
-                }
-            } else {
+                }}
+            }} else {{
                  resBox.className = "mt-6 border p-4 rounded-lg bg-gray-50 border-gray-200";
                 statIcon.className = "fa-solid fa-question-circle text-gray-600 mr-1";
                 statText.className = "text-gray-600 font-bold";
                 statText.innerText = "Application Not Found / Not Paid";
                 statRemark.classList.add('hidden');
-            }
-        }
+            }}
+        }}
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
@@ -434,7 +515,7 @@ status_check_design = """
 # ==========================================
 # 3. USER REGISTRATION PAGE
 # ==========================================
-user_register_design = """
+user_register_design = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -442,10 +523,11 @@ user_register_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New User Registration</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const stateLanguages = {
+        const stateLanguages = {{
             "Odisha": "Odia",
             "Andhra Pradesh": "Telugu",
             "Arunachal Pradesh": "English",
@@ -474,24 +556,24 @@ user_register_design = """
             "Uttar Pradesh": "Hindi",
             "Uttarakhand": "Hindi",
             "West Bengal": "Bengali"
-        };
+        }};
 
         // ADMIN DATE CONTROL LOGIC
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', () => {{
             let startDate = localStorage.getItem('reg_start_date');
             let closeDate = localStorage.getItem('reg_close_date');
             
             let isOpen = true;
-            if(startDate && closeDate) {
+            if(startDate && closeDate) {{
                 let start = new Date(startDate).setHours(0,0,0,0);
                 let end = new Date(closeDate).setHours(23,59,59,999);
                 let now = new Date().getTime();
-                if(now < start || now > end) {
+                if(now < start || now > end) {{
                     isOpen = false;
-                }
-            }
+                }}
+            }}
             
-            if(!isOpen) {
+            if(!isOpen) {{
                 document.body.innerHTML = `
                 <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
                     <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full border-t-4 border-red-600">
@@ -501,74 +583,74 @@ user_register_design = """
                         <a href="/" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 font-bold"><i class="fa-solid fa-home"></i> Back to Home</a>
                     </div>
                 </div>`;
-            }
-        });
+            }}
+        }});
 
-        function updateLanguageOptions() {
+        function updateLanguageOptions() {{
             let state = document.getElementById('state_select').value;
             let langSelect = document.getElementById('language_select');
             langSelect.innerHTML = '<option value="">Select Language</option>';
 
-            if(state && stateLanguages[state]) {
+            if(state && stateLanguages[state]) {{
                 let localLang = stateLanguages[state];
                 let langs = new Set([localLang, "English", "Hindi"]); 
-                langs.forEach(l => {
-                    langSelect.innerHTML += `<option value="${l}">${l}</option>`;
-                });
-                document.getElementById('dynamic_heading').innerText = `User Registration (${localLang} / English / Hindi)`;
-            } else {
+                langs.forEach(l => {{
+                    langSelect.innerHTML += `<option value="${{l}}">${{l}}</option>`;
+                }});
+                document.getElementById('dynamic_heading').innerText = `User Registration (${{localLang}} / English / Hindi)`;
+            }} else {{
                 document.getElementById('dynamic_heading').innerText = `User Registration (ନୂଆ ଆବେଦନକାରୀ)`;
-            }
-        }
+            }}
+        }}
 
         let currentOTP = "";
         
-        async function generateOTP() {
+        async function generateOTP() {{
             let emailId = document.getElementById('reg_email').value;
-            if(!emailId) {
+            if(!emailId) {{
                 alert("Please enter Email ID first to get OTP.");
                 return;
-            }
+            }}
             
             currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('otpDisplay').innerText = `Sending Real OTP to ${emailId}... (Demo OTP: ${currentOTP})`;
+            document.getElementById('otpDisplay').innerText = `Sending Real OTP to ${{emailId}}... (Demo OTP: ${{currentOTP}})`;
             document.getElementById('otpDisplay').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse mt-2";
             document.getElementById('otpDisplay').classList.remove('hidden');
             
-            try {
-                let response = await fetch('/api/send_email', {
+            try {{
+                let response = await fetch('/api/send_email', {{
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: emailId, otp: currentOTP, subject: "Your Registration OTP - Pension Portal" })
-                });
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ email: emailId, otp: currentOTP, subject: "Your Registration OTP - Pension Portal" }})
+                }});
                 let data = await response.json();
-                if(data.status === 'success') {
-                    document.getElementById('otpDisplay').innerText = `Real OTP sent to ${emailId}! (Demo OTP for testing: ${currentOTP})`;
+                if(data.status === 'success') {{
+                    document.getElementById('otpDisplay').innerText = `Real OTP sent to ${{emailId}}! (Demo OTP for testing: ${{currentOTP}})`;
                     document.getElementById('otpDisplay').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm mt-2";
-                } else {
-                    document.getElementById('otpDisplay').innerText = `Failed to send email. Setup your Gmail App Password. (Demo OTP: ${currentOTP})`;
+                }} else {{
+                    document.getElementById('otpDisplay').innerText = `Failed to send email. Setup your Gmail App Password. (Demo OTP: ${{currentOTP}})`;
                     document.getElementById('otpDisplay').className = "text-center bg-red-100 text-red-800 font-bold p-2 rounded text-sm mt-2";
                     console.log("Error:", data.message);
-                }
-            } catch(e) {
+                }}
+            }} catch(e) {{
                 alert("Server error connecting to Email API.");
-            }
-        }
+            }}
+        }}
         
-        function verifyOTP() {
+        function verifyOTP() {{
             let enteredOTP = document.getElementById('otpInput').value;
-            if (enteredOTP === currentOTP && enteredOTP !== "") {
+            if (enteredOTP === currentOTP && enteredOTP !== "") {{
                 document.getElementById('otpSuccess').classList.remove('hidden');
                 document.getElementById('otpError').classList.add('hidden');
                 document.getElementById('submitBtn').disabled = false;
                 document.getElementById('submitBtn').classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
+            }} else {{
                 document.getElementById('otpError').classList.remove('hidden');
                 document.getElementById('otpSuccess').classList.add('hidden');
-            }
-        }
+            }}
+        }}
 
-        function handleUserRegistration(event) {
+        function handleUserRegistration(event) {{
             event.preventDefault();
             let pwd = document.getElementById('reg_pass').value;
             let conf_pwd = document.getElementById('reg_conf_pass').value;
@@ -576,16 +658,16 @@ user_register_design = """
             let mobileNo = document.getElementById('reg_mobile').value;
             let emailId = document.getElementById('reg_email').value;
             
-            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
-            if (!passRegex.test(pwd)) {
+            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{{6,}}$/;
+            if (!passRegex.test(pwd)) {{
                 alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
                 return;
-            }
+            }}
 
-            if (pwd !== conf_pwd) {
+            if (pwd !== conf_pwd) {{
                 alert('Password and Confirm Password do not match!');
                 return;
-            }
+            }}
             
             // Generate a Unique Application Number for EACH user
             let randomNum = Math.floor(100000 + Math.random() * 900000);
@@ -605,7 +687,7 @@ user_register_design = """
             
             alert('Registration Successful! Your Unique Application No is: ' + appNo + '. Please Login using this ID.');
             window.location.href = '/user/login';
-        }
+        }}
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
@@ -693,9 +775,9 @@ user_register_design = """
 """
 
 # ==========================================
-# 4. USER LOGIN PAGE (WITH CAPTCHA & FORGOT PASSWORD)
+# 4. USER LOGIN PAGE
 # ==========================================
-user_login_design = """
+user_login_design = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -703,6 +785,7 @@ user_login_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User / Beneficiary Login</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -711,150 +794,150 @@ user_login_design = """
         let otpTimerInterval;
         let timeLeft = 300; // 5 minutes
 
-        window.onload = function() {
+        window.onload = function() {{
             generateCaptcha();
-        };
+        }};
 
-        function generateCaptcha() {
+        function generateCaptcha() {{
             const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
             currentCaptcha = "";
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 6; i++) {{
                 currentCaptcha += chars[Math.floor(Math.random() * chars.length)];
-            }
+            }}
             document.getElementById('captcha_display').innerText = currentCaptcha;
-        }
+        }}
 
-        function handleUserLogin(event) {
+        function handleUserLogin(event) {{
             event.preventDefault();
             let appNo = document.getElementById('login_app_no').value.trim().toUpperCase();
             let pass = document.getElementById('login_pass').value;
             let captchaInput = document.getElementById('login_captcha').value;
             
-            if (captchaInput !== currentCaptcha) {
+            if (captchaInput !== currentCaptcha) {{
                 alert("Invalid Captcha! Please try again.");
                 generateCaptcha();
                 return;
-            }
+            }}
 
             let savedPass = localStorage.getItem('user_password_' + appNo);
             
-            if (savedPass && pass === savedPass) {
+            if (savedPass && pass === savedPass) {{
                 localStorage.setItem('active_app_no', appNo);
                 window.location.href = '/user/dashboard';
-            } else {
+            }} else {{
                 alert('Access Denied: Invalid Application Number or Password! Or Registration Not Found.');
                 generateCaptcha();
-            }
-        }
+            }}
+        }}
 
-        function showForgotForm() {
+        function showForgotForm() {{
             document.getElementById('login_section').classList.add('hidden');
             document.getElementById('forgot_section').classList.remove('hidden');
-        }
+        }}
 
-        function backToLogin() {
+        function backToLogin() {{
             document.getElementById('forgot_section').classList.add('hidden');
             document.getElementById('login_section').classList.remove('hidden');
             clearInterval(otpTimerInterval);
-        }
+        }}
 
-        async function sendForgotOTP() {
+        async function sendForgotOTP() {{
             let appNo = document.getElementById('forgot_app_no').value.trim().toUpperCase();
             let userEmail = localStorage.getItem('user_email_' + appNo);
 
-            if (!userEmail) {
+            if (!userEmail) {{
                 alert("Application Number not found in system!");
                 return;
-            }
+            }}
 
             forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${userEmail}... (Demo OTP: ${forgotOTP})`;
+            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{userEmail}}... (Demo OTP: ${{forgotOTP}})`;
             document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
             document.getElementById('forgot_otp_display').classList.remove('hidden');
             
-            try {
-                let response = await fetch('/api/send_email', {
+            try {{
+                let response = await fetch('/api/send_email', {{
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, otp: forgotOTP, subject: "Your Password Reset OTP - Pension Portal" })
-                });
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ email: userEmail, otp: forgotOTP, subject: "Your Password Reset OTP - Pension Portal" }})
+                }});
                 let data = await response.json();
-                if(data.status === 'success') {
-                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${userEmail}! (Demo OTP: ${forgotOTP})`;
+                if(data.status === 'success') {{
+                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${{userEmail}}! (Demo OTP: ${{forgotOTP}})`;
                     document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
                     document.getElementById('step2_forgot').classList.remove('hidden');
                     startOtpTimer();
-                } else {
+                }} else {{
                     alert("Email sending failed. Setup your Gmail App Password in code.");
-                }
-            } catch(e) {
+                }}
+            }} catch(e) {{
                 alert("Server Error in sending email.");
-            }
-        }
+            }}
+        }}
 
-        function startOtpTimer() {
+        function startOtpTimer() {{
             clearInterval(otpTimerInterval);
             timeLeft = 300;
             updateTimerDisplay();
             document.getElementById('timer_display').classList.remove('text-red-600');
             
-            otpTimerInterval = setInterval(() => {
+            otpTimerInterval = setInterval(() => {{
                 timeLeft--;
                 updateTimerDisplay();
-                if (timeLeft <= 0) {
+                if (timeLeft <= 0) {{
                     clearInterval(otpTimerInterval);
                     forgotOTP = ""; // Invalidate OTP
                     document.getElementById('timer_display').innerText = "OTP Invalid/Expired!";
                     document.getElementById('timer_display').classList.add('text-red-600');
-                }
-            }, 1000);
-        }
+                }}
+            }}, 1000);
+        }}
 
-        function updateTimerDisplay() {
-            if(timeLeft > 0) {
+        function updateTimerDisplay() {{
+            if(timeLeft > 0) {{
                 let m = Math.floor(timeLeft / 60);
                 let s = timeLeft % 60;
                 document.getElementById('timer_display').innerText = "Expires in: 0" + m + ":" + (s < 10 ? "0" : "") + s;
-            }
-        }
+            }}
+        }}
 
-        function verifyForgotOTP() {
+        function verifyForgotOTP() {{
             let entered = document.getElementById('forgot_otp_input').value;
-            if(timeLeft <= 0 || !forgotOTP) {
+            if(timeLeft <= 0 || !forgotOTP) {{
                 alert("OTP has expired! Please click Resend OTP.");
                 return;
-            }
-            if (entered === forgotOTP && entered !== "") {
+            }}
+            if (entered === forgotOTP && entered !== "") {{
                 clearInterval(otpTimerInterval);
                 document.getElementById('timer_display').innerText = "OTP Verified successfully!";
                 document.getElementById('timer_display').classList.add('text-green-600');
                 document.getElementById('step3_forgot').classList.remove('hidden');
-            } else {
+            }} else {{
                 alert("Invalid OTP!");
-            }
-        }
+            }}
+        }}
 
-        function saveNewPassword(event) {
+        function saveNewPassword(event) {{
             event.preventDefault();
             let appNo = document.getElementById('forgot_app_no').value.trim().toUpperCase();
             let p1 = document.getElementById('new_pass').value;
             let p2 = document.getElementById('conf_new_pass').value;
 
-            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
-            if (!passRegex.test(p1)) {
+            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{{6,}}$/;
+            if (!passRegex.test(p1)) {{
                 alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
                 return;
-            }
+            }}
 
-            if(p1 !== p2) {
+            if(p1 !== p2) {{
                 alert("Passwords do not match!");
                 return;
-            }
+            }}
 
             localStorage.setItem('user_password_' + appNo, p1);
             alert("Password Changed Successfully! Please Login.");
             backToLogin();
-        }
+        }}
     </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
@@ -938,7 +1021,7 @@ user_login_design = """
 # ==========================================
 # 5. FULL USER DASHBOARD 
 # ==========================================
-user_dashboard_design = """
+user_dashboard_design = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -946,15 +1029,16 @@ user_dashboard_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        const stateLanguages = {
+        const stateLanguages = {{
             "Odisha": "Odia"
-        };
+        }};
 
-        const locationData = {
-            "Odisha": {
+        const locationData = {{
+            "Odisha": {{
                 "Angul": ["Banarpal", "Chhendiapada", "Athamallik", "Kisshorenagar", "Talcher", "Kaniha", "Pallahara", "Angul"],
                 "Balasore": ["Basta", "Remuna", "Jaleswar", "Bhograi", "Baliapal", "Nilagiri", "Oupada", "Sora", "Bahanaga", "Simulia", "Khaira", "Balasore"],
                 "Bargarh": ["Barpali", "Bheden", "Bhatli", "Ambabhona", "Atabira", "Padampur", "Paikmal", "Jharbhand", "Sohella", "Bijepur", "Bargarh"],
@@ -985,15 +1069,15 @@ user_dashboard_design = """
                 "Sambalpur": ["Dhankauda", "Maneswar", "Jujumora", "Rengali", "Rairakhola", "Nakatideul", "Kuchinda", "Bamara", "Jamanakira", "Pairakhal", "Sambalpur"],
                 "Sonepur": ["Tarva", "Birmaharajpur", "Ulunda", "Dunguripalli", "Binka", "Sonepur"],
                 "Sundargarh": ["Balisankara", "Subdega", "Lephripara", "Hemgiri", "Rajgangpur", "Panposh", "Tanngarapalli", "Kutra", "Lathikata", "Kuanrmunda", "Badagaon", "Nuagaon", "Bisra", "Gurundia", "Koira", "Lahunipada", "Banaigarh", "Sundargarh (Sadar)"]
-            }
-        };
+            }}
+        }};
 
-        window.onload = function() {
+        window.onload = function() {{
             let appNo = localStorage.getItem('active_app_no');
-            if(!appNo) {
+            if(!appNo) {{
                 window.location.href = '/user/login';
                 return;
-            }
+            }}
             
             populateDistricts();
             
@@ -1004,33 +1088,33 @@ user_dashboard_design = """
             let savedMobile = localStorage.getItem('user_mobile_' + appNo);
             let savedEmail = localStorage.getItem('user_email_' + appNo);
             
-            if(savedFullName) {
+            if(savedFullName) {{
                 let nameField = document.getElementById('full_name');
-                if(nameField) {
+                if(nameField) {{
                     nameField.value = savedFullName;
                     nameField.setAttribute('readonly', 'readonly');
                     nameField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
-                }
-            }
-            if(savedMobile) {
+                }}
+            }}
+            if(savedMobile) {{
                 let mobField = document.getElementById('app_mobile');
-                if(mobField){
+                if(mobField){{
                     mobField.value = savedMobile;
                     mobField.setAttribute('readonly', 'readonly');
                     mobField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
-                }
-            }
-            if(savedEmail) {
+                }}
+            }}
+            if(savedEmail) {{
                 let emailField = document.getElementById('app_email');
-                if(emailField){
+                if(emailField){{
                     emailField.value = savedEmail;
                     emailField.setAttribute('readonly', 'readonly');
                     emailField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
-                }
-            }
+                }}
+            }}
             
             let isApplied = localStorage.getItem('user_has_applied_' + appNo);
-            if(isApplied === 'true') {
+            if(isApplied === 'true') {{
                 document.getElementById('apply_form_container').innerHTML = `
                     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded shadow-sm text-center">
                         <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-4xl mb-4"></i>
@@ -1042,21 +1126,21 @@ user_dashboard_design = """
                         </div>
                     </div>
                 `;
-            }
+            }}
 
             // RENEWAL LOGIC UPDATE
             let penSent = localStorage.getItem('app_status_' + appNo);
-            if(penSent === 'pension_sent') {
+            if(penSent === 'pension_sent') {{
                 let rname = savedFullName;
                 document.getElementById('section-renew').innerHTML = `
                     <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
                     <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 border-l-4 border-green-500">
-                        <p class="text-gray-600 font-semibold mb-2">Beneficiary Found: <strong class="text-gray-800">${rname} (${appNo})</strong></p>
+                        <p class="text-gray-600 font-semibold mb-2">Beneficiary Found: <strong class="text-gray-800">${{rname}} (${{appNo}})</strong></p>
                         <p class="text-sm text-gray-500 mb-4">Your current pension is active. Proceed with Renewal to continue receiving benefits.</p>
                         <button onclick="alert('Data Verified! Proceeding to Payment Gateway...');" class="bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow"><i class="fa-solid fa-credit-card"></i> Pay Renewal Fee</button>
                     </div>
                 `;
-            } else {
+            }} else {{
                  document.getElementById('section-renew').innerHTML = `
                     <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
                     <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 text-center">
@@ -1064,141 +1148,141 @@ user_dashboard_design = """
                         <p class="text-gray-500 font-semibold">No active pension found eligible for renewal yet.</p>
                     </div>
                 `;
-            }
-        };
+            }}
+        }};
 
-        function resetApplicationForm() {
+        function resetApplicationForm() {{
             let appNo = localStorage.getItem('active_app_no');
-            if(confirm('Are you sure you want to reset and fill a new form for this ID? Previous application data will be overwritten.')) {
+            if(confirm('Are you sure you want to reset and fill a new form for this ID? Previous application data will be overwritten.')) {{
                 localStorage.setItem('user_has_applied_' + appNo, 'false');
                 localStorage.removeItem('app_status_' + appNo);
                 location.reload();
-            }
-        }
+            }}
+        }}
 
-        function populateDistricts() {
+        function populateDistricts() {{
             let state = "Odisha"; 
             let distSelect = document.getElementById("district");
             let blockSelect = document.getElementById("block");
             
-            if(distSelect && blockSelect) {
+            if(distSelect && blockSelect) {{
                 distSelect.innerHTML = "<option value=''>Select</option>";
                 blockSelect.innerHTML = "<option value=''>Select</option>";
 
-                if(state && locationData[state]) {
-                    for(let dist in locationData[state]) {
-                        distSelect.innerHTML += `<option value='${dist}'>${dist}</option>`;
-                    }
-                }
-            }
-        }
+                if(state && locationData[state]) {{
+                    for(let dist in locationData[state]) {{
+                        distSelect.innerHTML += `<option value='${{dist}}'>${{dist}}</option>`;
+                    }}
+                }}
+            }}
+        }}
 
-        function populateBlocks() {
+        function populateBlocks() {{
             let state = "Odisha";
             let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
             
-            if(blockSelect) {
+            if(blockSelect) {{
                 blockSelect.innerHTML = "<option value=''>Select</option>";
 
-                if(state && dist && locationData[state][dist]) {
+                if(state && dist && locationData[state][dist]) {{
                     let blocks = locationData[state][dist];
-                    for(let i=0; i<blocks.length; i++) {
-                        blockSelect.innerHTML += `<option value='${blocks[i]}'>${blocks[i]}</option>`;
-                    }
-                }
-            }
-        }
+                    for(let i=0; i<blocks.length; i++) {{
+                        blockSelect.innerHTML += `<option value='${{blocks[i]}}'>${{blocks[i]}}</option>`;
+                    }}
+                }}
+            }}
+        }}
 
-        function switchUserTab(tabId) {
+        function switchUserTab(tabId) {{
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
-            if(tabId === 'status') {
+            if(tabId === 'status') {{
                 loadPrintData();
-            }
-        }
+            }}
+        }}
         
-        function calculateAge() {
+        function calculateAge() {{
             let dob = new Date(document.getElementById('dob').value);
             let age = new Date().getFullYear() - dob.getFullYear();
             document.getElementById('age').value = age;
             let scheme = document.getElementById('scheme').value;
-            if(scheme === 'Old Age Pension' && age < 55) { alert('System Error: Age must be 55 or above for Old Age Pension.'); }
-        }
+            if(scheme === 'Old Age Pension' && age < 55) {{ alert('System Error: Age must be 55 or above for Old Age Pension.'); }}
+        }}
 
-        function checkSchemeCondition() {
+        function checkSchemeCondition() {{
             let scheme = document.getElementById('scheme').value;
             let specialBox = document.getElementById('special_cert_box');
-            if(scheme === 'Widow Pension' || scheme === 'Disability Pension' || scheme === 'Divorcee Pension' || scheme === 'Transgender Pension') {
+            if(scheme === 'Widow Pension' || scheme === 'Disability Pension' || scheme === 'Divorcee Pension' || scheme === 'Transgender Pension') {{
                 specialBox.classList.remove('hidden');
-            } else { specialBox.classList.add('hidden'); }
-        }
+            }} else {{ specialBox.classList.add('hidden'); }}
+        }}
 
-        function updateAgeProof() {
+        function updateAgeProof() {{
             let docType = document.getElementById("age_proof_type").value;
             let docNumBox = document.getElementById("age_proof_number");
             let docFileBox = document.getElementById("age_proof_file_container");
-            if(docType) {
+            if(docType) {{
                 docNumBox.classList.remove("hidden");
                 docNumBox.placeholder = "Enter " + docType + " Number";
                 docFileBox.classList.remove("hidden");
-            } else {
+            }} else {{
                 docNumBox.classList.add("hidden");
                 docFileBox.classList.add("hidden");
-            }
-        }
+            }}
+        }}
 
-        function verifyAadhaar() {
+        function verifyAadhaar() {{
             let appNo = localStorage.getItem('active_app_no');
             let fullName = document.getElementById('full_name').value;
             let aadhaarInput = document.getElementById('aadhaar_input').value;
             
             let savedAadhaar = localStorage.getItem('user_aadhaar_' + appNo);
-            if (savedAadhaar === aadhaarInput) {
+            if (savedAadhaar === aadhaarInput) {{
                 alert('An application with this Aadhaar number already exists!');
                 return;
-            }
+            }}
             
-            if(!fullName) { alert("Please enter your Full Name at the top to fetch matching data."); return; }
-            if(!aadhaarInput) { alert("Please enter Aadhaar Number."); return; }
+            if(!fullName) {{ alert("Please enter your Full Name at the top to fetch matching data."); return; }}
+            if(!aadhaarInput) {{ alert("Please enter Aadhaar Number."); return; }}
             
             alert('Aadhaar OTP verified automatically!');
             document.getElementById('aadhaar_success_box').classList.remove('hidden');
             document.getElementById('aadhaar_status').classList.add('hidden');
-        }
+        }}
 
-        async function fetchIFSC() {
+        async function fetchIFSC() {{
             let ifsc = document.getElementById("ifsc_code").value.trim().toUpperCase();
-            if(!ifsc) { alert("Please enter IFSC Code first."); return; }
-            try {
-                let res = await fetch(`https://ifsc.razorpay.com/${ifsc}`);
-                if(res.ok) {
+            if(!ifsc) {{ alert("Please enter IFSC Code first."); return; }}
+            try {{
+                let res = await fetch(`https://ifsc.razorpay.com/${{ifsc}}`);
+                if(res.ok) {{
                     let data = await res.json();
                     document.getElementById("bank_name_display").value = data.BANK + " - " + data.BRANCH;
-                } else {
+                }} else {{
                     alert("Invalid IFSC Code");
                     document.getElementById("bank_name_display").value = "";
-                }
-            } catch (e) {
+                }}
+            }} catch (e) {{
                 alert("Error fetching IFSC details.");
-            }
-        }
+            }}
+        }}
 
-        async function verifyIncome() {
+        async function verifyIncome() {{
             let cert = document.getElementById('income_cert_no').value;
             let year = document.getElementById('income_year').value;
 
-            if(cert && year !== "Select") {
-                try {
-                    let response = await fetch(`/api/get_income?cert_no=${cert}`);
+            if(cert && year !== "Select") {{
+                try {{
+                    let response = await fetch(`/api/get_income?cert_no=${{cert}}`);
                     let data = await response.json();
 
-                    if(data.error) {
+                    if(data.error) {{
                         alert("Invalid Certificate Number or Data Not Found in Database!");
                         return;
-                    }
+                    }}
 
-                    alert(`Fetching Income Details from Database for Certificate ${cert}...`);
+                    alert(`Fetching Income Details from Database for Certificate ${{cert}}...`);
                     
                     document.getElementById('inc_issued_to').value = data.name;
                     document.getElementById('inc_father').value = data.father;
@@ -1210,34 +1294,34 @@ user_dashboard_design = """
                     document.getElementById('inc_relation').value = "Self";
 
                     let nameField = document.getElementById('full_name');
-                    if(!nameField.value) {
+                    if(!nameField.value) {{
                         nameField.value = data.name;
-                    }
+                    }}
                     document.getElementById('father_name').value = data.father;
                     document.getElementById('mother_name').value = data.mother;
                     
                     populateDistricts();
-                    setTimeout(() => {
+                    setTimeout(() => {{
                         document.getElementById("district").value = data.district;
                         populateBlocks();
-                    }, 100);
+                    }}, 100);
 
-                } catch (error) {
+                }} catch (error) {{
                     console.error("Error fetching data:", error);
                     alert("System Error: Unable to fetch data from Server.");
-                }
-            } else {
+                }}
+            }} else {{
                 alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
-            }
-        }
+            }}
+        }}
         
-        function updateAddressCharCount() {
+        function updateAddressCharCount() {{
             let addressInput = document.getElementById('manual_address');
             let charsLeft = 200 - addressInput.value.length;
             document.getElementById('address_char_count').innerText = charsLeft + " characters remaining";
-        }
+        }}
         
-        function goToPaymentStep(e) {
+        function goToPaymentStep(e) {{
             e.preventDefault();
             let appNo = localStorage.getItem('active_app_no');
             
@@ -1256,26 +1340,26 @@ user_dashboard_design = """
             localStorage.setItem('u_inc_auth_' + appNo, document.getElementById('inc_authority').value);
             localStorage.setItem('u_inc_amount_' + appNo, document.getElementById('inc_amount').value);
             localStorage.setItem('u_ifsc_' + appNo, document.getElementById('ifsc_code').value);
-            localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value); // Dynamic Bank + Branch saved
+            localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value); 
             localStorage.setItem('u_acc_' + appNo, document.getElementById('acc_no').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-payment-step').classList.remove('hidden');
-        }
+        }}
 
-        function togglePayButton() {
+        function togglePayButton() {{
             let cb = document.getElementById('tnc_checkbox');
             let btn = document.getElementById('payu_button');
-            if(cb.checked) {
+            if(cb.checked) {{
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
+            }} else {{
                 btn.disabled = true;
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        }
+            }}
+        }}
 
-        async function processPayment() {
+        async function processPayment() {{
             let gateway = document.querySelector('input[name="pay_gateway"]:checked').value;
             let appNo = localStorage.getItem('active_app_no');
             
@@ -1292,32 +1376,32 @@ user_dashboard_design = """
             let autoRemark = "";
             let autoStatus = "sys_pending"; 
             
-            if (!incAmt || !incAmt.includes("Rs.")) {
+            if (!incAmt || !incAmt.includes("Rs.")) {{
                 autoStatus = "rejected";
                 autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
-            } else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {
+            }} else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {{
                 autoStatus = "rejected";
                 autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
-            } else {
+            }} else {{
                 let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
-                if (numAmt > 50000) {
+                if (numAmt > 50000) {{
                     autoStatus = "rejected";
                     autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
-                }
-            }
+                }}
+            }}
             
             localStorage.setItem('user_has_applied_' + appNo, 'true');
             localStorage.setItem('app_status_' + appNo, autoStatus);
-            if(autoStatus === 'rejected') {
+            if(autoStatus === 'rejected') {{
                 localStorage.setItem('reject_reason_' + appNo, autoRemark);
-            }
+            }}
 
-            if(gateway === 'razorpay') {
+            if(gateway === 'razorpay') {{
                 alert('Redirecting to Asali Razorpay Live Secure Payment Gateway...');
-                setTimeout(() => {
+                setTimeout(() => {{
                     window.location.href = "/payment_success";
-                }, 1000);
-            } else {
+                }}, 1000);
+            }} else {{
                 alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
                 let txnid = "TXN" + new Date().getTime();
                 let productinfo = "PensionApplication";
@@ -1327,15 +1411,15 @@ user_dashboard_design = """
                 let surl = window.location.origin + "/payment_success";
                 let furl = window.location.origin + "/payment_failure";
                 
-                try {
-                    let response = await fetch(`/api/payu_hash?txnid=${txnid}&amount=${amount}&productinfo=${productinfo}&firstname=${firstname}&email=${email}`);
+                try {{
+                    let response = await fetch(`/api/payu_hash?txnid=${{txnid}}&amount=${{amount}}&productinfo=${{productinfo}}&firstname=${{firstname}}&email=${{email}}`);
                     let data = await response.json();
 
                     let form = document.createElement("form");
                     form.setAttribute("method", "POST");
                     form.setAttribute("action", "https://secure.payu.in/_payment");
 
-                    let params = {
+                    let params = {{
                         "key": data.key,
                         "txnid": txnid,
                         "amount": amount,
@@ -1346,41 +1430,41 @@ user_dashboard_design = """
                         "surl": surl,
                         "furl": furl,
                         "hash": data.hash
-                    };
+                    }};
 
-                    for(let key in params) {
+                    for(let key in params) {{
                         let hiddenField = document.createElement("input");
                         hiddenField.setAttribute("type", "hidden");
                         hiddenField.setAttribute("name", key);
                         hiddenField.setAttribute("value", params[key]);
                         form.appendChild(hiddenField);
-                    }
+                    }}
 
                     document.body.appendChild(form);
                     form.submit(); 
                     
-                } catch (error) {
+                }} catch (error) {{
                     alert("Error connecting to PayU Gateway. Checking connection...");
-                }
-            }
-        }
+                }}
+            }}
+        }}
 
-        function loadPrintData() {
+        function loadPrintData() {{
             let appNo = localStorage.getItem('active_app_no');
-            let safeSet = (className, key, defaultVal) => {
+            let safeSet = (className, key, defaultVal) => {{
                 let val = localStorage.getItem(key + '_' + appNo) || defaultVal;
                 document.querySelectorAll(className).forEach(el => el.innerText = val);
-            };
+            }};
             
             safeSet('.print_u_name', 'user_full_name', 'N/A');
             safeSet('.print_u_appno', 'user_app_no', 'N/A');
             safeSet('.print_u_scheme', 'u_scheme', 'N/A');
             document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = localStorage.getItem('paid_amount_' + appNo) || '100.00');
 
-            let safeSetId = (id, key) => {
+            let safeSetId = (id, key) => {{
                 let el = document.getElementById(id);
                 if(el) el.innerText = localStorage.getItem(key + '_' + appNo) || 'N/A';
-            };
+            }};
             
             safeSetId('print_u_father', 'u_father');
             safeSetId('print_u_mother', 'u_mother');
@@ -1397,16 +1481,16 @@ user_dashboard_design = """
             safeSetId('print_u_bank', 'u_bank');
             safeSetId('print_u_acc', 'u_acc');
             safeSetId('print_u_ifsc', 'u_ifsc');
-        }
+        }}
         
-        function viewUserAppModal() {
+        function viewUserAppModal() {{
             loadPrintData();
             document.getElementById('user_app_view_modal').classList.remove('hidden');
-        }
+        }}
 
-        function closeUserAppModal() {
+        function closeUserAppModal() {{
             document.getElementById('user_app_view_modal').classList.add('hidden');
-        }
+        }}
     </script>
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden">
@@ -1773,7 +1857,7 @@ user_dashboard_design = """
 # ==========================================
 # 6. FULL ADMIN DASHBOARD
 # ==========================================
-admin_login_design = """
+admin_login_design = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1781,6 +1865,7 @@ admin_login_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Private Pension Scheme</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -1789,158 +1874,158 @@ admin_login_design = """
         let otpTimerInterval;
         let timeLeft = 300; // 5 minutes
 
-        window.onload = function() {
+        window.onload = function() {{
             generateCaptcha();
-        };
+        }};
 
-        function generateCaptcha() {
+        function generateCaptcha() {{
             const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
             currentCaptcha = "";
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 6; i++) {{
                 currentCaptcha += chars[Math.floor(Math.random() * chars.length)];
-            }
+            }}
             document.getElementById('captcha_display').innerText = currentCaptcha;
-        }
+        }}
 
-        function togglePassword() {
+        function togglePassword() {{
             var passField = document.getElementById("password");
             var eyeIcon = document.getElementById("eye-icon");
-            if (passField.type === "password") { passField.type = "text"; eyeIcon.classList.remove("fa-eye"); eyeIcon.classList.add("fa-eye-slash"); } 
-            else { passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }
-        }
+            if (passField.type === "password") {{ passField.type = "text"; eyeIcon.classList.remove("fa-eye"); eyeIcon.classList.add("fa-eye-slash"); }} 
+            else {{ passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }}
+        }}
 
-        function handleAdminLogin(event) {
+        function handleAdminLogin(event) {{
             event.preventDefault();
             let adminId = document.getElementById('admin_id').value;
             let adminPass = document.getElementById('password').value;
             let captchaInput = document.getElementById('login_captcha').value;
             
-            if (captchaInput !== currentCaptcha) {
+            if (captchaInput !== currentCaptcha) {{
                 alert("Invalid Captcha! Please try again.");
                 generateCaptcha();
                 return;
-            }
+            }}
 
             let savedId = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
             let savedPass = localStorage.getItem('admin_password') || 'Admin@123';
 
-            if(adminId === savedId && adminPass === savedPass) {
+            if(adminId === savedId && adminPass === savedPass) {{
                 window.location.href = '/admin';
-            } else {
+            }} else {{
                 alert('Access Denied: Invalid ID or Password! Please enter correct credentials.');
                 generateCaptcha();
-            }
-        }
+            }}
+        }}
 
-        function showForgotForm() {
+        function showForgotForm() {{
             document.getElementById('admin_login_form').classList.add('hidden');
             document.getElementById('admin_forgot_form').classList.remove('hidden');
-        }
+        }}
 
-        function backToLogin() {
+        function backToLogin() {{
             document.getElementById('admin_forgot_form').classList.add('hidden');
             document.getElementById('admin_login_form').classList.remove('hidden');
             clearInterval(otpTimerInterval);
-        }
+        }}
 
-        async function sendForgotOTP() {
+        async function sendForgotOTP() {{
             let email = document.getElementById('forgot_email').value;
             let mobile = document.getElementById('forgot_mobile').value;
             let savedEmail = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
             let savedMobile = localStorage.getItem('admin_mobile') || '9876543210';
 
-            if (email !== savedEmail || mobile !== savedMobile) {
+            if (email !== savedEmail || mobile !== savedMobile) {{
                 alert("Email or Mobile Number does not match Admin Records!");
                 return;
-            }
+            }}
 
             forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${email}... (Demo OTP: ${forgotOTP})`;
+            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{email}}... (Demo OTP: ${{forgotOTP}})`;
             document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
             document.getElementById('forgot_otp_display').classList.remove('hidden');
             
-            try {
-                let response = await fetch('/api/send_email', {
+            try {{
+                let response = await fetch('/api/send_email', {{
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, otp: forgotOTP, subject: "Admin Panel - Password Reset OTP" })
-                });
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ email: email, otp: forgotOTP, subject: "Admin Panel - Password Reset OTP" }})
+                }});
                 let data = await response.json();
-                if(data.status === 'success') {
-                    document.getElementById('forgot_otp_display').innerText = `Real OTP successfully sent to Admin Email! (Demo OTP: ${forgotOTP})`;
+                if(data.status === 'success') {{
+                    document.getElementById('forgot_otp_display').innerText = `Real OTP successfully sent to Admin Email! (Demo OTP: ${{forgotOTP}})`;
                     document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
                     document.getElementById('step2_forgot').classList.remove('hidden');
                     startOtpTimer();
-                } else {
+                }} else {{
                     alert("Email sending failed. Setup your Gmail App Password in code.");
-                }
-            } catch(e) {
+                }}
+            }} catch(e) {{
                 alert("Server error connecting to Email API.");
-            }
-        }
+            }}
+        }}
 
-        function startOtpTimer() {
+        function startOtpTimer() {{
             clearInterval(otpTimerInterval);
             timeLeft = 300;
             updateTimerDisplay();
             document.getElementById('timer_display').classList.remove('text-red-600');
             
-            otpTimerInterval = setInterval(() => {
+            otpTimerInterval = setInterval(() => {{
                 timeLeft--;
                 updateTimerDisplay();
-                if (timeLeft <= 0) {
+                if (timeLeft <= 0) {{
                     clearInterval(otpTimerInterval);
                     forgotOTP = ""; 
                     document.getElementById('timer_display').innerText = "OTP Invalid/Expired!";
                     document.getElementById('timer_display').classList.add('text-red-600');
-                }
-            }, 1000);
-        }
+                }}
+            }}, 1000);
+        }}
 
-        function updateTimerDisplay() {
-            if(timeLeft > 0) {
+        function updateTimerDisplay() {{
+            if(timeLeft > 0) {{
                 let m = Math.floor(timeLeft / 60);
                 let s = timeLeft % 60;
                 document.getElementById('timer_display').innerText = "Expires in: 0" + m + ":" + (s < 10 ? "0" : "") + s;
-            }
-        }
+            }}
+        }}
 
-        function verifyForgotOTP() {
+        function verifyForgotOTP() {{
             let entered = document.getElementById('forgot_otp_input').value;
-            if(timeLeft <= 0 || !forgotOTP) {
+            if(timeLeft <= 0 || !forgotOTP) {{
                 alert("OTP has expired! Please click Resend OTP.");
                 return;
-            }
-            if (entered === forgotOTP && entered !== "") {
+            }}
+            if (entered === forgotOTP && entered !== "") {{
                 clearInterval(otpTimerInterval);
                 document.getElementById('timer_display').innerText = "OTP Verified successfully!";
                 document.getElementById('timer_display').classList.add('text-green-600');
                 document.getElementById('step3_forgot').classList.remove('hidden');
-            } else {
+            }} else {{
                 alert("Invalid OTP!");
-            }
-        }
+            }}
+        }}
 
-        function saveNewPassword(event) {
+        function saveNewPassword(event) {{
             event.preventDefault();
             let p1 = document.getElementById('new_pass').value;
             let p2 = document.getElementById('conf_new_pass').value;
 
-            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
-            if (!passRegex.test(p1)) {
+            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{{6,}}$/;
+            if (!passRegex.test(p1)) {{
                 alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
                 return;
-            }
+            }}
 
-            if(p1 !== p2) {
+            if(p1 !== p2) {{
                 alert("Passwords do not match!");
                 return;
-            }
+            }}
 
             localStorage.setItem('admin_password', p1);
             alert("Admin Password Changed Successfully! Please Login.");
             backToLogin();
-        }
+        }}
     </script>
 </head>
 <body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
@@ -2030,7 +2115,7 @@ admin_login_design = """
 </html>
 """
 
-admin_design = """
+admin_design = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2038,10 +2123,11 @@ admin_design = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Private Pension Scheme</title>
+    {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        window.onload = function() {
+        window.onload = function() {{
             if(localStorage.getItem('app_fee')) document.getElementById('app_fee').value = localStorage.getItem('app_fee');
             if(localStorage.getItem('payu_merchant_key')) document.getElementById('payu_merchant_key').value = localStorage.getItem('payu_merchant_key');
             if(localStorage.getItem('payu_merchant_salt')) document.getElementById('payu_merchant_salt').value = localStorage.getItem('payu_merchant_salt');
@@ -2057,9 +2143,9 @@ admin_design = """
 
             loadAdminData();
             loadAdminProfile();
-        };
+        }};
 
-        function saveSettings() {
+        function saveSettings() {{
             localStorage.setItem('app_fee', document.getElementById('app_fee').value);
             localStorage.setItem('payu_merchant_key', document.getElementById('payu_merchant_key').value);
             localStorage.setItem('payu_merchant_salt', document.getElementById('payu_merchant_salt').value);
@@ -2074,41 +2160,41 @@ admin_design = """
             localStorage.setItem('notice_text', document.getElementById('notice_text').value);
 
             alert('Settings Saved Successfully!');
-        }
+        }}
 
-        function loadAdminProfile() {
+        function loadAdminProfile() {{
             let n = localStorage.getItem('admin_name');
-            if(n) {
+            if(n) {{
                 document.getElementById('prof_admin_name').value = n;
                 document.getElementById('welcome_admin_name').innerText = n;
-            }
+            }}
             
             let m = localStorage.getItem('admin_mobile');
             if(m) document.getElementById('prof_admin_mobile').value = m;
             
             let e = localStorage.getItem('admin_email');
             if(e) document.getElementById('prof_admin_email').value = e;
-        }
+        }}
 
-        function saveAdminProfile() {
+        function saveAdminProfile() {{
             let n = document.getElementById('prof_admin_name').value;
             let m = document.getElementById('prof_admin_mobile').value;
             let e = document.getElementById('prof_admin_email').value;
             let p1 = document.getElementById('prof_new_pass').value;
             let p2 = document.getElementById('prof_conf_pass').value;
             
-            if(p1 || p2) {
-                let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/;
-                if (!passRegex.test(p1)) {
+            if(p1 || p2) {{
+                let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{{6,}}$/;
+                if (!passRegex.test(p1)) {{
                     alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
                     return;
-                }
-                if(p1 !== p2) {
+                }}
+                if(p1 !== p2) {{
                     alert("Passwords do not match!");
                     return;
-                }
+                }}
                 localStorage.setItem('admin_password', p1);
-            }
+            }}
             
             localStorage.setItem('admin_name', n);
             localStorage.setItem('admin_mobile', m);
@@ -2116,22 +2202,22 @@ admin_design = """
             
             alert("Admin Profile Saved Successfully! Login credentials updated.");
             location.reload();
-        }
+        }}
 
-        function switchTab(tabId, element) {
+        function switchTab(tabId, element) {{
             let sections = document.querySelectorAll('.content-section');
-            for(let i=0; i<sections.length; i++) { sections[i].classList.add('hidden'); }
+            for(let i=0; i<sections.length; i++) {{ sections[i].classList.add('hidden'); }}
             document.getElementById('section-' + tabId).classList.remove('hidden');
 
             let links = document.querySelectorAll('.menu-link');
-            for(let i=0; i<links.length; i++) {
+            for(let i=0; i<links.length; i++) {{
                 links[i].classList.remove('bg-blue-700', 'text-white');
                 links[i].classList.add('text-slate-300', 'hover:bg-slate-800');
-            }
+            }}
             element.classList.remove('text-slate-300', 'hover:bg-slate-800');
             element.classList.add('bg-blue-700', 'text-white');
 
-            let titles = {
+            let titles = {{
                 'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
                 'sysverify': '<i class="fa-solid fa-microchip text-blue-600 mr-2"></i> System Verification (Level 1)',
                 'adminapprove': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Final Admin Approval (Level 2)',
@@ -2141,19 +2227,19 @@ admin_design = """
                 'payments': '<i class="fa-solid fa-money-bill-transfer text-blue-600 mr-2"></i> Payment Records',
                 'settings': '<i class="fa-solid fa-gears text-blue-600 mr-2"></i> System & API Settings',
                 'profile': '<i class="fa-solid fa-user-gear text-blue-600 mr-2"></i> Admin Profile Settings'
-            };
+            }};
             document.getElementById('header-title').innerHTML = titles[tabId];
-        }
+        }}
 
-        function loadAdminData() {
+        function loadAdminData() {{
             let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
             let total = 0; let pending = 0; let approved = 0; let rejected = 0; let wallet = 0;
             
             let sysHtml = ''; let adminHtml = ''; let benHtml = ''; let rejHtml = ''; let payHtml = '';
 
-            appList.forEach(appNo => {
+            appList.forEach(appNo => {{
                 let isApplied = localStorage.getItem('user_has_applied_' + appNo);
-                if(isApplied === 'true') {
+                if(isApplied === 'true') {{
                     total++;
                     let amt = parseFloat(localStorage.getItem('paid_amount_' + appNo) || '100');
                     wallet += amt;
@@ -2164,65 +2250,65 @@ admin_design = """
                     let bankName = localStorage.getItem('u_bank_' + appNo) || 'N/A';
                     let accNo = localStorage.getItem('u_acc_' + appNo) || 'N/A';
 
-                    if(status === 'sys_pending') {
+                    if(status === 'sys_pending') {{
                         pending++;
                         sysHtml += `
                             <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
-                                <td class="py-4 px-4 font-bold text-green-800">${name}</td>
-                                <td class="py-4 px-4">${scheme}</td>
+                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
+                                <td class="py-4 px-4 font-bold text-green-800">${{name}}</td>
+                                <td class="py-4 px-4">${{scheme}}</td>
                                 <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="viewFullApplication('${appNo}')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
-                                    <button onclick="verifySysDoc('${appNo}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify & Send</button>
-                                    <button onclick="rejectApp('${appNo}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                                    <button onclick="verifySysDoc('${{appNo}}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify & Send</button>
+                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
                                 </td>
                             </tr>
                         `;
-                    } else if(status === 'admin_pending') {
+                    }} else if(status === 'admin_pending') {{
                         pending++;
                         adminHtml += `
                             <tr class="hover:bg-green-50 border-b transition-all">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${appNo} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">SYS OK</span></td>
-                                <td class="py-4 px-4 font-bold text-blue-800">${name}</td>
+                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">SYS OK</span></td>
+                                <td class="py-4 px-4 font-bold text-blue-800">${{name}}</td>
                                 <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
                                 <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="viewFullApplication('${appNo}')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
-                                    <button onclick="finalApprove('${appNo}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
-                                    <button onclick="rejectApp('${appNo}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
+                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
+                                    <button onclick="finalApprove('${{appNo}}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
+                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
                                 </td>
                             </tr>
                         `;
-                    } else if(status === 'approved' || status === 'pension_sent') {
+                    }} else if(status === 'approved' || status === 'pension_sent') {{
                         approved++;
                         let sentFlag = localStorage.getItem('pension_sent_' + appNo);
                         let btnHtml = "";
-                        if(sentFlag === 'true') {
+                        if(sentFlag === 'true') {{
                             btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Paid</button>`;
                             
                             let utr = localStorage.getItem('utr_number_' + appNo) || 'N/A';
                             payHtml += `
                                 <tr class="bg-gray-50 border-b">
-                                    <td class="py-4 px-4 font-bold text-blue-600">#${appNo}</td>
-                                    <td class="py-4 px-4 font-bold">${name}</td>
-                                    <td class="py-4 px-4 font-semibold text-gray-700">${bankName} (A/C: ${accNo})</td>
+                                    <td class="py-4 px-4 font-bold text-blue-600">#${{appNo}}</td>
+                                    <td class="py-4 px-4 font-bold">${{name}}</td>
+                                    <td class="py-4 px-4 font-semibold text-gray-700">${{bankName}} (A/C: ${{accNo}})</td>
                                     <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded font-bold">Success</span></td>
-                                    <td class="py-4 px-4 font-mono font-bold text-gray-800">${utr}</td>
+                                    <td class="py-4 px-4 font-mono font-bold text-gray-800">${{utr}}</td>
                                 </tr>
                             `;
-                        } else {
+                        }} else {{
                             btnHtml = `
-                                <button onclick="markManualPaid('${appNo}', '${name}', '${accNo}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-check-dollar"></i> Manual Pay</button>
-                                <button onclick="sendPensionDBT('${appNo}', '${name}', '1000', '${accNo}')" class="bg-indigo-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-indigo-700 mt-1"><i class="fa-solid fa-bolt"></i> DBT Auto</button>
+                                <button onclick="markManualPaid('${{appNo}}', '${{name}}', '${{accNo}}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-check-dollar"></i> Manual Pay</button>
+                                <button onclick="sendPensionDBT('${{appNo}}', '${{name}}', '1000', '${{accNo}}')" class="bg-indigo-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-indigo-700 mt-1"><i class="fa-solid fa-bolt"></i> DBT Auto</button>
                             `;
-                        }
+                        }}
 
                         benHtml += `
                             <tr class="hover:bg-gray-50 border-b">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${appNo}</td>
-                                <td class="py-4 px-4 font-bold">${name}</td>
+                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}}</td>
+                                <td class="py-4 px-4 font-bold">${{name}}</td>
                                 <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
                                 <td class="py-4 px-4 text-center space-x-2 flex flex-col items-center justify-center gap-1">
-                                    ${btnHtml}
+                                    ${{btnHtml}}
                                     <div class="flex gap-2">
                                         <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-orange-600"><i class="fa-solid fa-pause"></i> Hold</button>
                                         <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop</button>
@@ -2230,23 +2316,23 @@ admin_design = """
                                 </td>
                             </tr>
                         `;
-                    } else if(status === 'rejected') {
+                    }} else if(status === 'rejected') {{
                         rejected++;
                         let reason = localStorage.getItem('reject_reason_' + appNo) || 'System Auto-Rejected';
                         rejHtml += `
-                            <tr id="rej_row_${appNo}" class="hover:bg-red-50 border-b">
-                                <td class="py-4 px-4 font-medium text-red-600">#${appNo}</td>
-                                <td class="py-4 px-4 font-bold text-gray-800">${name}</td>
+                            <tr id="rej_row_${{appNo}}" class="hover:bg-red-50 border-b">
+                                <td class="py-4 px-4 font-medium text-red-600">#${{appNo}}</td>
+                                <td class="py-4 px-4 font-bold text-gray-800">${{name}}</td>
                                 <td class="py-4 px-4 text-gray-600 font-semibold">System/Admin</td>
-                                <td class="py-4 px-4 text-gray-600 italic">${reason}</td>
+                                <td class="py-4 px-4 text-gray-600 italic">${{reason}}</td>
                                 <td class="py-4 px-4 text-center">
-                                    <button onclick="deleteRejectedRow('${appNo}')" class="bg-gray-200 text-red-600 px-3 py-1 rounded shadow hover:bg-red-600 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
+                                    <button onclick="deleteRejectedRow('${{appNo}}')" class="bg-gray-200 text-red-600 px-3 py-1 rounded shadow hover:bg-red-600 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
                                 </td>
                             </tr>
                         `;
-                    }
-                }
-            });
+                    }}
+                }}
+            }});
 
             document.getElementById('count_total').innerText = total;
             document.getElementById('count_pending').innerText = pending;
@@ -2259,9 +2345,9 @@ admin_design = """
             if(benHtml) document.getElementById('beneficiaries_tbody').innerHTML = benHtml;
             if(rejHtml) document.getElementById('rejected_tbody').innerHTML = rejHtml;
             if(payHtml) document.getElementById('payments_tbody').innerHTML = payHtml;
-        }
+        }}
 
-        function verifySysDoc(appNo) {
+        function verifySysDoc(appNo) {{
             window.current_modal_appNo = appNo;
             let authName = localStorage.getItem('u_inc_auth_' + appNo) || "";
             let amount = localStorage.getItem('u_inc_amount_' + appNo) || "";
@@ -2271,79 +2357,79 @@ admin_design = """
             document.getElementById('modal_sys_inc_amt').innerText = amount;
             
             document.getElementById('sys_verification_modal').classList.remove('hidden');
-        }
+        }}
         
-        function closeSysModal() {
+        function closeSysModal() {{
             document.getElementById('sys_verification_modal').classList.add('hidden');
-        }
+        }}
 
-        function approveSys(appNo) {
+        function approveSys(appNo) {{
             let targetApp = appNo || window.current_modal_appNo;
             localStorage.setItem('app_status_' + targetApp, 'admin_pending');
             alert("System Validation Completed! Forwarded to Final Admin Approval Portal.");
             location.reload();
-        }
+        }}
 
-        function finalApprove(appNo) {
+        function finalApprove(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'approved');
             alert("Application Finally Approved! Added to Beneficiaries.");
             location.reload();
-        }
+        }}
 
-        function rejectApp(appNo) {
+        function rejectApp(appNo) {{
             let targetApp = appNo || window.current_modal_appNo;
             let reason = prompt("Please enter the reason for rejection (Remark):");
-            if (reason != null && reason != "") {
+            if (reason != null && reason != "") {{
                 localStorage.setItem('app_status_' + targetApp, 'rejected');
                 localStorage.setItem('reject_reason_' + targetApp, reason);
                 alert("Application Rejected and Moved to Rejected Box with Remark: " + reason);
                 document.getElementById('sys_verification_modal').classList.add('hidden');
                 location.reload();
-            }
-        }
+            }}
+        }}
 
-        function deleteRejectedRow(appNo) {
-            if(confirm("Are you sure you want to permanently delete this rejected application data?")) {
+        function deleteRejectedRow(appNo) {{
+            if(confirm("Are you sure you want to permanently delete this rejected application data?")) {{
                 localStorage.removeItem('user_has_applied_' + appNo);
                 localStorage.removeItem('app_status_' + appNo);
                 location.reload();
-            }
-        }
+            }}
+        }}
 
-        function markManualPaid(appNo, name, accNo) {
-            let utr = prompt(`Enter Payment UTR/Transaction Number for ${name} (A/C: ${accNo}):`);
-            if(utr != null && utr.trim() !== "") {
+        function markManualPaid(appNo, name, accNo) {{
+            let utr = prompt(`Enter Payment UTR/Transaction Number for ${{name}} (A/C: ${{accNo}}):`);
+            if(utr != null && utr.trim() !== "") {{
                 localStorage.setItem('utr_number_' + appNo, utr);
                 localStorage.setItem('pension_sent_' + appNo, 'true');
                 localStorage.setItem('app_status_' + appNo, 'pension_sent');
-                alert(`Manual Payment Verified! UTR ${utr} saved. Customer will now see Payment Success status.`);
+                alert(`Manual Payment Verified! UTR ${{utr}} saved. Customer will now see Payment Success status.`);
                 location.reload();
-            } else {
+            }} else {{
                 alert("UTR Number is required to confirm manual payment.");
-            }
-        }
+            }}
+        }}
 
-        function sendPensionDBT(appNo, name, amount, accNo) {
+        function sendPensionDBT(appNo, name, amount, accNo) {{
             let apiKey = localStorage.getItem('payout_api_key');
-            if(!apiKey) {
+            if(!apiKey) {{
                 alert("ERROR: Payout API Key is missing! Please configure Decentro/RazorpayX keys in API & Settings first.");
                 return;
-            }
+            }}
             
-            let confirmMsg = `Connecting to Secure Payout Gateway...\\nAre you sure you want to transfer Pension of ₹${amount} to ${name} (A/C: ${accNo})?`;
-            if(confirm(confirmMsg)) {
-                setTimeout(() => {
+            let confirmMsg = `Connecting to Secure Payout Gateway...\\nAre you sure you want to transfer Pension of ₹${{amount}} to ${{name}} (A/C: ${{accNo}})?`;
+            if(confirm(confirmMsg)) {{
+                setTimeout(() => {{
                     let txnId = "DBT-" + Math.floor(Math.random()*1000000000);
-                    alert(`SUCCESS! ₹${amount} Transferred via IMPS/NEFT to ${name}.\\nTransaction ID: ${txnId}`);
+                    alert(`SUCCESS! ₹${{amount}} Transferred via IMPS/NEFT to ${{name}}.\\nTransaction ID: ${{txnId}}`);
                     localStorage.setItem('utr_number_' + appNo, txnId);
                     localStorage.setItem('pension_sent_' + appNo, 'true');
                     localStorage.setItem('app_status_' + appNo, 'pension_sent');
                     location.reload();
-                }, 1500);
-            }
-        }
+                }}, 1500);
+            }}
+        }}
 
-        function viewFullApplication(appNo) {
+        function viewFullApplication(appNo) {{
             document.getElementById('v_appno').innerText = appNo;
             document.getElementById('v_scheme').innerText = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
             document.getElementById('v_name').innerText = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
@@ -2369,11 +2455,11 @@ admin_design = """
             document.getElementById('v_fee').innerText = "Paid (₹" + fee + ")";
 
             document.getElementById('full_app_view_modal').classList.remove('hidden');
-        }
+        }}
 
-        function closeFullAppModal() {
+        function closeFullAppModal() {{
             document.getElementById('full_app_view_modal').classList.add('hidden');
-        }
+        }}
     </script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
