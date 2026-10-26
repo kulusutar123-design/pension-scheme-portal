@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
 import os
+import threading
 
 app = FastAPI()
 
@@ -21,22 +22,25 @@ app.add_middleware(
 )
 
 # ==========================================
-# 0. BACKEND CLOUD DATABASE SYSTEM (NEW - FOR CROSS BROWSER)
+# 0. BACKEND CLOUD DATABASE SYSTEM (UPDATED FOR 100% CROSS-BROWSER)
 # ==========================================
 DB_FILE = "server_database.json"
+db_lock = threading.Lock() # Lock added to prevent data corruption during simultaneous saves
 
 def read_db():
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE, "r") as f:
-            try:
-                return json.load(f)
-            except:
-                return {}
-    return {}
+    with db_lock:
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE, "r") as f:
+                try:
+                    return json.load(f)
+                except:
+                    return {}
+        return {}
 
 def write_db(data):
-    with open(DB_FILE, "w") as f:
-        json.dump(data, f)
+    with db_lock:
+        with open(DB_FILE, "w") as f:
+            json.dump(data, f)
 
 @app.get("/api/get_all_storage")
 async def get_all_storage():
@@ -195,44 +199,52 @@ async def payment_failure_route(request: Request):
     """)
 
 # ==========================================
-# CLOUD SYNC SCRIPT (INJECTED IN ALL HTML)
+# CLOUD SYNC SCRIPT (UPDATED & PERFECTED)
 # ==========================================
 cloud_sync_script = """
     <!-- 100% WORKING CROSS-DEVICE SYNC SCRIPT -->
     <script>
+        // 1. Securely reference original Storage methods
+        const originalSetItem = Storage.prototype.setItem;
+        const originalRemoveItem = Storage.prototype.removeItem;
+        const originalClear = Storage.prototype.clear;
+
+        // 2. Synchronously fetch server data on page load BEFORE anything else runs
         try {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/api/get_all_storage', false); 
+            xhr.open('GET', '/api/get_all_storage', false); // false = synchronous
             xhr.send(null);
             if (xhr.status === 200) {
                 var serverData = JSON.parse(xhr.responseText);
-                var origSet = Object.getOwnPropertyDescriptor(Storage.prototype, 'setItem').value;
+                originalClear.call(localStorage); // Clear old garbage
                 for (var key in serverData) {
-                    origSet.call(localStorage, key, serverData[key]);
+                    originalSetItem.call(localStorage, key, serverData[key]); // Load fresh DB
                 }
             }
-        } catch(e) { console.error("Sync failed", e); }
+        } catch(e) { 
+            console.error("Cloud Sync Load Error:", e); 
+        }
 
-        const originalSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
-            originalSetItem.apply(this, arguments);
+        // 3. Override setItem to auto-save to Cloud safely
+        Storage.prototype.setItem = function(key, value) {
+            originalSetItem.call(this, key, value);
             try {
                 var saveXhr = new XMLHttpRequest();
-                saveXhr.open('POST', '/api/sync_storage', true);
+                saveXhr.open('POST', '/api/sync_storage', true); // true = asynchronous
                 saveXhr.setRequestHeader('Content-Type', 'application/json');
-                saveXhr.send(JSON.stringify({key: key, value: String(value)}));
-            } catch(e) {}
+                saveXhr.send(JSON.stringify({key: String(key), value: String(value)}));
+            } catch(e) { console.error("Cloud Sync Save Error:", e); }
         };
         
-        const originalRemoveItem = localStorage.removeItem;
-        localStorage.removeItem = function(key) {
-            originalRemoveItem.apply(this, arguments);
+        // 4. Override removeItem to auto-delete from Cloud safely
+        Storage.prototype.removeItem = function(key) {
+            originalRemoveItem.call(this, key);
             try {
                 var delXhr = new XMLHttpRequest();
                 delXhr.open('POST', '/api/delete_storage', true);
                 delXhr.setRequestHeader('Content-Type', 'application/json');
-                delXhr.send(JSON.stringify({key: key}));
-            } catch(e) {}
+                delXhr.send(JSON.stringify({key: String(key)}));
+            } catch(e) { console.error("Cloud Sync Delete Error:", e); }
         };
     </script>
 """
@@ -1063,7 +1075,7 @@ user_dashboard_design = f"""
                 "Nawarangpur": ["Nandahandi", "Tentulikhuinti", "Papadahandi", "Kosagumuda", "Dabugaon", "Umerkote", "Jharigaon", "Chandahandi", "Raighar", "Nawarangpur"],
                 "Nayagarh": ["Odagaon", "Bhapur", "Khandapada", "Ranpur", "Daspalla", "Nuagaon", "Gania", "Nayagarh"],
                 "Nuapada": ["Boden", "Khariar", "Komna", "Sinapali", "Nuapada"],
-                "Phulbani": ["Phiringia", "Khajuripada", "K.Nuagaon", "Daringbadi", "Balliguda", "Kotgarh", "Tumudibandh", "G.Udayagiri", "Raikia", "Tikabali", "Chakapad", "Phulbani"],
+                "Phulbani": ["Khajuripada", "K.Nuagaon", "Daringbadi", "Balliguda", "Kotgarh", "Tumudibandh", "G.Udayagiri", "Raikia", "Tikabali", "Chakapad", "Phulbani"],
                 "Puri": ["Brahmagiri", "Krushnaprasad", "Satyabadi", "Kanas", "Delang", "Pipili", "Nimapada", "Gop", "Kakatpur", "Astarang", "Puri Sadar"],
                 "Rayagada": ["Kolanara", "Kaalyansinghpur", "Kaashipur", "Padmapur", "Ramanaguda", "Gunupur", "Gudari", "Muniguda", "Bisam-Cuttack", "Chandrapur", "Rayagada"],
                 "Sambalpur": ["Dhankauda", "Maneswar", "Jujumora", "Rengali", "Rairakhola", "Nakatideul", "Kuchinda", "Bamara", "Jamanakira", "Pairakhal", "Sambalpur"],
