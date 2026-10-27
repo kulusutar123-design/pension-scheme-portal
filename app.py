@@ -161,7 +161,7 @@ class EmailRequest(BaseModel):
 
 @app.post("/api/send_email")
 async def send_email_api(req: EmailRequest):
-    # NOTUN EMAIL ID & PASSWORD UPDATE KORA HOYECHE
+    # UPDATED EMAIL ID & PASSWORD
     SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
     SENDER_PASSWORD = "gzafqvjphaftybhy" 
 
