@@ -161,8 +161,9 @@ class EmailRequest(BaseModel):
 
 @app.post("/api/send_email")
 async def send_email_api(req: EmailRequest):
-    SENDER_EMAIL = "dhana6942@gmail.com" 
-    SENDER_PASSWORD = "blhqjmyucjsokxki" 
+    # NOTUN EMAIL ID & PASSWORD UPDATE KORA HOYECHE
+    SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
+    SENDER_PASSWORD = "gzafqvjphaftybhy" 
 
     try:
         msg = MIMEMultipart()
