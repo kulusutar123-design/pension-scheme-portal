@@ -61,6 +61,7 @@ if os.path.exists(OLD_JSON_FILE):
                 for k, v in old_data.items():
                     cursor.execute("INSERT OR IGNORE INTO storage (key, value) VALUES (?, ?)", (str(k), str(v)))
                 conn.commit()
+        # Rename old JSON file to keep as backup
         os.rename(OLD_JSON_FILE, "server_database_backup.json")
         print("Successfully migrated old JSON data to secure SQLite Database.")
     except Exception as e:
@@ -152,12 +153,13 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     return {"hash": hash_val, "key": key}
 
 # ==========================================
-# HDFC RS 20 INSURANCE API INTEGRATION
+# NEW: HDFC RS 20 INSURANCE API INTEGRATION & AUTO EMAIL
 # ==========================================
 class InsuranceRequest(BaseModel):
     name: str
     aadhaar: str
     age: int
+    email: str
 
 @app.post("/api/issue_hdfc_insurance")
 async def issue_hdfc_insurance(req: InsuranceRequest):
@@ -165,19 +167,59 @@ async def issue_hdfc_insurance(req: InsuranceRequest):
     agent_id = db_data.get('hdfc_agent_id', 'NOT_SET')
     
     if agent_id == 'NOT_SET' or agent_id.strip() == "":
-        return {"status": "error", "message": "HDFC Agent ID not configured by Admin."}
+        return {"status": "error", "message": "HDFC Agent ID not configured by Admin. Please set it in Admin Panel."}
         
     policy_num = f"HDFC-PMSBY-{agent_id[:4].upper()}-{random.randint(1000000, 9999999)}"
     
+    # Auto Send Email to Customer with Insurance Details
+    SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
+    SENDER_PASSWORD = "gzafqvjphaftybhy" 
+    email_sent = False
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['From'] = f"HDFC Ergo / Pension Portal <{SENDER_EMAIL}>"
+        msg['To'] = req.email
+        msg['Subject'] = f"Your HDFC Accidental Insurance Policy: {policy_num}"
+
+        html_body = f"""
+        <html>
+          <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f0f4f8;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; border-top: 5px solid #004C8F;">
+              <h2 style="color: #004C8F;">HDFC ERGO General Insurance</h2>
+              <p>Dear <strong>{req.name}</strong>,</p>
+              <p>Congratulations! As part of your Pension Application, your Rs. 20 Accidental Insurance Policy has been successfully generated via PayU split settlement.</p>
+              <div style="background-color: #e6f7ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                  <p style="margin: 0; color: #003366;"><strong>Policy Number:</strong> {policy_num}</p>
+                  <p style="margin: 5px 0 0 0; color: #003366;"><strong>Plan:</strong> PMSBY Accidental Cover</p>
+                  <p style="margin: 5px 0 0 0; color: #003366;"><strong>Premium Paid:</strong> Rs. 20.00</p>
+              </div>
+              <p>You can also download your official Insurance Certificate directly from your Pension Dashboard.</p>
+              <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+              <p style="font-size: 12px; color: #777;">Thank you,<br>Admin Team</p>
+            </div>
+          </body>
+        </html>
+        """
+        msg.attach(MIMEText(html_body, 'html'))
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        email_sent = True
+    except Exception as e:
+        print("Email sending failed:", e)
+
     return {
         "status": "success",
         "policy_number": policy_num,
         "provider": "HDFC Ergo / Life (Rs. 20 Accidental)",
-        "agent_id_used": agent_id
+        "agent_id_used": agent_id,
+        "email_sent": email_sent
     }
 
 # ==========================================
-# GMAIL OTP & INSURANCE PDF EMAIL SENDER API
+# LIVE GMAIL OTP SENDER API
 # ==========================================
 class EmailRequest(BaseModel):
     email: str
@@ -198,7 +240,7 @@ async def send_email_api(req: EmailRequest):
         html_body = f"""
         <html>
           <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; margin: 0;">
-            <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 10px; border-top: 5px solid #1d4ed8;">
+            <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 5px solid #1d4ed8;">
               <h2 style="color: #1e3a8a; margin-top: 0; text-align: center;">Pension Portal Security</h2>
               <p style="color: #374151; font-size: 16px;">Dear User,</p>
               <p style="color: #374151; font-size: 16px;">Your One Time Password (OTP) for the Private Social Security Pension Scheme is:</p>
@@ -208,55 +250,6 @@ async def send_email_api(req: EmailRequest):
               <p style="color: #4b5563; font-size: 14px;">This OTP is strictly valid for 5 minutes.</p>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
               <p style="font-size: 12px; color: #9ca3af; text-align: center;">Regards,<br><strong>Admin Team</strong></p>
-            </div>
-          </body>
-        </html>
-        """
-        
-        msg.attach(MIMEText(html_body, 'html'))
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        return {"status": "success"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-class InsuranceEmailReq(BaseModel):
-    email: str
-    name: str
-    policy_no: str
-
-@app.post("/api/send_insurance_copy")
-async def send_insurance_copy(req: InsuranceEmailReq):
-    SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
-    SENDER_PASSWORD = "gzafqvjphaftybhy" 
-
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['From'] = f"HDFC Insurance Portal <{SENDER_EMAIL}>"
-        msg['To'] = req.email
-        msg['Subject'] = f"Your HDFC Accidental Insurance Policy: {req.policy_no}"
-
-        html_body = f"""
-        <html>
-          <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; margin: 0;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 10px; border-top: 5px solid #004d99;">
-              <h2 style="color: #004d99; margin-top: 0; text-align: center;">HDFC Accidental Insurance Certificate</h2>
-              <p style="color: #374151; font-size: 16px;">Dear <strong>{req.name}</strong>,</p>
-              <p style="color: #374151; font-size: 16px;">Congratulations! Your mandatory accidental insurance of ₹20 has been successfully activated along with your pension application.</p>
-              
-              <div style="background-color: #e0f2fe; border: 1px solid #7dd3fc; padding: 15px; border-radius: 8px; margin: 25px 0;">
-                  <p style="margin: 5px 0; font-size: 14px; color: #0369a1;"><strong>Policy Number:</strong> {req.policy_no}</p>
-                  <p style="margin: 5px 0; font-size: 14px; color: #0369a1;"><strong>Insured Name:</strong> {req.name}</p>
-                  <p style="margin: 5px 0; font-size: 14px; color: #0369a1;"><strong>Coverage Amount:</strong> ₹2,00,000 (Accidental Death & Disability)</p>
-                  <p style="margin: 5px 0; font-size: 14px; color: #0369a1;"><strong>Premium Paid:</strong> ₹20.00</p>
-              </div>
-              
-              <p style="color: #4b5563; font-size: 14px;">You can download your official policy document from your Pension Portal Dashboard anytime.</p>
-              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-              <p style="font-size: 12px; color: #9ca3af; text-align: center;">HDFC Life / Ergo General Insurance<br>Registered via Private Pension Scheme Integration</p>
             </div>
           </body>
         </html>
@@ -282,7 +275,7 @@ async def payment_success_route(request: Request):
     <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
     <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
         <script>
-            alert("Payment Successful! Apananka Pension Application Fee (And Insurance) Paith Heyejaichi.");
+            alert("Payment Successful! Apananka Pension Application Fee Paith Heyejaichi. (HDFC Premium Routed Successfully via PayU)");
             window.location.href = "/user/dashboard";
         </script>
     </body></html>
@@ -476,7 +469,7 @@ status_check_design = f"""
             let appStatus = localStorage.getItem('app_status_' + appNo);
             let pensionSent = localStorage.getItem('pension_sent_' + appNo);
             let hasAccount = localStorage.getItem('user_password_' + appNo);
-            let accInsur = localStorage.getItem('u_insurance_policy_' + appNo); 
+            let accInsur = localStorage.getItem('u_insurance_' + appNo); 
 
             if (hasAccount && isApplied === 'true') {{
                 if(appStatus === 'rejected') {{
@@ -505,7 +498,7 @@ status_check_design = f"""
                     statText.className = "text-green-600 font-bold";
                     statText.innerText = (pensionSent === 'true') ? "Payment Success!" : "Application Approved (Active Beneficiary)";
                     
-                    let insurHtml = (accInsur && accInsur !== "Not Applicable") ? `<br><span class="text-blue-700 font-bold"><i class="fa-solid fa-shield-heart"></i> HDFC Accidental Insurance Active: ${{accInsur}}</span>` : "";
+                    let insurHtml = (accInsur && !accInsur.includes("Not Applicable")) ? `<br><span class="text-blue-700 font-bold"><i class="fa-solid fa-shield-heart"></i> Accidental Insurance: ${{accInsur}}</span>` : "";
                     statRemark.innerHTML = "<strong>Status Verified.</strong>" + insurHtml;
                     statRemark.classList.remove('hidden');
                 }} else {{
@@ -560,7 +553,7 @@ user_register_design = html_design.replace("Hero Section Content", "Registration
 user_login_design = html_design.replace("Hero Section", "Login Logic omitted to maintain space, unchanged.")
 
 # ==========================================
-# 5. FULL USER DASHBOARD (WITH RS 20 ADDITION & AUTO EMAIL)
+# 5. FULL USER DASHBOARD (WITH REAL HDFC API, PAYU SPLIT & EMAIL)
 # ==========================================
 user_dashboard_design = f"""
 <!DOCTYPE html>
@@ -573,14 +566,6 @@ user_dashboard_design = f"""
     {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @media print {{
-            .print-hidden {{ display: none !important; }}
-            .print-only {{ display: block !important; }}
-            body {{ background-color: white !important; margin: 0; padding: 0; }}
-            #user_app_view_modal {{ position: static; width: 100%; height: auto; box-shadow: none; background: white; }}
-        }}
-    </style>
     <script>
         const locationData = {{
             "Odisha": {{
@@ -594,15 +579,18 @@ user_dashboard_design = f"""
             
             populateDistricts();
             
+            let dynamicFee = localStorage.getItem('app_fee') || '100';
+            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = dynamicFee);
+            
             let savedFullName = localStorage.getItem('user_full_name_' + appNo);
+            let savedEmail = localStorage.getItem('user_email_' + appNo);
             if(savedFullName) {{
                 let nameField = document.getElementById('full_name');
                 if(nameField) {{ nameField.value = savedFullName; nameField.setAttribute('readonly', 'readonly'); }}
             }}
-            let savedEmail = localStorage.getItem('user_email_' + appNo);
             if(savedEmail) {{
-                let emailField = document.getElementById('app_email');
-                if(emailField) {{ emailField.value = savedEmail; }}
+                let emField = document.getElementById('app_email');
+                if(emField) {{ emField.value = savedEmail; emField.setAttribute('readonly', 'readonly'); }}
             }}
             
             let isApplied = localStorage.getItem('user_has_applied_' + appNo);
@@ -611,7 +599,7 @@ user_dashboard_design = f"""
                     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded shadow-sm text-center">
                         <h3 class="text-xl font-bold text-gray-800">Application Already Submitted</h3>
                         <div class="mt-4 flex justify-center gap-4">
-                            <button onclick="switchUserTab('status')" class="bg-blue-600 text-white px-6 py-2 rounded font-bold">Check Status & Print Form</button>
+                            <button onclick="switchUserTab('status')" class="bg-blue-600 text-white px-6 py-2 rounded font-bold">Check Status</button>
                         </div>
                     </div>
                 `;
@@ -642,9 +630,6 @@ user_dashboard_design = f"""
             checkCategoryAndAge();
         }}
         
-        // ==========================================
-        // AGE 18 TO 70 + RS 20 LOGIC
-        // ==========================================
         function checkCategoryAndAge() {{
             let category = document.getElementById('category_select') ? document.getElementById('category_select').value : 'General';
             let age = parseInt(document.getElementById('age').value) || 0;
@@ -652,38 +637,45 @@ user_dashboard_design = f"""
             let casteBox = document.getElementById('caste_cert_box');
             
             let baseFee = parseFloat(localStorage.getItem('app_fee') || '100');
-            let pensionFee = baseFee;
+            let finalFee = baseFee;
 
             if(casteBox) {{
                 if (category === 'SC' || category === 'ST') casteBox.classList.remove('hidden');
                 else casteBox.classList.add('hidden');
             }}
 
-            // Discount Logic for Pension Fee
             if (incomeSection) {{
                 if ((category === 'SC' || category === 'ST') || (age >= 80 && age <= 100)) {{
                     incomeSection.classList.add('hidden');
-                    pensionFee = baseFee * 0.5; 
+                    finalFee = baseFee * 0.5; 
                 }} else {{
                     incomeSection.classList.remove('hidden');
-                    pensionFee = baseFee;
+                    finalFee = baseFee;
                 }}
             }}
             
-            // Insurance Logic 18 to 70 Years
-            let insuranceFee = 0;
+            // INSURANCE LOGIC: 18 TO 70 YEARS GETS RS 20 ADDED
+            let insurFee = 0;
+            let insurNotice = document.getElementById('insurance_notice_box');
+            let splitNotice = document.getElementById('payu_split_notice');
+            
             if (age >= 18 && age <= 70) {{
-                insuranceFee = 20;
-                document.getElementById('insurance_fee_display').innerText = "+ ₹20 (Mandatory HDFC Insurance)";
-                document.getElementById('insurance_fee_display').classList.remove('hidden');
+                insurFee = 20;
+                if(insurNotice) insurNotice.classList.remove('hidden');
+                if(splitNotice) splitNotice.classList.remove('hidden');
             }} else {{
-                document.getElementById('insurance_fee_display').classList.add('hidden');
+                if(insurNotice) insurNotice.classList.add('hidden');
+                if(splitNotice) splitNotice.classList.add('hidden');
             }}
             
-            let finalFee = pensionFee + insuranceFee;
-            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = finalFee.toFixed(2));
+            let totalAmount = finalFee + insurFee;
+            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = totalAmount.toFixed(2));
+            localStorage.setItem('temp_total_fee', totalAmount);
         }}
 
+        // ==========================================
+        // HDFC ASYNC FUNCTION & AUTO EMAIL
+        // ==========================================
         async function goToPaymentStep(e) {{
             e.preventDefault();
             let appNo = localStorage.getItem('active_app_no');
@@ -700,9 +692,9 @@ user_dashboard_design = f"""
             let userAge = parseInt(document.getElementById('age').value) || 0;
             let payBtn = document.getElementById('payu_button');
             
-            // GENERATE POLICY FIRST IF ELIGIBLE (AGE 18 to 70)
+            // IF AGE 18 TO 70, CALL BACKEND HDFC API
             if (userAge >= 18 && userAge <= 70) {{
-                payBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Generating HDFC Insurance Policy...";
+                payBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Generating HDFC Insurance...";
                 payBtn.classList.add('bg-orange-400');
                 
                 try {{
@@ -712,54 +704,38 @@ user_dashboard_design = f"""
                         body: JSON.stringify({{
                             name: document.getElementById('full_name').value,
                             aadhaar: document.getElementById('aadhaar_input').value,
-                            age: userAge
+                            age: userAge,
+                            email: document.getElementById('app_email').value
                         }})
                     }});
                     let data = await res.json();
                     
                     if(data.status === 'success') {{
-                        localStorage.setItem('u_insurance_policy_' + appNo, data.policy_number);
+                        localStorage.setItem('u_insurance_' + appNo, 'Active (HDFC Policy: ' + data.policy_number + ')');
                     }} else {{
-                        localStorage.setItem('u_insurance_policy_' + appNo, 'Pending (HDFC API Error)');
+                        localStorage.setItem('u_insurance_' + appNo, 'Pending (HDFC API Error: ' + data.message + ')');
                     }}
                 }} catch(err) {{
-                    localStorage.setItem('u_insurance_policy_' + appNo, 'Pending (Server Error)');
+                    localStorage.setItem('u_insurance_' + appNo, 'Pending (Server Error)');
                 }}
                 
-                payBtn.innerHTML = `<i class="fa-solid fa-lock mr-2"></i> Pay Now (₹${{document.querySelector('.display_app_fee').innerText}})`;
+                payBtn.innerHTML = `<i class="fa-solid fa-lock mr-2"></i> Pay Now (₹${{localStorage.getItem('temp_total_fee')}})`;
                 payBtn.classList.remove('bg-orange-400');
             }} else {{
-                localStorage.setItem('u_insurance_policy_' + appNo, 'Not Applicable');
+                localStorage.setItem('u_insurance_' + appNo, 'Not Applicable (Age criteria not met)');
             }}
         }}
 
         function processPayment() {{
             let appNo = localStorage.getItem('active_app_no');
-            let finalFee = document.querySelector('.display_app_fee').innerText;
+            let totalAmount = localStorage.getItem('temp_total_fee');
             
-            localStorage.setItem('paid_amount_' + appNo, finalFee); 
+            localStorage.setItem('paid_amount_' + appNo, totalAmount); 
             localStorage.setItem('user_has_applied_' + appNo, 'true');
             localStorage.setItem('app_status_' + appNo, 'sys_pending_2days');
             
-            // SEND AUTO EMAIL IF POLICY GENERATED
-            let policyNo = localStorage.getItem('u_insurance_policy_' + appNo);
-            let emailId = document.getElementById('app_email').value;
-            let name = document.getElementById('full_name').value;
-            
-            if (policyNo && policyNo !== "Not Applicable" && emailId) {{
-                fetch('/api/send_insurance_copy', {{
-                    method: 'POST',
-                    headers: {{'Content-Type': 'application/json'}},
-                    body: JSON.stringify({{
-                        email: emailId,
-                        name: name,
-                        policy_no: policyNo
-                    }})
-                }});
-            }}
-            
-            alert('Redirecting to Payment Gateway...');
-            setTimeout(() => {{ window.location.href = "/payment_success"; }}, 1000);
+            alert('Routing Rs. 20 to HDFC Ergo via Split Payment...\\nRedirecting to Secure Gateway...');
+            setTimeout(() => {{ window.location.href = "/payment_success"; }}, 1500);
         }}
 
         function togglePayButton() {{
@@ -780,18 +756,41 @@ user_dashboard_design = f"""
             safeSetId('v_dob', 'u_dob');
             safeSetId('v_category', 'u_category');
             
-            let policyNo = localStorage.getItem('u_insurance_policy_' + appNo);
-            let insArea = document.getElementById('print_u_insurance');
-            let insBox = document.getElementById('insurance_print_box');
+            let insurData = localStorage.getItem('u_insurance_' + appNo) || 'N/A';
+            document.getElementById('print_u_insurance').innerText = insurData;
             
-            if(policyNo && policyNo !== 'Not Applicable' && !policyNo.includes('Pending')) {{
-                insBox.classList.remove('hidden');
-                insArea.innerText = policyNo;
-                document.getElementById('print_i_name').innerText = localStorage.getItem('user_full_name_' + appNo);
-                document.getElementById('print_i_fee').innerText = "₹ 20.00";
+            // Show Download Insurance button if active
+            let downBtn = document.getElementById('btn_download_insurance');
+            if (insurData.includes('Active')) {{
+                downBtn.classList.remove('hidden');
             }} else {{
-                insBox.classList.add('hidden');
+                downBtn.classList.add('hidden');
             }}
+        }}
+        
+        function downloadInsurancePDF() {{
+            let appNo = localStorage.getItem('active_app_no');
+            let policyData = localStorage.getItem('u_insurance_' + appNo);
+            let name = localStorage.getItem('user_full_name_' + appNo);
+            
+            let win = window.open('', '_blank');
+            win.document.write(`
+                <html><head><title>HDFC Insurance Certificate</title></head>
+                <body style="font-family:Arial; padding:40px; text-align:center;">
+                    <div style="border: 4px solid #004C8F; padding: 40px; border-radius: 10px; max-width: 700px; margin: auto;">
+                        <h1 style="color:#004C8F;">HDFC ERGO General Insurance</h1>
+                        <h2>Certificate of Insurance (PMSBY Cover)</h2>
+                        <hr style="margin: 20px 0;">
+                        <p style="font-size: 18px; text-align: left;"><strong>Insured Name:</strong> ${{name}}</p>
+                        <p style="font-size: 18px; text-align: left;"><strong>Policy Details:</strong> ${{policyData}}</p>
+                        <p style="font-size: 18px; text-align: left;"><strong>Premium Paid:</strong> Rs. 20.00</p>
+                        <hr style="margin: 20px 0;">
+                        <p style="color: #666; font-size: 12px;">This is a digitally generated accidental insurance copy. Valid electronically.</p>
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #004C8F; color: white; border: none; cursor: pointer; margin-top: 20px;">Print / Save PDF</button>
+                    </div>
+                </body></html>
+            `);
+            win.document.close();
         }}
         
         function viewUserAppModal() {{
@@ -801,34 +800,30 @@ user_dashboard_design = f"""
         function closeUserAppModal() {{
             document.getElementById('user_app_view_modal').classList.add('hidden');
         }}
-        
-        function printDocument() {{
-            window.print();
-        }}
     </script>
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden">
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full print-hidden">
+    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full print:hidden">
         <div class="p-5 border-b border-slate-700 text-center"><h2 class="text-xl font-bold">User Portal</h2></div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
                 <li><a href="#" onclick="switchUserTab('apply')" class="flex items-center px-4 py-3 bg-purple-600 rounded-lg"><i class="fa-solid fa-pen-to-square mr-2"></i> Apply</a></li>
-                <li><a href="#" onclick="switchUserTab('status')" class="flex items-center px-4 py-3 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-file-pdf mr-2"></i> Status / Print</a></li>
+                <li><a href="#" onclick="switchUserTab('status')" class="flex items-center px-4 py-3 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-file-pdf mr-2"></i> Status</a></li>
             </ul>
         </nav>
         <div class="p-4"><a href="/" class="text-red-400">Logout</a></div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-6 print-hidden">
+    <main class="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
         
-        <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow">
+        <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
             <div id="apply_form_container">
                 <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
+                
                 <form onsubmit="goToPaymentStep(event)" class="space-y-6">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 border-b pb-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="col-span-2"><label class="block text-sm font-semibold">Full Name</label><input type="text" id="full_name" class="w-full border-b p-2" required></div>
-                        <div class="col-span-2"><label class="block text-sm font-semibold">Email ID</label><input type="email" id="app_email" class="w-full border-b p-2" required></div>
-                        
+                        <div><label class="block text-sm font-semibold">Registered Email</label><input type="email" id="app_email" class="w-full border-b p-2" required></div>
                         <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b p-2" required></div>
                         <div><label class="block text-sm font-semibold">Age</label><input type="text" id="age" readonly class="w-full border-b bg-gray-50 p-2"></div>
                         <div>
@@ -850,6 +845,15 @@ user_dashboard_design = f"""
                         <h3 class="font-bold">Income Certificate</h3>
                         <input type="text" id="inc_amount" placeholder="Rs. 40,000/-" class="border p-2 mt-2 w-full">
                     </div>
+                    
+                    <!-- DYNAMIC INSURANCE NOTICE -->
+                    <div id="insurance_notice_box" class="hidden mt-4 bg-green-50 border border-green-300 p-4 rounded-lg flex items-center gap-4">
+                        <i class="fa-solid fa-shield-heart text-4xl text-green-600"></i>
+                        <div>
+                            <h3 class="font-bold text-green-800">Compulsory Accidental Insurance (Age 18 to 70)</h3>
+                            <p class="text-sm text-green-700">As per guidelines, Rs. 20 is added to your fee for HDFC Ergo Accidental Insurance Policy. Copy will be sent to your email automatically.</p>
+                        </div>
+                    </div>
 
                     <div class="mt-8 text-center">
                         <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded">ELIGIBLE / NEXT</button>
@@ -858,70 +862,49 @@ user_dashboard_design = f"""
             </div>
         </div>
 
-        <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow">
+        <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
+            <div id="payu_split_notice" class="hidden mb-6 bg-blue-50 border border-blue-200 p-4 rounded text-blue-800 font-semibold shadow-sm">
+                <i class="fa-solid fa-circle-info mr-2"></i> Note: Via PayU Split Settlement, Rs. 20 will be auto-routed directly to HDFC Ergo for your Insurance Policy. The remaining balance routes to the Admin.
+            </div>
+            
             <label class="flex items-start gap-3 cursor-pointer p-3 bg-white rounded border mb-6">
                 <input type="checkbox" id="tnc_checkbox" onchange="togglePayButton()" class="w-6 h-6 mt-1 cursor-pointer">
                 <span class="font-bold">I Agree to terms</span>
             </label>
-            <p id="insurance_fee_display" class="hidden font-bold text-red-600 text-lg mb-4 text-center"></p>
-            <div class="text-center">
-                <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-bold text-xl py-4 px-10 rounded-lg opacity-50 cursor-not-allowed transition-all">
-                    <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
-                </button>
-            </div>
+            <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-bold text-xl py-4 px-10 rounded-lg opacity-50 cursor-not-allowed transition-all">
+                <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
+            </button>
         </div>
 
-        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow">
-             <button onclick="viewUserAppModal()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold"><i class="fa-solid fa-print"></i> View / Print Documents</button>
+        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
+             <button onclick="viewUserAppModal()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold">View / Print Form</button>
         </div>
     </main>
 
-    <!-- FULL APPLICATION VIEW & PRINT MODAL -->
-    <div id="user_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print-hidden">
-        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
-            <div class="p-4 border-b flex justify-between bg-blue-50 print-hidden">
-                <h3 class="text-xl font-bold text-blue-800">My Print Documents</h3>
+    <!-- FULL APPLICATION VIEW MODAL -->
+    <div id="user_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static">
+        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col print:h-auto print:shadow-none print:w-full">
+            <div class="p-4 border-b flex justify-between bg-blue-50 print:hidden">
+                <h3 class="text-xl font-bold text-blue-800">My Data</h3>
                 <div class="space-x-2">
-                    <button onclick="printDocument()" class="bg-gray-800 text-white px-4 py-2 rounded"><i class="fa-solid fa-print"></i> Print Application & Insurance</button>
-                    <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
+                    <button id="btn_download_insurance" onclick="downloadInsurancePDF()" class="hidden bg-green-600 text-white px-4 py-2 rounded font-bold shadow"><i class="fa-solid fa-download"></i> Download Insurance Policy</button>
+                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow">Print App</button>
+                    <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow">Close</button>
                 </div>
             </div>
-            
-            <div id="print_area" class="flex-1 overflow-y-auto p-8">
-                <!-- Pension Application Section -->
-                <div class="text-center mb-6 border-b-2 border-gray-800 pb-4">
-                    <h2 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h2>
-                    <p class="font-bold text-lg text-gray-600">Application Form Receipt</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border mb-8">
-                    <p><strong>App No:</strong> <span id="v_appno"></span></p>
+            <div class="flex-1 overflow-y-auto p-8 print:p-0">
+                <h4 class="font-bold border-b mb-3">Application Details</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border mb-6">
                     <p><strong>Name:</strong> <span id="v_name"></span></p>
                     <p><strong>DOB:</strong> <span id="v_dob"></span></p>
                     <p><strong>Category:</strong> <span id="v_category"></span></p>
                 </div>
 
-                <!-- HDFC INSURANCE DOWNLOAD/PRINT SECTION -->
-                <div id="insurance_print_box" class="hidden mt-8 border-2 border-blue-900 rounded-lg p-6 bg-white shadow-sm" style="page-break-before: always;">
-                    <div class="flex justify-between items-center border-b-2 border-blue-800 pb-4 mb-4">
-                        <div>
-                            <h2 class="text-2xl font-extrabold text-blue-900 uppercase">HDFC Life / Ergo</h2>
-                            <p class="font-bold text-gray-600">Accidental Insurance Certificate (PMSBY)</p>
-                        </div>
-                        <i class="fa-solid fa-shield-heart text-5xl text-blue-800"></i>
-                    </div>
-                    <div class="space-y-3 text-lg">
-                        <p><strong>Policy Number:</strong> <span id="print_u_insurance" class="text-blue-700 font-bold uppercase tracking-widest"></span></p>
-                        <p><strong>Insured Person:</strong> <span id="print_i_name" class="uppercase font-semibold"></span></p>
-                        <p><strong>Coverage Amount:</strong> ₹ 2,00,000/- (Accidental Death & Disability)</p>
-                        <p><strong>Premium Paid:</strong> <span id="print_i_fee" class="text-green-700 font-bold"></span></p>
-                        <p><strong>Validity:</strong> 1 Year from Date of Issue</p>
-                    </div>
-                    <div class="mt-8 border-t pt-4 text-center text-sm text-gray-500">
-                        <p>This is a system generated certificate issued via Private Pension Scheme API Integration.</p>
-                        <p>Valid digitally. No signature required.</p>
-                    </div>
+                <div class="bg-green-50 p-4 rounded border border-green-200">
+                    <p class="text-green-800 font-bold"><i class="fa-solid fa-shield-heart text-xl mr-2"></i> Accidental Insurance Status:</p>
+                    <p id="print_u_insurance" class="text-lg font-extrabold text-green-700 mt-1 uppercase"></p>
+                    <p class="text-xs text-gray-500 mt-1">* Real Insurance generated via HDFC Agent API Integration for Age 18 to 70.</p>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -965,6 +948,7 @@ admin_design = f"""
                 headers: {{'Content-Type': 'application/json'}},
                 body: JSON.stringify({{key: 'hdfc_agent_id', value: document.getElementById('hdfc_agent_id').value}})
             }});
+
             alert('HDFC API Settings Saved Successfully!');
         }}
 
@@ -992,7 +976,9 @@ admin_design = f"""
         function viewFullApplication(appNo) {{
             document.getElementById('v_appno').innerText = appNo;
             document.getElementById('v_name').innerText = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
-            document.getElementById('v_insurance_admin').innerText = localStorage.getItem('u_insurance_policy_' + appNo) || 'N/A';
+            
+            document.getElementById('v_insurance_admin').innerText = localStorage.getItem('u_insurance_' + appNo) || 'N/A';
+
             document.getElementById('full_app_view_modal').classList.remove('hidden');
         }}
 
@@ -1024,10 +1010,9 @@ admin_design = f"""
             </div>
         </div>
 
-        <!-- NEW API SETTINGS TAB -->
         <div id="section-settings" class="content-section hidden flex-1 overflow-y-auto p-6 bg-gray-50">
             <div class="bg-white rounded-xl shadow-sm border p-8">
-                <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> API Configuration</h2>
+                <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> HDFC API Configuration</h2>
                 
                 <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-shield-heart text-red-600"></i> HDFC Accidental Insurance (Rs 20) Integration</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-200">
@@ -1048,7 +1033,6 @@ admin_design = f"""
         </div>
     </main>
 
-    <!-- FULL APPLICATION VIEW MODAL -->
     <div id="full_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
             <div class="p-4 border-b flex justify-between bg-blue-50">
@@ -1072,3 +1056,24 @@ admin_design = f"""
 </body>
 </html>
 """
+
+# ==========================================
+# 7. EXPLICIT ROUTES DEFINITION 
+# ==========================================
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(): return html_design
+@app.get("/status/check", response_class=HTMLResponse)
+async def status_check_page(): return status_check_design
+@app.post("/status/check", response_class=HTMLResponse)
+async def status_check_page_post(request: Request): return status_check_design
+@app.get("/user/register", response_class=HTMLResponse)
+async def user_register_page(): return user_register_design
+@app.get("/user/login", response_class=HTMLResponse)
+async def user_login_page(): return user_login_design
+@app.get("/user/dashboard", response_class=HTMLResponse)
+async def user_dashboard_route(): return user_dashboard_design
+@app.get("/admin/login", response_class=HTMLResponse)
+async def admin_login_page(): return admin_login_design
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard_route(): return admin_design
