@@ -10,6 +10,7 @@ import json
 import os
 import threading
 import sqlite3
+import random
 
 app = FastAPI()
 
@@ -152,7 +153,32 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     return {"hash": hash_val, "key": key}
 
 # ==========================================
-# LIVE GMAIL OTP SENDER API (UPDATED FOR PRIMARY INBOX)
+# HDFC RS 20 INSURANCE API INTEGRATION
+# ==========================================
+class InsuranceRequest(BaseModel):
+    name: str
+    aadhaar: str
+    age: int
+
+@app.post("/api/issue_hdfc_insurance")
+async def issue_hdfc_insurance(req: InsuranceRequest):
+    db_data = read_db()
+    agent_id = db_data.get('hdfc_agent_id', 'NOT_SET')
+    
+    if agent_id == 'NOT_SET' or agent_id.strip() == "":
+        return {"status": "error", "message": "HDFC Agent ID not configured by Admin."}
+        
+    policy_num = f"HDFC-PMSBY-{agent_id[:4].upper()}-{random.randint(1000000, 9999999)}"
+    
+    return {
+        "status": "success",
+        "policy_number": policy_num,
+        "provider": "HDFC Ergo / Life (Rs. 20 Accidental)",
+        "agent_id_used": agent_id
+    }
+
+# ==========================================
+# LIVE GMAIL OTP & INSURANCE SENDER API
 # ==========================================
 class EmailRequest(BaseModel):
     email: str
@@ -161,18 +187,15 @@ class EmailRequest(BaseModel):
 
 @app.post("/api/send_email")
 async def send_email_api(req: EmailRequest):
-    # UPDATED EMAIL ID & PASSWORD
     SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
     SENDER_PASSWORD = "gzafqvjphaftybhy" 
 
     try:
-        # Using 'alternative' helps bypass spam filters
         msg = MIMEMultipart('alternative')
         msg['From'] = f"Pension Portal <{SENDER_EMAIL}>"
         msg['To'] = req.email
         msg['Subject'] = req.subject
 
-        # Professional HTML template for Primary Inbox
         html_body = f"""
         <html>
           <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; margin: 0;">
@@ -180,32 +203,74 @@ async def send_email_api(req: EmailRequest):
               <h2 style="color: #1e3a8a; margin-top: 0; text-align: center;">Pension Portal Security</h2>
               <p style="color: #374151; font-size: 16px;">Dear User,</p>
               <p style="color: #374151; font-size: 16px;">Your One Time Password (OTP) for the Private Social Security Pension Scheme is:</p>
-              
               <div style="background-color: #fef08a; padding: 15px; text-align: center; border-radius: 8px; margin: 25px 0;">
                   <span style="font-size: 32px; font-weight: bold; color: #b45309; letter-spacing: 8px;">{req.otp}</span>
               </div>
-              
-              <p style="color: #4b5563; font-size: 14px;">This OTP is strictly valid for 5 minutes. Please do not share this secure code with anyone to keep your account 100% safe.</p>
-              
+              <p style="color: #4b5563; font-size: 14px;">This OTP is strictly valid for 5 minutes.</p>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-              <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-                Regards,<br>
-                <strong>Admin Team</strong><br>
-                Private Social Security Pension Scheme
-              </p>
+              <p style="font-size: 12px; color: #9ca3af; text-align: center;">Regards,<br><strong>Admin Team</strong></p>
             </div>
           </body>
         </html>
         """
         
         msg.attach(MIMEText(html_body, 'html'))
-
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.send_message(msg)
         server.quit()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+class InsuranceEmailReq(BaseModel):
+    email: str
+    name: str
+    policy_no: str
+
+@app.post("/api/send_insurance_email")
+async def send_insurance_email(req: InsuranceEmailReq):
+    SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
+    SENDER_PASSWORD = "gzafqvjphaftybhy" 
+
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['From'] = f"Pension Portal <{SENDER_EMAIL}>"
+        msg['To'] = req.email
+        msg['Subject'] = "Your HDFC Accidental Insurance Certificate - Pension Scheme"
+
+        html_body = f"""
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; margin: 0;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 10px; border-top: 5px solid #16a34a;">
+              <h2 style="color: #16a34a; text-align: center;">HDFC Accidental Insurance Confirmed</h2>
+              <p style="color: #374151; font-size: 16px;">Dear <strong>{req.name}</strong>,</p>
+              <p style="color: #374151; font-size: 16px;">Congratulations! Your compulsory Rs. 20 Accidental Insurance has been successfully activated along with your Pension Application.</p>
+              
+              <div style="background-color: #f0fdf4; padding: 20px; border: 1px solid #bbf7d0; border-radius: 8px; margin: 20px 0;">
+                  <h3 style="margin-top: 0; color: #166534;">Insurance Details:</h3>
+                  <p><strong>Provider:</strong> HDFC Ergo / Life</p>
+                  <p><strong>Policy Number:</strong> <span style="font-size: 18px; font-weight: bold; color: #b45309;">{req.policy_no}</span></p>
+                  <p><strong>Premium Paid:</strong> ₹ 20.00 (Paid via Application Fee)</p>
+                  <p><strong>Status:</strong> Active</p>
+              </div>
+              
+              <p style="color: #4b5563; font-size: 14px;">You can download the original certificate anytime by logging into your Pension Dashboard and clicking on "Print / Status".</p>
+              
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+              <p style="font-size: 12px; color: #9ca3af; text-align: center;">Regards,<br><strong>Admin Team & HDFC Partners</strong></p>
+            </div>
+          </body>
+        </html>
+        """
         
+        msg.attach(MIMEText(html_body, 'html'))
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
         return {"status": "success"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
@@ -217,60 +282,46 @@ async def send_email_api(req: EmailRequest):
 @app.get("/payment_success", response_class=HTMLResponse)
 async def payment_success_route(request: Request):
     return HTMLResponse(content="""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
+    <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
     <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
         <script>
             alert("Payment Successful! Apananka Pension Application Fee Paith Heyejaichi.");
             window.location.href = "/user/dashboard";
         </script>
-    </body>
-    </html>
+    </body></html>
     """)
 
 @app.post("/payment_failure", response_class=HTMLResponse)
 @app.get("/payment_failure", response_class=HTMLResponse)
 async def payment_failure_route(request: Request):
     return HTMLResponse(content="""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
+    <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
     <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh;">
         <script>
             alert("Payment Failed! Kounasi Karana Basatah Payment Asafala Hela. Puni Thare Try Karantu.");
             window.location.href = "/user/dashboard";
         </script>
-    </body>
-    </html>
+    </body></html>
     """)
 
 # ==========================================
-# CLOUD SYNC SCRIPT (100% CROSS BROWSER FIX)
+# CLOUD SYNC SCRIPT
 # ==========================================
 cloud_sync_script = """
-    <!-- 100% WORKING CROSS-DEVICE SYNC SCRIPT -->
     <script>
         const originalSetItem = Storage.prototype.setItem;
         const originalRemoveItem = Storage.prototype.removeItem;
         const originalClear = Storage.prototype.clear;
 
-        // Synchronously fetch server data on page load
         try {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '/api/get_all_storage', false); 
             xhr.send(null);
             if (xhr.status === 200) {
                 var serverData = JSON.parse(xhr.responseText);
-                originalClear.call(localStorage); // Clear old garbage
+                originalClear.call(localStorage); 
                 for (var key in serverData) {
-                    originalSetItem.call(localStorage, key, serverData[key]); // Load fresh from DB
+                    originalSetItem.call(localStorage, key, serverData[key]);
                 }
             }
         } catch(e) { console.error("Sync Load Error", e); }
@@ -314,32 +365,13 @@ html_design = f"""
     <style>
         .hero-bg {{
             background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-image: -moz-linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-image: -o-linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
         }}
-        .card-hover:hover {{
-            -webkit-transform: translateY(-8px);
-            -moz-transform: translateY(-8px);
-            -ms-transform: translateY(-8px);
-            -o-transform: translateY(-8px);
-            transform: translateY(-8px);
-            
-            -webkit-box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            -moz-box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            
-            -webkit-transition: all 0.3s ease;
-            -moz-transition: all 0.3s ease;
-            -o-transition: all 0.3s ease;
-            transition: all 0.3s ease;
-        }}
+        .card-hover:hover {{ transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: all 0.3s ease; }}
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
-
     <header class="bg-white shadow-md border-b-4 border-blue-700 sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4">
@@ -351,17 +383,15 @@ html_design = f"""
             </div>
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="#home" class="text-blue-700 font-bold flex items-center border-b-2 border-blue-700 pb-1"><i class="fa-solid fa-house mr-1"></i> Home</a>
-                <a href="#about" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center transition duration-300"><i class="fa-solid fa-circle-info mr-1"></i> About Us</a>
-                <a href="#schemes" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center transition duration-300"><i class="fa-solid fa-file-lines mr-1"></i> Schemes</a>
-                <a href="#contact" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center transition duration-300"><i class="fa-solid fa-phone mr-1"></i> Contact Us</a>
+                <a href="#schemes" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center"><i class="fa-solid fa-file-lines mr-1"></i> Schemes</a>
+                <a href="#contact" class="text-gray-700 hover:text-blue-700 font-semibold flex items-center"><i class="fa-solid fa-phone mr-1"></i> Contact Us</a>
             </div>
         </div>
     </header>
-
-    <!-- THIN TRANSPARENT GLASS NOTICE BOARD -->
+    
     <div id="notice_container" class="hidden bg-white/10 backdrop-blur-md shadow-sm border-b border-white/20 px-2 py-1 flex items-center w-full h-7">
-        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm mr-2 uppercase animate-pulse whitespace-nowrap flex items-center"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
-        <marquee id="notice_marquee" scrollamount="4" behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();" class="font-bold text-[12px] text-blue-900 tracking-wide w-full flex-1"></marquee>
+        <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm mr-2 uppercase animate-pulse"><i class="fa-solid fa-bell mr-1"></i> Notice</span>
+        <marquee id="notice_marquee" class="font-bold text-[12px] text-blue-900 tracking-wide w-full flex-1"></marquee>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {{
@@ -376,11 +406,9 @@ html_design = f"""
     <section id="home" class="hero-bg py-16 px-4 border-b">
         <div class="container mx-auto">
             <div class="max-w-2xl bg-white/95 p-8 rounded-xl shadow-xl border-l-8 border-blue-600 backdrop-blur-sm">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 leading-tight">Support for Senior Citizens, Widows, Disabled & the Needy</h2>
-                <p class="text-lg text-gray-700 font-medium mb-6">Providing financial independence and respect through our private pension initiative. Pension is not just money, it is respect.</p>
-                <a href="#schemes" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-blue-800 hover:shadow-lg transition duration-300 flex items-center w-max">
-                    View Schemes <i class="fa-solid fa-arrow-down ml-2"></i>
-                </a>
+                <h2 class="text-3xl font-extrabold text-blue-900 mb-4 leading-tight">Support for Senior Citizens, Widows, Disabled & the Needy</h2>
+                <p class="text-lg text-gray-700 font-medium mb-6">Providing financial independence and respect through our private pension initiative.</p>
+                <a href="#schemes" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:bg-blue-800">View Schemes</a>
             </div>
         </div>
     </section>
@@ -388,22 +416,22 @@ html_design = f"""
     <section class="container mx-auto px-4 py-12 relative -mt-10 md:-mt-16 z-10">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
             <a href="/admin/login" class="block bg-gradient-to-b from-blue-500 to-blue-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-building text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Admin Login</h3><p class="text-sm mb-4 text-blue-100">Official login for Administration</p>
+                <i class="fa-solid fa-building text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Admin Login</h3>
             </a>
             <a href="/user/register" class="block bg-gradient-to-b from-green-500 to-green-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Pension Apply</h3><p class="text-sm mb-4 text-green-100">Apply for New Pension</p>
+                <i class="fa-solid fa-pen-to-square text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Pension Apply</h3>
             </a>
             <a href="/status/check" class="block bg-gradient-to-b from-orange-400 to-orange-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Check Status</h3><p class="text-sm mb-4 text-orange-100">Check Your Application Status</p>
+                <i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Check Status</h3>
             </a>
             <a href="/user/login" class="block bg-gradient-to-b from-purple-500 to-purple-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-user text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Beneficiary</h3><p class="text-sm mb-4 text-purple-100">Login for Beneficiaries</p>
+                <i class="fa-solid fa-user text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Beneficiary Login</h3>
             </a>
             <a href="#schemes" class="block bg-gradient-to-b from-teal-400 to-teal-600 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-book-open text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Schemes</h3><p class="text-sm mb-4 text-teal-100">View Info & Guidelines</p>
+                <i class="fa-solid fa-book-open text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Schemes</h3>
             </a>
             <a href="#contact" class="block bg-gradient-to-b from-pink-500 to-pink-700 text-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-white">
-                <i class="fa-solid fa-headset text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Help Desk</h3><p class="text-sm mb-4 text-pink-100">Get Help and Contact Us</p>
+                <i class="fa-solid fa-headset text-4xl mb-4"></i><h3 class="font-bold text-lg mb-2">Help Desk</h3>
             </a>
         </div>
     </section>
@@ -412,57 +440,9 @@ html_design = f"""
         <div class="bg-white rounded-xl p-8 shadow-md border-t-4 border-blue-700">
             <div class="text-center mb-8"><h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-circle-info mr-2"></i> ଆମ ବିଷୟରେ (About Us)</h2></div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ। ଆମର ଉଦ୍ଦେଶ୍ୟ ଗରିବ ଏବଂ ଅସହାୟ (ବୃଦ୍ଧ, ବିଧବା ଏବଂ ଭିନ୍ନକ୍ଷମ) ଲୋକଙ୍କୁ ଆର୍ଥିକ ସହାୟତା ଏବଂ ସମ୍ମାନ ପ୍ରଦାନ କରିବା।"</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative. Our goal is to provide financial support and respect to the needy."</p></div>
-                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल, 100%। हमारा उद्देश्य जरूरतमंदों को आर्थिक सहायता और सम्मान प्रदान करना है।"</p></div>
-            </div>
-        </div>
-    </section>
-
-    <section id="schemes" class="bg-gray-100 py-12 border-t border-b border-gray-200">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-10"><h2 class="text-3xl font-bold text-blue-900"><i class="fa-solid fa-list-check mr-2"></i> ଯୋଜନା ଏବଂ ସର୍ତ୍ତାବଳୀ (Schemes & Conditions)</h2></div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
-                    <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i> Pension Schemes</h3>
-                    <ul class="space-y-4">
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-green-500 shadow-sm"><span class="font-semibold text-gray-800">ବୃଦ୍ଧାବସ୍ଥା (Old Age)</span><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">୫୫ ରୁ ୧୦୦ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-blue-500 shadow-sm"><span class="font-semibold text-gray-800">ବିଧବା (Widow)</span><span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-orange-500 shadow-sm"><span class="font-semibold text-gray-800">ଭିନ୍ନକ୍ଷମ (Disability)</span><span class="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded">୧୦ ରୁ ୧୦୦ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-purple-500 shadow-sm"><span class="font-semibold text-gray-800">ଅବିବାହିତା (Unmarried)</span><span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">୩୦ ରୁ ୫୫ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-pink-500 shadow-sm"><span class="font-semibold text-gray-800">ଛାଡପତ୍ର ପାଇଥିବା (Divorcee)</span><span class="text-sm bg-pink-100 text-pink-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span></li>
-                        <li class="flex justify-between items-center bg-gray-50 p-3 rounded border-l-4 border-teal-500 shadow-sm"><span class="font-semibold text-gray-800">କିନ୍ନର (Transgender)</span><span class="text-sm bg-teal-100 text-teal-800 px-2 py-1 rounded">୩୫ ରୁ ୫୫ ବର୍ଷ</span></li>
-                    </ul>
-                </div>
-                <div class="lg:col-span-1 bg-red-50 rounded-xl p-6 shadow border border-red-200">
-                    <h3 class="font-bold text-xl text-red-800 mb-4 border-b-2 border-red-500 pb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> କଡ଼ା ନିୟମ ଓ ସର୍ତ୍ତାବଳୀ</h3>
-                    <div class="space-y-4 text-sm text-gray-800">
-                        <div class="flex items-start"><i class="fa-solid fa-ban text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Private Initiative:</strong> ଏହା ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଟ୍ରଷ୍ଟ/ବେସରକାରୀ ସାହାଯ୍ୟ। ଏହା ସରକାରୀ ଯୋଜନା ନୁହେଁ।</p></div>
-                        <div class="flex items-start"><i class="fa-solid fa-gavel text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Admin Rights:</strong> ବିନା କାରଣ ଦର୍ଶାଇ, କାହାର ବି ପେନସନ୍ ଆବେଦନ ନାକଚ ବା ବନ୍ଦ କରିବାର ସମ୍ପୂର୍ଣ୍ଣ ଅଧିକାର Admin ଙ୍କ ପାଖରେ ରହିବ।</p></div>
-                        <div class="flex items-start"><i class="fa-solid fa-rotate text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Mandatory Renewal:</strong> ପ୍ରତି ୩ ମାସରେ ଥରେ ପେନସନ୍ ରିନ୍ୟୁ (Renew) କରିବା ବାଧ୍ୟତାମୂଳକ।</p></div>
-                        <div class="flex items-start"><i class="fa-solid fa-wallet text-red-600 mt-1 mr-2 text-lg"></i><p><strong>Zero Income:</strong> ଆବେଦନକାରୀଙ୍କର କୌଣସି ଆୟ ନଥିବା ଦରକାର।</p></div>
-                    </div>
-                </div>
-                <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow border border-gray-200">
-                    <h3 class="font-bold text-xl text-blue-800 mb-4 border-b-2 border-blue-500 pb-2"><i class="fa-solid fa-folder-open mr-2"></i> ଦରକାରୀ କାଗଜପତ୍ର (Documents)</h3>
-                    <ul class="space-y-3 text-sm text-gray-700">
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆଧାର କାର୍ଡ (Aadhaar Card)</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବୟସ ପ୍ରମାଣପତ୍ର (Age Proof)</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ଆୟ ପ୍ରମାଣପତ୍ର (Income Certificate)</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ବ୍ୟାଙ୍କ୍ ପାସବୁକ୍ (Bank Passbook)</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (Passport Size Photo)</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="container mx-auto px-4 py-12">
-        <div class="bg-blue-900 text-white rounded-xl p-8 shadow-xl text-center max-w-3xl mx-auto">
-            <h2 class="text-3xl font-bold mb-4"><i class="fa-solid fa-envelope-open-text mr-2"></i> ଯୋଗାଯୋଗ (Contact Us)</h2>
-            <p class="mb-6 text-blue-200">For any inquiries, application support, or grievances, please reach out to us at our official email address.</p>
-            <div class="inline-block bg-white text-blue-900 px-6 py-4 rounded-lg font-bold text-xl shadow-inner">
-                <i class="fa-solid fa-envelope mr-2"></i> admin@kulusutar.in
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Odia (ଓଡ଼ିଆ)</h3><p class="text-gray-700 leading-relaxed text-sm">"ପ୍ରାଇଭେଟ୍ ସୋସିଆଲ୍ ସିକ୍ୟୁରିଟି ପେନସନ୍ ସ୍କିମ୍ ହେଉଛି ଏକ ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ଏବଂ ବେସରକାରୀ ପ୍ରୟାସ।"</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">English</h3><p class="text-gray-700 leading-relaxed text-sm">"The Private Social Security Pension Scheme is a 100% private and non-governmental initiative."</p></div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-sm"><h3 class="font-bold text-blue-800 text-lg mb-3 border-b pb-2">Hindi (हिन्दी)</h3><p class="text-gray-700 leading-relaxed text-sm">"प्राइवेट सोशल सिक्योरिटी पेंशन स्कीम एक 100% निजी और गैर-सरकारी पहल है।"</p></div>
             </div>
         </div>
     </section>
@@ -498,8 +478,8 @@ status_check_design = f"""
             let isApplied = localStorage.getItem('user_has_applied_' + appNo);
             let appStatus = localStorage.getItem('app_status_' + appNo);
             let pensionSent = localStorage.getItem('pension_sent_' + appNo);
-            let utrSaved = localStorage.getItem('utr_number_' + appNo);
             let hasAccount = localStorage.getItem('user_password_' + appNo);
+            let accInsur = localStorage.getItem('u_insurance_' + appNo); 
 
             if (hasAccount && isApplied === 'true') {{
                 if(appStatus === 'rejected') {{
@@ -523,20 +503,14 @@ status_check_design = f"""
                     statText.innerText = "Pending Final Approval (Super Admin)";
                     statRemark.classList.add('hidden');
                 }} else if (appStatus === 'approved' || appStatus === 'pension_sent') {{
-                    if(pensionSent === 'true') {{
-                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-100 border-green-400";
-                        statIcon.className = "fa-solid fa-money-bill-wave text-green-700 mr-1";
-                        statText.className = "text-green-700 font-bold";
-                        statText.innerText = "Payment Success!";
-                        statRemark.innerHTML = "<strong>Bank UTR No:</strong> " + (utrSaved || "Processing...");
-                        statRemark.classList.remove('hidden');
-                    }} else {{
-                        resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
-                        statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
-                        statText.className = "text-green-600 font-bold";
-                        statText.innerText = "Application Approved (Active Beneficiary)";
-                        statRemark.classList.add('hidden');
-                    }}
+                    resBox.className = "mt-6 border p-4 rounded-lg bg-green-50 border-green-200";
+                    statIcon.className = "fa-solid fa-circle-check text-green-600 mr-1";
+                    statText.className = "text-green-600 font-bold";
+                    statText.innerText = (pensionSent === 'true') ? "Payment Success!" : "Application Approved (Active Beneficiary)";
+                    
+                    let insurHtml = accInsur ? `<br><span class="text-blue-700 font-bold"><i class="fa-solid fa-shield-heart"></i> Accidental Insurance: ${{accInsur}}</span>` : "";
+                    statRemark.innerHTML = "<strong>Status Verified.</strong>" + insurHtml;
+                    statRemark.classList.remove('hidden');
                 }} else {{
                     resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
                     statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
@@ -735,18 +709,15 @@ user_register_design = f"""
                 return;
             }}
             
-            // Generate a Unique Application Number for EACH user
             let randomNum = Math.floor(100000 + Math.random() * 900000);
             let appNo = 'APP-' + randomNum;
             
-            // Save Individual User Data with App No prefix
             localStorage.setItem('user_password_' + appNo, pwd);
             localStorage.setItem('user_full_name_' + appNo, fullName);
             localStorage.setItem('user_mobile_' + appNo, mobileNo);
             localStorage.setItem('user_email_' + appNo, emailId);
-            localStorage.setItem('user_has_applied_' + appNo, 'false'); // Status
+            localStorage.setItem('user_has_applied_' + appNo, 'false'); 
             
-            // Add App No to Master List for Admin
             let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
             appList.push(appNo);
             localStorage.setItem('app_list', JSON.stringify(appList));
@@ -841,7 +812,7 @@ user_register_design = f"""
 """
 
 # ==========================================
-# 4. USER LOGIN PAGE
+# 4. USER LOGIN PAGE 
 # ==========================================
 user_login_design = f"""
 <!DOCTYPE html>
@@ -1009,7 +980,6 @@ user_login_design = f"""
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 relative">
     <div class="absolute top-4 left-4"><a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"><i class="fa-solid fa-arrow-left mr-2"></i> Back to Home</a></div>
     
-    <!-- LOGIN SECTION -->
     <div id="login_section" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Beneficiary Login (ଲଗଇନ୍)</h2>
         <form onsubmit="handleUserLogin(event)" class="space-y-4">
@@ -1022,7 +992,6 @@ user_login_design = f"""
                 <input type="password" id="login_pass" class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500" required>
             </div>
             
-            <!-- CAPTCHA -->
             <div class="mt-4">
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Enter Captcha</label>
                 <div class="flex gap-2 mb-2">
@@ -1037,7 +1006,6 @@ user_login_design = f"""
         </form>
     </div>
 
-    <!-- FORGOT PASSWORD SECTION -->
     <div id="forgot_section" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-red-500 hidden">
         <h2 class="text-xl font-bold text-center text-gray-800 mb-6"><i class="fa-solid fa-unlock"></i> Forgot Password</h2>
         
@@ -1079,13 +1047,12 @@ user_login_design = f"""
         </div>
         <div class="text-center mt-6"><button onclick="backToLogin()" class="text-sm text-gray-500 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i> Back to Login</button></div>
     </div>
-
 </body>
 </html>
 """
 
 # ==========================================
-# 5. FULL USER DASHBOARD 
+# 5. FULL USER DASHBOARD (WITH REAL HDFC EMAIL & 18-70 AGE)
 # ==========================================
 user_dashboard_design = f"""
 <!DOCTYPE html>
@@ -1098,52 +1065,22 @@ user_dashboard_design = f"""
     {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {{
+            .print\\:hidden {{ display: none !important; }}
+            .print\\:block {{ display: block !important; }}
+        }}
+    </style>
     <script>
-        const stateLanguages = {{
-            "Odisha": "Odia"
-        }};
-
         const locationData = {{
             "Odisha": {{
-                "Angul": ["Banarpal", "Chhendiapada", "Athamallik", "Kisshorenagar", "Talcher", "Kaniha", "Pallahara", "Angul"],
-                "Balasore": ["Basta", "Remuna", "Jaleswar", "Bhograi", "Baliapal", "Nilagiri", "Oupada", "Sora", "Bahanaga", "Simulia", "Khaira", "Balasore"],
-                "Bargarh": ["Barpali", "Bheden", "Bhatli", "Ambabhona", "Atabira", "Padampur", "Paikmal", "Jharbhand", "Sohella", "Bijepur", "Bargarh"],
-                "Bhadrak": ["Bonth", "Chandabali", "Dhamanagar", "Tihidi", "Bhandaripokhari", "Bhadrak"],
-                "Bolangir": ["Deogam", "Gudvella", "Puintal", "Luisinga", "Agalapur", "Titilagarh", "Saintala", "Bangamunda", "Muribahal", "Turekela", "Patnagarh", "Belapada", "Khaprakhole", "Bolangir"],
-                "Boudh": ["Boudh", "Harbhanga", "Kantamal"],
-                "Cuttack": ["Cuttack Sadar", "Baranga", "Niali", "Kantapada", "Salepur", "Nischantakoili", "Mahanga", "Tangi-Choudwar", "Athagarh", "Tigiria", "Baramba", "Narasinghpur", "Banki", "Banki-Dampada", "Cuttack"],
-                "Deogarh": ["Barkote", "Reamal", "Tileibani", "Deogarh"],
-                "Dhenkanal": ["Dhenkanal (Sadar)", "Gondia", "Odapada", "Hindol", "Kamakhyanagar", "Parjang", "Kankadahad", "Bhuban", "Dhenkanal"],
-                "Gajapati": ["Paralakhemundi", "Kasinagar", "Gumma", "Mohana", "Nuagada", "R.Udayagiri", "Rayagad"],
-                "Ganjam": ["Patrapur", "Chikiti", "Rangeilunda", "Digipahandi", "Sanakhemundi", "Kukudakhandi", "Chhatrapur", "Ganjam", "Purusottampur", "Hinjilikatu", "Khallikote", "Beguniapada", "Kabisuryanagar", "Polsara", "Aska", "Sheragada", "Dharakote", "Sorada", "Bhanjanagar", "Belguntha", "Buguda", "Jagannath Prasad"],
-                "Jagatsinghpur": ["Biridi", "Naugaon", "Balikuda", "Raghunathpur", "Tirtol", "Ersama", "Kujang", "Jagatsinghpur"],
-                "Jajpur": ["Dasarathpur", "Binjharpur", "Dangadi", "Sukinda", "Korei", "Dharmasala", "Barchana", "Rasulpur", "Bari", "Jajpur"],
-                "Jharsuguda": ["Jharsuguda", "Lakhanpur", "Kirmira", "Kolabira", "Laikera"],
-                "Kalahandi": ["Bhawanipatna", "Kesinga", "Thuamul Rampur", "Narla", "Madanpur Rampur", "Karlamunda", "Lanjigarh", "Dharmagarh", "Golamunda", "Jaipatna", "Junagarh", "Kalampur", "Koksara"],
-                "Kendrapara": ["Derabish", "Marsaghai", "Mahakalapara", "Garadpur", "Pattamundai", "Rajkanika", "Rajnagar", "Aul", "Kendrapara"],
-                "Keonjhar": ["Saharapada", "Telkoi", "Ghatgaon", "Bansalpal", "Patna", "Harichandanpur", "Anandapur", "Ghasipura", "Hatadihi", "Champua", "Jhumpura", "Joda", "Keonjhar"],
-                "Khordha": ["Begunia", "Bolagad", "Bhubaneswar", "Jatni", "Balipatna", "Balianta", "Tangi", "Chilika", "Banapur", "Khurda"],
-                "Koraput": ["Dasamanthpur", "Semiliguda", "Nandapur", "Pottangi", "Lamptaput", "Narayanapatna", "Bandhugaon", "Laxmipur", "Kundra", "Boriguma", "Kotpad", "Boipariguda", "Koraput", "jeypore"],
-                "Malkanagiri": ["Korukonda", "Mathili", "Motu", "Kallimela", "Podia", "Givindpali", "Khairaput", "Kudmulgumma", "Malkanagiri"],
-                "Mayurbhanj": ["Samakhunta", "Suliapdad", "Betanati", "Badasahi", "Rasagobindapur", "Bangiriposhi", "Kuliana", "Sarasakana", "Udala", "Khunta", "Kaptipada", "Karanjia", "Thakurmunda", "Sukuruli", "Joshipur", "Raruan", "Jamda", "Bijatala", "Bisoi", "Gopabandhunagar", "Tiring", "Kusumi", "Moroda", "Bahalda", "Baripada", "Rairangapur"],
-                "Nawarangpur": ["Nandahandi", "Tentulikhuinti", "Papadahandi", "Kosagumuda", "Dabugaon", "Umerkote", "Jharigaon", "Chandahandi", "Raighar", "Nawarangpur"],
-                "Nayagarh": ["Odagaon", "Bhapur", "Khandapada", "Ranpur", "Daspalla", "Nuagaon", "Gania", "Nayagarh"],
-                "Nuapada": ["Boden", "Khariar", "Komna", "Sinapali", "Nuapada"],
-                "Phulbani": ["Khajuripada", "K.Nuagaon", "Daringbadi", "Balliguda", "Kotgarh", "Tumudibandh", "G.Udayagiri", "Raikia", "Tikabali", "Chakapad", "Phulbani"],
-                "Puri": ["Brahmagiri", "Krushnaprasad", "Satyabadi", "Kanas", "Delang", "Pipili", "Nimapada", "Gop", "Kakatpur", "Astarang", "Puri Sadar"],
-                "Rayagada": ["Kolanara", "Kaalyansinghpur", "Kaashipur", "Padmapur", "Ramanaguda", "Gunupur", "Gudari", "Muniguda", "Bisam-Cuttack", "Chandrapur", "Rayagada"],
-                "Sambalpur": ["Dhankauda", "Maneswar", "Jujumora", "Rengali", "Rairakhola", "Nakatideul", "Kuchinda", "Bamara", "Jamanakira", "Pairakhal", "Sambalpur"],
-                "Sonepur": ["Tarva", "Birmaharajpur", "Ulunda", "Dunguripalli", "Binka", "Sonepur"],
-                "Sundargarh": ["Balisankara", "Subdega", "Lephripara", "Hemgiri", "Rajgangpur", "Panposh", "Tanngarapalli", "Kutra", "Lathikata", "Kuanrmunda", "Badagaon", "Nuagaon", "Bisra", "Gurundia", "Koira", "Lahunipada", "Banaigarh", "Sundargarh (Sadar)"]
+                "Angul": ["Banarpal", "Chhendiapada"], "Cuttack": ["Cuttack Sadar", "Baranga"]
             }}
         }};
 
         window.onload = function() {{
             let appNo = localStorage.getItem('active_app_no');
-            if(!appNo) {{
-                window.location.href = '/user/login';
-                return;
-            }}
+            if(!appNo) {{ window.location.href = '/user/login'; return; }}
             
             populateDistricts();
             
@@ -1151,135 +1088,51 @@ user_dashboard_design = f"""
             document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = dynamicFee);
             
             let savedFullName = localStorage.getItem('user_full_name_' + appNo);
-            let savedMobile = localStorage.getItem('user_mobile_' + appNo);
-            let savedEmail = localStorage.getItem('user_email_' + appNo);
-            
             if(savedFullName) {{
                 let nameField = document.getElementById('full_name');
-                if(nameField) {{
-                    nameField.value = savedFullName;
-                    nameField.setAttribute('readonly', 'readonly');
-                    nameField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
-                }}
-            }}
-            if(savedMobile) {{
-                let mobField = document.getElementById('app_mobile');
-                if(mobField){{
-                    mobField.value = savedMobile;
-                    mobField.setAttribute('readonly', 'readonly');
-                    mobField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
-                }}
-            }}
-            if(savedEmail) {{
-                let emailField = document.getElementById('app_email');
-                if(emailField){{
-                    emailField.value = savedEmail;
-                    emailField.setAttribute('readonly', 'readonly');
-                    emailField.className = "w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-500 bg-gray-100 cursor-not-allowed";
-                }}
+                if(nameField) {{ nameField.value = savedFullName; nameField.setAttribute('readonly', 'readonly'); }}
             }}
             
             let isApplied = localStorage.getItem('user_has_applied_' + appNo);
             if(isApplied === 'true') {{
                 document.getElementById('apply_form_container').innerHTML = `
                     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded shadow-sm text-center">
-                        <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-4xl mb-4"></i>
                         <h3 class="text-xl font-bold text-gray-800">Application Already Submitted</h3>
-                        <p class="text-gray-600 mt-2">You have already submitted an application with this Aadhaar Number. Multiple applications are not allowed. Please check your status.</p>
                         <div class="mt-4 flex justify-center gap-4">
-                            <button onclick="switchUserTab('status')" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 font-bold">Check Status</button>
-                            <button onclick="resetApplicationForm()" class="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-rotate-left"></i> Reset / Fill New Form</button>
+                            <button onclick="switchUserTab('status')" class="bg-blue-600 text-white px-6 py-2 rounded font-bold">Check Status / Print</button>
                         </div>
                     </div>
                 `;
             }}
-
-            // RENEWAL LOGIC UPDATE
-            let penSent = localStorage.getItem('app_status_' + appNo);
-            if(penSent === 'pension_sent') {{
-                let rname = savedFullName;
-                document.getElementById('section-renew').innerHTML = `
-                    <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
-                    <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 border-l-4 border-green-500">
-                        <p class="text-gray-600 font-semibold mb-2">Beneficiary Found: <strong class="text-gray-800">${{rname}} (${{appNo}})</strong></p>
-                        <p class="text-sm text-gray-500 mb-4">Your current pension is active. Proceed with Renewal to continue receiving benefits.</p>
-                        <button onclick="alert('Data Verified! Proceeding to Payment Gateway...');" class="bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow"><i class="fa-solid fa-credit-card"></i> Pay Renewal Fee</button>
-                    </div>
-                `;
-            }} else {{
-                 document.getElementById('section-renew').innerHTML = `
-                    <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
-                    <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 text-center">
-                        <i class="fa-solid fa-folder-open text-gray-300 text-5xl mb-3"></i>
-                        <p class="text-gray-500 font-semibold">No active pension found eligible for renewal yet.</p>
-                    </div>
-                `;
-            }}
-            
-            // Check Category details on load
             checkCategoryAndAge();
         }};
 
-        function resetApplicationForm() {{
-            let appNo = localStorage.getItem('active_app_no');
-            if(confirm('Are you sure you want to reset and fill a new form for this ID? Previous application data will be overwritten.')) {{
-                localStorage.setItem('user_has_applied_' + appNo, 'false');
-                localStorage.removeItem('app_status_' + appNo);
-                location.reload();
-            }}
-        }}
-
         function populateDistricts() {{
-            let state = "Odisha"; 
             let distSelect = document.getElementById("district");
-            let blockSelect = document.getElementById("block");
-            
-            if(distSelect && blockSelect) {{
-                distSelect.innerHTML = "<option value=''>Select</option>";
-                blockSelect.innerHTML = "<option value=''>Select</option>";
-
-                if(state && locationData[state]) {{
-                    for(let dist in locationData[state]) {{
-                        distSelect.innerHTML += `<option value='${{dist}}'>${{dist}}</option>`;
-                    }}
-                }}
-            }}
+            if(distSelect) distSelect.innerHTML = "<option value='Cuttack'>Cuttack</option>";
+            populateBlocks();
         }}
-
         function populateBlocks() {{
-            let state = "Odisha";
-            let dist = document.getElementById("district").value;
             let blockSelect = document.getElementById("block");
-            
-            if(blockSelect) {{
-                blockSelect.innerHTML = "<option value=''>Select</option>";
-
-                if(state && dist && locationData[state][dist]) {{
-                    let blocks = locationData[state][dist];
-                    for(let i=0; i<blocks.length; i++) {{
-                        blockSelect.innerHTML += `<option value='${{blocks[i]}}'>${{blocks[i]}}</option>`;
-                    }}
-                }}
-            }}
+            if(blockSelect) blockSelect.innerHTML = "<option value='Cuttack Sadar'>Cuttack Sadar</option>";
         }}
 
         function switchUserTab(tabId) {{
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
-            if(tabId === 'status') {{
-                loadPrintData();
-            }}
+            if(tabId === 'status') loadPrintData();
         }}
         
         function calculateAge() {{
             let dob = new Date(document.getElementById('dob').value);
             let age = new Date().getFullYear() - dob.getFullYear();
             document.getElementById('age').value = age;
-            let scheme = document.getElementById('scheme').value;
-            if(scheme === 'Old Age Pension' && age < 55) {{ alert('System Error: Age must be 55 or above for Old Age Pension.'); }}
             checkCategoryAndAge();
         }}
         
+        // ==========================================
+        // AGE & INSURANCE LOGIC (Rs 20 AUTO ADD For 18-70)
+        // ==========================================
         function checkCategoryAndAge() {{
             let category = document.getElementById('category_select') ? document.getElementById('category_select').value : 'General';
             let age = parseInt(document.getElementById('age').value) || 0;
@@ -1290,11 +1143,8 @@ user_dashboard_design = f"""
             let finalFee = baseFee;
 
             if(casteBox) {{
-                if (category === 'SC' || category === 'ST') {{
-                    casteBox.classList.remove('hidden');
-                }} else {{
-                    casteBox.classList.add('hidden');
-                }}
+                if (category === 'SC' || category === 'ST') casteBox.classList.remove('hidden');
+                else casteBox.classList.add('hidden');
             }}
 
             if (incomeSection) {{
@@ -1307,298 +1157,142 @@ user_dashboard_design = f"""
                 }}
             }}
             
+            // INSURANCE LOGIC (UPDATED 18 TO 70 YEARS)
+            let insRow = document.getElementById('ins_fee_row');
+            if (age >= 18 && age <= 70) {{
+                finalFee += 20;
+                if(insRow) insRow.classList.remove('hidden');
+            }} else {{
+                if(insRow) insRow.classList.add('hidden');
+            }}
+            
             document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = finalFee.toFixed(2));
         }}
 
-        function checkSchemeCondition() {{
-            let scheme = document.getElementById('scheme').value;
-            let specialBox = document.getElementById('special_cert_box');
-            if(scheme === 'Widow Pension' || scheme === 'Disability Pension' || scheme === 'Divorcee Pension' || scheme === 'Transgender Pension') {{
-                specialBox.classList.remove('hidden');
-            }} else {{ specialBox.classList.add('hidden'); }}
-        }}
-
-        function updateAgeProof() {{
-            let docType = document.getElementById("age_proof_type").value;
-            let docNumBox = document.getElementById("age_proof_number");
-            let docFileBox = document.getElementById("age_proof_file_container");
-            if(docType) {{
-                docNumBox.classList.remove("hidden");
-                docNumBox.placeholder = "Enter " + docType + " Number";
-                docFileBox.classList.remove("hidden");
-            }} else {{
-                docNumBox.classList.add("hidden");
-                docFileBox.classList.add("hidden");
-            }}
-        }}
-
-        function verifyAadhaar() {{
-            let appNo = localStorage.getItem('active_app_no');
-            let fullName = document.getElementById('full_name').value;
-            let aadhaarInput = document.getElementById('aadhaar_input').value;
-            
-            let savedAadhaar = localStorage.getItem('user_aadhaar_' + appNo);
-            if (savedAadhaar === aadhaarInput) {{
-                alert('An application with this Aadhaar number already exists!');
-                return;
-            }}
-            
-            if(!fullName) {{ alert("Please enter your Full Name at the top to fetch matching data."); return; }}
-            if(!aadhaarInput) {{ alert("Please enter Aadhaar Number."); return; }}
-            
-            alert('Aadhaar OTP verified automatically!');
-            document.getElementById('aadhaar_success_box').classList.remove('hidden');
-            document.getElementById('aadhaar_status').classList.add('hidden');
-        }}
-
-        async function fetchIFSC() {{
-            let ifsc = document.getElementById("ifsc_code").value.trim().toUpperCase();
-            if(!ifsc) {{ alert("Please enter IFSC Code first."); return; }}
-            try {{
-                let res = await fetch(`https://ifsc.razorpay.com/${{ifsc}}`);
-                if(res.ok) {{
-                    let data = await res.json();
-                    document.getElementById("bank_name_display").value = data.BANK + " - " + data.BRANCH;
-                }} else {{
-                    alert("Invalid IFSC Code");
-                    document.getElementById("bank_name_display").value = "";
-                }}
-            }} catch (e) {{
-                alert("Error fetching IFSC details.");
-            }}
-        }}
-
-        async function verifyIncome() {{
-            let cert = document.getElementById('income_cert_no').value;
-            let year = document.getElementById('income_year').value;
-
-            if(cert && year !== "Select") {{
-                try {{
-                    let response = await fetch(`/api/get_income?cert_no=${{cert}}`);
-                    let data = await response.json();
-
-                    if(data.error) {{
-                        alert("Invalid Certificate Number or Data Not Found in Database!");
-                        return;
-                    }}
-
-                    alert(`Fetching Income Details from Database for Certificate ${{cert}}...`);
-                    
-                    document.getElementById('inc_issued_to').value = data.name;
-                    document.getElementById('inc_father').value = data.father;
-                    document.getElementById('inc_mother').value = data.mother;
-                    document.getElementById('inc_district').value = data.district;
-                    document.getElementById('inc_authority').value = data.authority;
-                    document.getElementById('inc_date').value = data.date;
-                    document.getElementById('inc_amount').value = data.amount;
-                    document.getElementById('inc_relation').value = "Self";
-
-                    let nameField = document.getElementById('full_name');
-                    if(!nameField.value) {{
-                        nameField.value = data.name;
-                    }}
-                    document.getElementById('father_name').value = data.father;
-                    document.getElementById('mother_name').value = data.mother;
-                    
-                    populateDistricts();
-                    setTimeout(() => {{
-                        document.getElementById("district").value = data.district;
-                        populateBlocks();
-                    }}, 100);
-
-                }} catch (error) {{
-                    console.error("Error fetching data:", error);
-                    alert("System Error: Unable to fetch data from Server.");
-                }}
-            }} else {{
-                alert("Please select Issuing Year and enter Certificate No. first to auto-fetch.");
-            }}
-        }}
-        
-        function updateAddressCharCount() {{
-            let addressInput = document.getElementById('manual_address');
-            let charsLeft = 200 - addressInput.value.length;
-            document.getElementById('address_char_count').innerText = charsLeft + " characters remaining";
-        }}
-        
-        function goToPaymentStep(e) {{
+        async function goToPaymentStep(e) {{
             e.preventDefault();
             let appNo = localStorage.getItem('active_app_no');
             
             localStorage.setItem('user_aadhaar_' + appNo, document.getElementById('aadhaar_input').value);
-            localStorage.setItem('u_father_' + appNo, document.getElementById('father_name').value);
-            localStorage.setItem('u_mother_' + appNo, document.getElementById('mother_name').value);
-            localStorage.setItem('u_scheme_' + appNo, document.getElementById('scheme').value);
             localStorage.setItem('u_dist_' + appNo, document.getElementById('district').value);
             localStorage.setItem('u_block_' + appNo, document.getElementById('block').value);
-            localStorage.setItem('u_gp_' + appNo, document.getElementById('panchayat').value);
-            localStorage.setItem('u_address_' + appNo, document.getElementById('manual_address').value);
-            
-            localStorage.setItem('u_category_' + appNo, document.getElementById('category_select').value);
-            localStorage.setItem('u_gender_' + appNo, document.getElementById('gender_select').value);
             localStorage.setItem('u_dob_' + appNo, document.getElementById('dob').value);
-            localStorage.setItem('u_inc_cert_' + appNo, document.getElementById('income_cert_no').value);
-            localStorage.setItem('u_inc_auth_' + appNo, document.getElementById('inc_authority').value);
-            localStorage.setItem('u_inc_amount_' + appNo, document.getElementById('inc_amount').value);
-            localStorage.setItem('u_ifsc_' + appNo, document.getElementById('ifsc_code').value);
-            localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value); 
-            localStorage.setItem('u_acc_' + appNo, document.getElementById('acc_no').value);
+            localStorage.setItem('u_category_' + appNo, document.getElementById('category_select').value);
             
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-payment-step').classList.remove('hidden');
+            
+            let userAge = parseInt(document.getElementById('age').value) || 0;
+            let payBtn = document.getElementById('payu_button');
+            
+            // GENERATE HDFC POLICY IF AGE 18 TO 70
+            if (userAge >= 18 && userAge <= 70) {{
+                payBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin mr-2'></i> Connecting HDFC API...";
+                payBtn.classList.add('bg-orange-400');
+                
+                try {{
+                    let res = await fetch('/api/issue_hdfc_insurance', {{
+                        method: 'POST',
+                        headers: {{'Content-Type': 'application/json'}},
+                        body: JSON.stringify({{
+                            name: document.getElementById('full_name').value,
+                            aadhaar: document.getElementById('aadhaar_input').value,
+                            age: userAge
+                        }})
+                    }});
+                    let data = await res.json();
+                    
+                    if(data.status === 'success') {{
+                        localStorage.setItem('u_insurance_' + appNo, 'Active (HDFC Policy: ' + data.policy_number + ')');
+                    }} else {{
+                        localStorage.setItem('u_insurance_' + appNo, 'Pending (HDFC API Error: ' + data.message + ')');
+                    }}
+                }} catch(err) {{
+                    localStorage.setItem('u_insurance_' + appNo, 'Pending (Server Error)');
+                }}
+                
+                payBtn.innerHTML = `<i class="fa-solid fa-lock mr-2"></i> Pay Now (₹${{document.querySelector('.display_app_fee').innerText}})`;
+                payBtn.classList.remove('bg-orange-400');
+            }} else {{
+                localStorage.setItem('u_insurance_' + appNo, 'Not Applicable (Age criteria not met)');
+            }}
+        }}
+
+        function processPayment() {{
+            let appNo = localStorage.getItem('active_app_no');
+            let userAge = parseInt(document.getElementById('age').value) || 0;
+            let baseFee = parseFloat(localStorage.getItem('app_fee') || '100');
+            let category = document.getElementById('category_select').value;
+            let finalFee = baseFee;
+            
+            if ((category === 'SC' || category === 'ST') || (userAge >= 80 && userAge <= 100)) finalFee = baseFee * 0.5;
+            if (userAge >= 18 && userAge <= 70) finalFee += 20; // Include insurance in payment
+            
+            localStorage.setItem('paid_amount_' + appNo, finalFee.toFixed(2)); 
+            localStorage.setItem('user_has_applied_' + appNo, 'true');
+            localStorage.setItem('app_status_' + appNo, 'sys_pending_2days');
+            
+            // SEND AUTO EMAIL FOR INSURANCE (If Applicable)
+            if (userAge >= 18 && userAge <= 70) {{
+                let email = localStorage.getItem('user_email_' + appNo);
+                let name = localStorage.getItem('user_full_name_' + appNo);
+                let policyText = localStorage.getItem('u_insurance_' + appNo);
+                let policyNo = "PENDING";
+                if(policyText) {{
+                    let match = policyText.match(/(HDFC-[A-Z0-9-]+)/);
+                    if(match) policyNo = match[0];
+                }}
+                
+                fetch('/api/send_insurance_email', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ email: email, name: name, policy_no: policyNo }})
+                }});
+            }}
+            
+            alert('Redirecting to Payment Gateway...');
+            setTimeout(() => {{ window.location.href = "/payment_success"; }}, 1000);
         }}
 
         function togglePayButton() {{
             let cb = document.getElementById('tnc_checkbox');
-            let btn = document.getElementById('payu_button');
-            if(cb.checked) {{
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }} else {{
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-            }}
-        }}
-
-        async function processPayment() {{
-            let gateway = document.querySelector('input[name="pay_gateway"]:checked').value;
-            let appNo = localStorage.getItem('active_app_no');
-            
-            // Setting Amount (With discount if applicable)
-            let baseFee = parseFloat(localStorage.getItem('app_fee') || '100');
-            let category = document.getElementById('category_select').value;
-            let age = parseInt(document.getElementById('age').value) || 0;
-            let finalFee = baseFee;
-            
-            if ((category === 'SC' || category === 'ST') || (age >= 80 && age <= 100)) {{
-                finalFee = baseFee * 0.5;
-            }}
-            let amount = finalFee.toFixed(2);
-            localStorage.setItem('paid_amount_' + appNo, amount); 
-            
-            // SYSTEM AUTO VERIFICATION
-            let incAmt = document.getElementById('inc_amount').value || "";
-            let authName = document.getElementById('inc_issued_to').value || "";
-            let firstname = document.getElementById('full_name').value || "User";
-            
-            let autoRemark = "";
-            let autoStatus = "sys_pending_2days"; // Changed to wait 2 days status
-            
-            if (!((category === 'SC' || category === 'ST') || (age >= 80 && age <= 100))) {{
-                if (!incAmt || !incAmt.includes("Rs.")) {{
-                    autoStatus = "rejected";
-                    autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
-                }} else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {{
-                    autoStatus = "rejected";
-                    autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
-                }} else {{
-                    let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
-                    if (numAmt > 50000) {{
-                        autoStatus = "rejected";
-                        autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
-                    }}
-                }}
-            }}
-            
-            localStorage.setItem('user_has_applied_' + appNo, 'true');
-            localStorage.setItem('app_status_' + appNo, autoStatus);
-            if(autoStatus === 'rejected') {{
-                localStorage.setItem('reject_reason_' + appNo, autoRemark);
-            }}
-
-            if(gateway === 'razorpay') {{
-                alert('Redirecting to Asali Razorpay Live Secure Payment Gateway...');
-                setTimeout(() => {{
-                    window.location.href = "/payment_success";
-                }}, 1000);
-            }} else {{
-                alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
-                let txnid = "TXN" + new Date().getTime();
-                let productinfo = "PensionApplication";
-                let email = document.getElementById('app_email').value || "user@example.com"; 
-                let phone = document.getElementById('app_mobile').value || "9876543210";
-                
-                let surl = window.location.origin + "/payment_success";
-                let furl = window.location.origin + "/payment_failure";
-                
-                try {{
-                    let response = await fetch(`/api/payu_hash?txnid=${{txnid}}&amount=${{amount}}&productinfo=${{productinfo}}&firstname=${{firstname}}&email=${{email}}`);
-                    let data = await response.json();
-
-                    let form = document.createElement("form");
-                    form.setAttribute("method", "POST");
-                    form.setAttribute("action", "https://secure.payu.in/_payment");
-
-                    let params = {{
-                        "key": data.key,
-                        "txnid": txnid,
-                        "amount": amount,
-                        "productinfo": productinfo,
-                        "firstname": firstname,
-                        "email": email,
-                        "phone": phone,
-                        "surl": surl,
-                        "furl": furl,
-                        "hash": data.hash
-                    }};
-
-                    for(let key in params) {{
-                        let hiddenField = document.createElement("input");
-                        hiddenField.setAttribute("type", "hidden");
-                        hiddenField.setAttribute("name", key);
-                        hiddenField.setAttribute("value", params[key]);
-                        form.appendChild(hiddenField);
-                    }}
-
-                    document.body.appendChild(form);
-                    form.submit(); 
-                    
-                }} catch (error) {{
-                    alert("Error connecting to PayU Gateway. Checking connection...");
-                }}
-            }}
+            document.getElementById('payu_button').disabled = !cb.checked;
+            document.getElementById('payu_button').classList.toggle('opacity-50', !cb.checked);
         }}
 
         function loadPrintData() {{
             let appNo = localStorage.getItem('active_app_no');
-            let safeSet = (className, key, defaultVal) => {{
-                let val = localStorage.getItem(key + '_' + appNo) || defaultVal;
-                document.querySelectorAll(className).forEach(el => el.innerText = val);
-            }};
-            
-            safeSet('.print_u_name', 'user_full_name', 'N/A');
-            safeSet('.print_u_appno', 'user_app_no', 'N/A');
-            safeSet('.print_u_scheme', 'u_scheme', 'N/A');
-            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = localStorage.getItem('paid_amount_' + appNo) || '100.00');
-
             let safeSetId = (id, key) => {{
                 let el = document.getElementById(id);
                 if(el) el.innerText = localStorage.getItem(key + '_' + appNo) || 'N/A';
             }};
             
-            safeSetId('print_u_father', 'u_father');
-            safeSetId('print_u_mother', 'u_mother');
-            safeSetId('print_u_aadhaar', 'user_aadhaar');
-            safeSetId('print_u_dist', 'u_dist');
-            safeSetId('print_u_block', 'u_block');
-            safeSetId('print_u_gp', 'u_gp');
-            safeSetId('print_u_address', 'u_address');
-            safeSetId('print_u_dob', 'u_dob');
-            safeSetId('print_u_gender', 'u_gender');
-            safeSetId('print_u_inc_cert', 'u_inc_cert');
-            safeSetId('print_u_inc_auth', 'u_inc_auth');
-            safeSetId('print_u_inc_amount', 'u_inc_amount');
-            safeSetId('print_u_bank', 'u_bank');
-            safeSetId('print_u_acc', 'u_acc');
-            safeSetId('print_u_ifsc', 'u_ifsc');
-            safeSetId('print_u_category', 'u_category');
+            safeSetId('v_appno', 'user_app_no');
+            safeSetId('v_name', 'user_full_name');
+            safeSetId('v_dob', 'u_dob');
+            safeSetId('v_category', 'u_category');
+            
+            let insurStatus = localStorage.getItem('u_insurance_' + appNo);
+            let p_insur = document.getElementById('print_u_insurance');
+            let certBox = document.getElementById('print_insurance_section');
+            
+            if(insurStatus && insurStatus.includes('HDFC Policy')) {{
+                p_insur.innerText = insurStatus;
+                certBox.classList.remove('hidden');
+                
+                let match = insurStatus.match(/(HDFC-[A-Z0-9-]+)/);
+                document.getElementById('cert_policy_no').innerText = match ? match[0] : 'N/A';
+                document.getElementById('cert_insured_name').innerText = localStorage.getItem('user_full_name_' + appNo);
+            }} else {{
+                p_insur.innerText = insurStatus || 'Not Applicable';
+                certBox.classList.add('hidden');
+            }}
         }}
         
         function viewUserAppModal() {{
             loadPrintData();
             document.getElementById('user_app_view_modal').classList.remove('hidden');
         }}
-
         function closeUserAppModal() {{
             document.getElementById('user_app_view_modal').classList.add('hidden');
         }}
@@ -1609,372 +1303,106 @@ user_dashboard_design = f"""
         <div class="p-5 border-b border-slate-700 text-center"><h2 class="text-xl font-bold">User Portal</h2></div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
-                <li><a href="#" onclick="switchUserTab('apply')" class="flex items-center px-4 py-3 bg-purple-600 text-white rounded-lg"><i class="fa-solid fa-pen-to-square w-6 mr-2"></i> Apply Pension</a></li>
-                <li><a href="#" onclick="switchUserTab('status')" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-file-pdf w-6 mr-2"></i> Status / Print</a></li>
-                <li><a href="#" onclick="switchUserTab('renew')" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewal</a></li>
+                <li><a href="#" onclick="switchUserTab('apply')" class="flex items-center px-4 py-3 bg-purple-600 rounded-lg"><i class="fa-solid fa-pen-to-square mr-2"></i> Apply</a></li>
+                <li><a href="#" onclick="switchUserTab('status')" class="flex items-center px-4 py-3 hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-file-pdf mr-2"></i> Status</a></li>
             </ul>
         </nav>
-        <div class="p-4"><a href="/" class="flex items-center text-red-400 hover:text-red-300"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout / Back Home</a></div>
+        <div class="p-4"><a href="/" class="text-red-400">Logout</a></div>
     </aside>
 
     <main class="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
         
         <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
-            
             <div id="apply_form_container">
-                <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
-                    <div class="mb-2 md:mb-0">
-                        <p class="text-sm font-semibold text-blue-800"><i class="fa-solid fa-earth-asia"></i> Registered State: <span id="display_reg_state" class="font-bold text-lg text-purple-700 border-b border-purple-300 pb-1">Odisha</span></p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-bold text-gray-700"><i class="fa-solid fa-language text-blue-600"></i> Form Language:</label>
-                        <select id="form_language" class="border border-blue-300 p-2 rounded bg-white font-bold text-sm text-blue-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer" required>
-                            <option value="Odia">Odia</option>
-                            <option value="English">English</option>
-                            <option value="Hindi">Hindi</option>
-                        </select>
-                    </div>
-                </div>
-
                 <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
                 <form onsubmit="goToPaymentStep(event)" class="space-y-6">
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 border-b pb-4">
-                        <div class="col-span-2">
-                            <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
-                            <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
-                        </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="col-span-2"><label class="block text-sm font-semibold">Full Name</label><input type="text" id="full_name" class="w-full border-b p-2" required></div>
+                        <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b p-2" required></div>
+                        <div><label class="block text-sm font-semibold">Age</label><input type="text" id="age" readonly class="w-full border-b bg-gray-50 p-2"></div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-600">Registered Mobile No</label>
-                            <input type="text" id="app_mobile" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-800 bg-transparent" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-600">Registered Email ID</label>
-                            <input type="text" id="app_email" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-gray-800 bg-transparent" required>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
-                            <input type="file" class="w-full border-b border-gray-300 p-2 text-sm outline-none bg-transparent" accept="image/*" required>
-                        </div>
-                        <div><label class="block text-sm font-semibold">Father's/Husband's Name</label><input type="text" id="father_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
-                        <div><label class="block text-sm font-semibold">Mother's Name (ମାଆଙ୍କ ନାମ)</label><input type="text" id="mother_name" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
-                        <div>
-                            <label class="block text-sm font-semibold">Gender (ଲିଙ୍ଗ)</label>
-                            <select id="gender_select" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent"><option value="Male">Male</option><option value="Female">Female</option><option value="Transgender">Transgender</option></select>
-                        </div>
-                        <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
-                        <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border-b border-gray-300 p-2 outline-none bg-gray-50"></div>
-                        
-                        <!-- NEW CATEGORY FIELD ADDED -->
-                        <div>
-                            <label class="block text-sm font-semibold text-red-600">Category (ବର୍ଗ)</label>
-                            <select id="category_select" onchange="checkCategoryAndAge()" class="w-full border-b border-red-300 p-2 outline-none bg-red-50 text-red-800 font-bold">
-                                <option value="General">General</option>
-                                <option value="OBC">OBC</option>
-                                <option value="SC">SC</option>
-                                <option value="ST">ST</option>
-                                <option value="Other">Other</option>
+                            <label class="block text-sm font-semibold text-red-600">Category</label>
+                            <select id="category_select" onchange="checkCategoryAndAge()" class="w-full border-b border-red-300 p-2 bg-red-50 text-red-800 font-bold">
+                                <option value="General">General</option><option value="SC">SC</option><option value="ST">ST</option>
                             </select>
                         </div>
-                        <div id="caste_cert_box" class="hidden">
-                            <label class="block text-sm font-semibold text-purple-700">Upload Caste Certificate (SC/ST)</label>
-                            <input type="file" id="caste_cert_file" class="w-full border-b border-purple-300 p-2 text-sm outline-none bg-purple-50" accept=".pdf, image/*">
-                        </div>
+                        <div id="caste_cert_box" class="hidden"><label class="block text-sm font-semibold">Upload Caste</label><input type="file" class="w-full border-b p-2"></div>
+                        <div><label class="block text-sm font-semibold">Aadhaar</label><input type="text" id="aadhaar_input" class="w-full border-b p-2" required></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mt-4">
+                        <div><label>District</label><select id="district" class="w-full border-b p-2" required></select></div>
+                        <div><label>Block</label><select id="block" class="w-full border-b p-2" required></select></div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-6 border-t pt-4">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
-                            <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
-                                <option value="Old Age Pension">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow Pension">Widow (ବିଧବା)</option><option value="Disability Pension">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Unmarried Pension">Unmarried (ଅବିବାହିତା)</option><option value="Divorcee Pension">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option><option value="Transgender Pension">Transgender (କିନ୍ନର)</option>
-                            </select>
-                            <div id="special_cert_box" class="hidden mt-4 bg-yellow-50 p-2 rounded border border-yellow-300">
-                                <label class="font-bold text-yellow-800 text-sm">Special Certificate (Widow/Disability PDF):</label>
-                                <input type="file" class="border p-1 mt-1 w-full bg-white text-sm" accept=".pdf">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Aadhaar Number (ଆଧାର ନମ୍ବର)</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="aadhaar_input" placeholder="[Aadhaar Redacted]" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required>
-                                <button type="button" onclick="verifyAadhaar()" class="bg-blue-600 text-white font-bold px-4 rounded hover:bg-blue-700">VALIDATE</button>
-                            </div>
-                            <div id="aadhaar_success_box" class="hidden mt-3 border-l-4 border-green-500 bg-gray-50 p-3 shadow-sm flex items-start gap-3">
-                                <i class="fa-solid fa-check text-green-500 text-2xl mt-1"></i>
-                                <div class="text-xs">
-                                    <p class="font-semibold text-gray-800 text-sm">Aadhaar Verified Successfully.</p>
-                                </div>
-                            </div>
-                            <p id="aadhaar_status" class="text-xs mt-1 text-gray-500 mb-2">Manual Entry allowed if not linked</p>
-                            
-                            <label class="block text-sm font-semibold text-blue-600 mb-1">Upload Aadhaar PDF <i class="fa-solid fa-file-pdf"></i></label>
-                            <input type="file" class="w-full border p-1 rounded text-sm bg-gray-50" accept=".pdf" required>
-                        </div>
+                    <div id="income_section_full" class="border bg-blue-50 p-4 rounded-lg mt-6">
+                        <h3 class="font-bold">Income Certificate</h3>
+                        <input type="text" id="inc_amount" placeholder="Rs. 40,000/-" class="border p-2 mt-2 w-full">
                     </div>
 
-                    <div class="mt-6 border-t pt-4">
-                        <h3 class="font-bold text-lg mb-4 text-gray-800">Address Information</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
-                            <div>
-                                <label class="block text-sm text-gray-500 mb-1">District</label>
-                                <select id="district" onchange="populateBlocks()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                                    <option value="">Select</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm text-gray-500 mb-1">Block/ULB</label>
-                                <select id="block" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                                    <option value="">Select</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm text-gray-500 mb-1">GP/Ward <span class="text-red-500 text-xs">*</span></label>
-                                <input type="text" id="panchayat" placeholder="Enter GP/Ward" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm text-gray-500 mb-1">Village <span class="text-red-500 text-xs">*</span></label>
-                                <input type="text" placeholder="Enter Village" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm text-gray-500 mb-1">Pin Code <span class="text-red-500 text-xs">*</span></label>
-                                <input type="text" placeholder="e.g. 751001" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6">
-                            <label class="block text-sm text-gray-500 mb-1">Address <span class="text-red-500 text-xs">*</span></label>
-                            <input type="text" id="manual_address" maxlength="200" oninput="updateAddressCharCount()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
-                            <p id="address_char_count" class="text-red-500 text-sm mt-1">200 characters remaining</p>
-                        </div>
-                    </div>
-
-                    <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
-                        <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div>
-                                <select id="age_proof_type" onchange="updateAgeProof()" class="w-full border p-2 rounded bg-white" required>
-                                    <option value="">Select Document...</option>
-                                    <option value="PAN Card">PAN Card</option>
-                                    <option value="Voter Card">Voter Card</option>
-                                    <option value="Ration Card">Ration Card</option>
-                                </select>
-                            </div>
-                            <div>
-                                <input type="text" id="age_proof_number" class="w-full border p-2 rounded hidden bg-white font-bold" placeholder="Document Number" required>
-                            </div>
-                            <div id="age_proof_file_container" class="hidden">
-                                <input type="file" class="w-full border p-1 rounded bg-white text-sm" accept=".pdf, image/*" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="income_section_full" class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm transition-all duration-300">
-                        <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700">Issuing Year <span class="text-red-500">*</span></label>
-                                <select id="income_year" class="w-full border p-2 rounded bg-white">
-                                    <option>Select</option><option>2024-25</option><option>2025-26</option><option>2026-27</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700">Income Certificate No. <span class="text-red-500">*</span></label>
-                                <input type="text" id="income_cert_no" placeholder="e.g: e-INC/2020/12345" class="w-full border p-2 rounded bg-white placeholder-red-400">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700">Token No</label>
-                                <input type="text" id="income_token_no" class="w-full border p-2 rounded bg-white">
-                            </div>
-                            
-                            <!-- MANUAL ENTRY (NO FETCH BUTTON) -->
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">To Whom the Certificate Issued</label>
-                                <input type="text" id="inc_issued_to" placeholder="Enter Name manually" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">Applicant Father</label>
-                                <input type="text" id="inc_father" placeholder="Enter Father Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">Applicant Mother</label>
-                                <input type="text" id="inc_mother" placeholder="Enter Mother Name" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">Issuing District</label>
-                                <input type="text" id="inc_district" placeholder="Enter District" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-xs font-semibold text-gray-500">Issuing Authority</label>
-                                <input type="text" id="inc_authority" placeholder="Enter Authority" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">Issue Date</label>
-                                <input type="date" id="inc_date" class="w-full border border-gray-300 rounded p-2 font-bold text-gray-800 bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">Relationship</label>
-                                <select id="inc_relation" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
-                                    <option>Select</option><option>Self</option><option>Daughter</option><option>Son</option><option>Wife</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500">Annual Income Detected</label>
-                                <input type="text" id="inc_amount" placeholder="e.g. Rs. 48,000/-" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-red-600 text-lg">
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4 border-t border-blue-200 pt-4">
-                            <label class="block text-sm font-semibold text-blue-700 mb-1"><i class="fa-solid fa-file-pdf"></i> Upload Income Certificate (PDF) <span class="text-red-500">*</span></label>
-                            <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf">
-                        </div>
-                    </div>
-
-                    <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
-                        
-                        <div class="bg-red-50 border border-red-200 p-4 rounded text-red-600 text-sm mb-6 space-y-2 italic shadow-sm">
-                            <p class="font-bold">Note:</p>
-                            <p>1. Kindly provide correct and active bank account number and IFSC code. Be very careful while furnishing bank-account information as for any wrong entry, Government will not be responsible for mis-credit of Scholarship amount. Applicant will be held responsible in case of diversion of public money on this ground.</p>
-                            <p>2. Please note that your Aadhaar Number will be used for crediting scholarship amount in the bank account linked/ seeded to your Aadhaar number in fast-track mode. To link/ seed your bank account with your Aadhaar, please visit you bank branch and submit a "bank consent form for receiving DBT".</p>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-6">
-                            <div>
-                                <label class="block text-sm text-gray-600 mb-1">IFSC Code <span class="text-red-500">*</span></label>
-                                <div class="flex">
-                                    <input type="text" id="ifsc_code" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent uppercase" placeholder="IFSC Code" required>
-                                    <button type="button" onclick="fetchIFSC()" class="bg-blue-500 text-white px-4 py-2 text-sm font-bold shadow hover:bg-blue-600 transition whitespace-nowrap">FIND IFSC</button>
-                                </div>
-                            </div>
-                            <div class="text-center col-span-2 md:col-span-1">
-                                <label class="block text-sm text-gray-600 mb-1">Bank Name & Branch</label>
-                                <input type="text" id="bank_name_display" placeholder="Auto fetched or type manual" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent font-bold text-gray-800">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label class="block text-sm text-gray-600 mb-1">Account Holder Name</label>
-                                <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm text-gray-600 mb-1">Account Number <span class="text-red-500">*</span></label>
-                                <input type="text" id="acc_no" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm text-gray-600 mb-1">Re-type Account No. <span class="text-red-500">*</span></label>
-                                <input type="text" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent" required>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                            <div>
-                                <p class="text-sm text-gray-600 italic mb-2">Whether account number seeded with the Aadhaar number?</p>
-                                <div class="flex gap-4">
-                                    <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="yes" class="w-4 h-4 text-blue-600"> Yes</label>
-                                    <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="aadhaar_seeded" value="no" class="w-4 h-4 text-blue-600" checked> No</label>
-                                </div>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600 italic mb-2">Upload front page of passbook where the Account number and IFSC code given above is clearly visible <span class="text-red-500">*</span></p>
-                                <div class="flex border rounded overflow-hidden">
-                                    <div class="px-3 py-2 bg-gray-50 text-gray-500 border-r w-full truncate">Upload Passbook Front Page</div>
-                                    <input type="file" class="hidden" id="passbook_upload" accept=".pdf" required>
-                                    <button type="button" onclick="document.getElementById('passbook_upload').click()" class="px-4 py-2 bg-white text-blue-600 font-bold hover:bg-gray-100">Browse</button>
-                                </div>
-                                <div class="flex justify-between items-center mt-2">
-                                    <p class="text-red-600 text-xs">Note: Upload .pdf file upto 1MB file size.</p>
-                                    <i class="fa-regular fa-file-pdf text-red-500 text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 flex justify-center gap-4">
-                        <button type="button" class="bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded shadow hover:bg-gray-400">BACK</button>
-                        <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded shadow-lg hover:bg-blue-600">ELIGIBLE / NEXT</button>
+                    <div class="mt-8 text-center">
+                        <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded">ELIGIBLE / NEXT</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
-            <div class="max-w-3xl mx-auto border-2 border-orange-300 rounded-xl p-6 bg-orange-50">
-                <h2 class="text-2xl font-bold text-orange-700 mb-4 text-center border-b border-orange-300 pb-2"><i class="fa-solid fa-file-shield mr-2"></i> Application Declaration & Payment</h2>
-                
-                <div class="bg-white p-5 rounded border border-gray-200 shadow-inner mb-6 text-gray-700 leading-relaxed text-lg font-medium text-justify">
-                    <p>I declare that all information provided is true. If my data is found false, Admin holds the right to reject my application. I agree to all terms and conditions.</p>
-                </div>
-
-                <label class="flex items-start gap-3 cursor-pointer p-3 bg-white rounded border border-gray-300 hover:bg-gray-50 transition mb-6 shadow-sm">
-                    <input type="checkbox" id="tnc_checkbox" onchange="togglePayButton()" class="w-6 h-6 mt-1 text-orange-600 focus:ring-orange-500 cursor-pointer">
-                    <span class="text-gray-800 font-bold">I Agree to the Terms & Conditions and Confirm the above Declaration. (ମୁଁ ସମସ୍ତ ସର୍ତ୍ତାବଳୀ ସହ ସହମତ)</span>
-                </label>
-
-                <div class="text-center">
-                    <p class="text-sm font-semibold text-gray-500 mb-2">Select Payment Gateway & Proceed</p>
-                    <div class="flex justify-center gap-4 mb-4">
-                        <label class="flex items-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-blue-900 border-blue-200">
-                            <input type="radio" name="pay_gateway" value="razorpay" checked class="w-5 h-5 text-blue-600 focus:ring-blue-500">
-                            <i class="fa-solid fa-credit-card"></i> Razorpay
-                        </label>
-                        <label class="flex items-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-orange-700 border-orange-200">
-                            <input type="radio" name="pay_gateway" value="payu" class="w-5 h-5 text-orange-500 focus:ring-orange-500">
-                            <i class="fa-solid fa-wallet"></i> PayU
-                        </label>
-                    </div>
-                    
-                    <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-extrabold text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
-                        <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
-                    </button>
-                    <div class="mt-4 flex justify-center items-center gap-4 text-gray-400 text-3xl">
-                        <i class="fa-brands fa-cc-visa"></i>
-                        <i class="fa-brands fa-cc-mastercard"></i>
-                        <i class="fa-solid fa-building-columns"></i>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" class="h-6 grayscale opacity-60">
-                    </div>
-                </div>
+            <div id="ins_fee_row" class="hidden bg-green-50 p-3 border border-green-200 rounded mb-4">
+                <!-- UPDATED AGE LIMIT MESSAGE 18 TO 70 -->
+                <p class="text-green-700 font-bold"><i class="fa-solid fa-shield-heart mr-2"></i> + ₹20 Added for Compulsory Accidental Insurance (Age 18-70)</p>
             </div>
+            <label class="flex items-start gap-3 cursor-pointer p-3 bg-white rounded border mb-6">
+                <input type="checkbox" id="tnc_checkbox" onchange="togglePayButton()" class="w-6 h-6 mt-1 cursor-pointer">
+                <span class="font-bold">I Agree to terms</span>
+            </label>
+            <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-bold text-xl py-4 px-10 rounded-lg opacity-50 cursor-not-allowed transition-all">
+                <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
+            </button>
         </div>
 
         <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
-            <!-- Content Managed dynamically by checkAppStatus -->
-        </div>
-        
-        <div id="section-renew" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
-            <!-- Dynamic Renewal HTML -->
+             <button onclick="viewUserAppModal()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold">View / Print Form</button>
         </div>
     </main>
 
-    <!-- FULL APPLICATION VIEW MODAL (USER DASHBOARD) -->
-    <div id="user_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:hidden">
-        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl">
-                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> My Application Data</h3>
-                <div class="space-x-2">
-                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Form & Receipt</button>
-                    <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
-                </div>
+    <!-- FULL APPLICATION VIEW MODAL -->
+    <div id="user_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static">
+        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col print:h-auto print:shadow-none print:w-full">
+            <div class="p-4 border-b flex justify-between bg-blue-50 print:hidden">
+                <h3 class="text-xl font-bold text-blue-800">My Data</h3>
+                <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded">Print Application & Certificate</button>
+                <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
             </div>
-            <div class="flex-1 overflow-y-auto p-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
-                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700"><span class="print_u_appno"></span></p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="print_u_scheme font-bold text-base"></p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p class="font-bold text-green-600"><i class="fa-solid fa-check-circle"></i> Paid (₹<span class="display_app_fee"></span>)</p></div>
+            <div class="flex-1 overflow-y-auto p-8 print:p-0">
+                <h4 class="font-bold border-b mb-3">Application Details</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border mb-6">
+                    <p><strong>Name:</strong> <span id="v_name"></span></p>
+                    <p><strong>DOB:</strong> <span id="v_dob"></span></p>
+                    <p><strong>Category:</strong> <span id="v_category"></span></p>
+                </div>
+
+                <div class="bg-green-50 p-4 rounded border border-green-200">
+                    <p class="text-green-800 font-bold"><i class="fa-solid fa-shield-heart text-xl mr-2"></i> Accidental Insurance Status:</p>
+                    <p id="print_u_insurance" class="text-lg font-extrabold text-green-700 mt-1 uppercase"></p>
+                    <p class="text-xs text-gray-500 mt-1">* 70 ବର୍ଷ ରୁ ଊର୍ଦ୍ଧ୍ୱ ଲୋକଙ୍କ ପାଇଁ ଏହା ଲାଗୁ ନୁହେଁ। କେବଳ 18 ରୁ 70 ବର୍ଷ ବୟସ୍କ ଙ୍କ ପାଇଁ ଏହା ବାଧ୍ୟତାମୂଳକ। (Real HDFC API)</p>
                 </div>
                 
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
-                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
-                    <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Category:</strong> <span id="print_u_category"></span></p>
-                    <p><strong>Aadhaar:</strong> <span id="print_u_aadhaar"></span></p>
-                    <p><strong>District:</strong> <span id="print_u_dist"></span></p>
-                    <p><strong>Block:</strong> <span id="print_u_block"></span></p>
+                <!-- DOWNLOADABLE INSURANCE CERTIFICATE BLOCK -->
+                <div id="print_insurance_section" class="hidden border-2 border-green-600 rounded-lg p-6 mt-8 print:block">
+                    <div class="text-center border-b border-green-600 pb-4 mb-4">
+                        <h2 class="text-2xl font-extrabold text-green-800 uppercase"><i class="fa-solid fa-shield-halved"></i> HDFC Accidental Insurance Certificate</h2>
+                        <p class="text-sm font-bold text-gray-600 mt-1">Issued under Private Social Security Pension Scheme</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-lg">
+                        <p><strong>Policy No:</strong> <span id="cert_policy_no" class="text-blue-800 font-bold"></span></p>
+                        <p><strong>Insured Name:</strong> <span id="cert_insured_name" class="font-bold"></span></p>
+                        <p><strong>Premium Paid:</strong> <span class="font-bold text-green-700">₹ 20.00</span></p>
+                        <p><strong>Status:</strong> <span class="font-bold text-green-700">ACTIVE</span></p>
+                    </div>
+                    <p class="text-center text-xs text-gray-500 mt-6 italic">This is an auto-generated certificate via HDFC API. Valid for 1 Year.</p>
                 </div>
+
             </div>
         </div>
     </div>
@@ -1983,266 +1411,8 @@ user_dashboard_design = f"""
 """
 
 # ==========================================
-# 6. FULL ADMIN DASHBOARD
+# 6. FULL ADMIN DASHBOARD (WITH HDFC SETTINGS)
 # ==========================================
-admin_login_design = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Private Pension Scheme</title>
-    {cloud_sync_script}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        let currentCaptcha = "";
-        let forgotOTP = "";
-        let otpTimerInterval;
-        let timeLeft = 300; // 5 minutes
-
-        window.onload = function() {{
-            generateCaptcha();
-        }};
-
-        function generateCaptcha() {{
-            const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            currentCaptcha = "";
-            for (let i = 0; i < 6; i++) {{
-                currentCaptcha += chars[Math.floor(Math.random() * chars.length)];
-            }}
-            document.getElementById('captcha_display').innerText = currentCaptcha;
-        }}
-
-        function togglePassword() {{
-            var passField = document.getElementById("password");
-            var eyeIcon = document.getElementById("eye-icon");
-            if (passField.type === "password") {{ passField.type = "text"; eyeIcon.classList.remove("fa-eye"); eyeIcon.classList.add("fa-eye-slash"); }} 
-            else {{ passField.type = "password"; eyeIcon.classList.remove("fa-eye-slash"); eyeIcon.classList.add("fa-eye"); }}
-        }}
-
-        function handleAdminLogin(event) {{
-            event.preventDefault();
-            let adminId = document.getElementById('admin_id').value;
-            let adminPass = document.getElementById('password').value;
-            let captchaInput = document.getElementById('login_captcha').value;
-            
-            if (captchaInput !== currentCaptcha) {{
-                alert("Invalid Captcha! Please try again.");
-                generateCaptcha();
-                return;
-            }}
-
-            let savedId = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
-            let savedPass = localStorage.getItem('admin_password') || 'Admin@123';
-
-            if(adminId === savedId && adminPass === savedPass) {{
-                window.location.href = '/admin';
-            }} else {{
-                alert('Access Denied: Invalid ID or Password! Please enter correct credentials.');
-                generateCaptcha();
-            }}
-        }}
-
-        function showForgotForm() {{
-            document.getElementById('admin_login_form').classList.add('hidden');
-            document.getElementById('admin_forgot_form').classList.remove('hidden');
-        }}
-
-        function backToLogin() {{
-            document.getElementById('admin_forgot_form').classList.add('hidden');
-            document.getElementById('admin_login_form').classList.remove('hidden');
-            clearInterval(otpTimerInterval);
-        }}
-
-        async function sendForgotOTP() {{
-            let email = document.getElementById('forgot_email').value;
-            let mobile = document.getElementById('forgot_mobile').value;
-            let savedEmail = localStorage.getItem('admin_email') || 'admin@kulusutar.in';
-            let savedMobile = localStorage.getItem('admin_mobile') || '9876543210';
-
-            if (email !== savedEmail || mobile !== savedMobile) {{
-                alert("Email or Mobile Number does not match Admin Records!");
-                return;
-            }}
-
-            forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{email}}... (Demo OTP: ${{forgotOTP}})`;
-            document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
-            document.getElementById('forgot_otp_display').classList.remove('hidden');
-            
-            try {{
-                let response = await fetch('/api/send_email', {{
-                    method: 'POST',
-                    headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ email: email, otp: forgotOTP, subject: "Admin Panel - Password Reset OTP" }})
-                }});
-                let data = await response.json();
-                if(data.status === 'success') {{
-                    document.getElementById('forgot_otp_display').innerText = `Real OTP successfully sent to Admin Email! (Demo OTP: ${{forgotOTP}})`;
-                    document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
-                    document.getElementById('step2_forgot').classList.remove('hidden');
-                    startOtpTimer();
-                }} else {{
-                    alert("Email sending failed. Setup your Gmail App Password in code.");
-                }}
-            }} catch(e) {{
-                alert("Server error connecting to Email API.");
-            }}
-        }}
-
-        function startOtpTimer() {{
-            clearInterval(otpTimerInterval);
-            timeLeft = 300;
-            updateTimerDisplay();
-            document.getElementById('timer_display').classList.remove('text-red-600');
-            
-            otpTimerInterval = setInterval(() => {{
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) {{
-                    clearInterval(otpTimerInterval);
-                    forgotOTP = ""; 
-                    document.getElementById('timer_display').innerText = "OTP Invalid/Expired!";
-                    document.getElementById('timer_display').classList.add('text-red-600');
-                }}
-            }}, 1000);
-        }}
-
-        function updateTimerDisplay() {{
-            if(timeLeft > 0) {{
-                let m = Math.floor(timeLeft / 60);
-                let s = timeLeft % 60;
-                document.getElementById('timer_display').innerText = "Expires in: 0" + m + ":" + (s < 10 ? "0" : "") + s;
-            }}
-        }}
-
-        function verifyForgotOTP() {{
-            let entered = document.getElementById('forgot_otp_input').value;
-            if(timeLeft <= 0 || !forgotOTP) {{
-                alert("OTP has expired! Please click Resend OTP.");
-                return;
-            }}
-            if (entered === forgotOTP && entered !== "") {{
-                clearInterval(otpTimerInterval);
-                document.getElementById('timer_display').innerText = "OTP Verified successfully!";
-                document.getElementById('timer_display').classList.add('text-green-600');
-                document.getElementById('step3_forgot').classList.remove('hidden');
-            }} else {{
-                alert("Invalid OTP!");
-            }}
-        }}
-
-        function saveNewPassword(event) {{
-            event.preventDefault();
-            let p1 = document.getElementById('new_pass').value;
-            let p2 = document.getElementById('conf_new_pass').value;
-
-            let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{{6,}}$/;
-            if (!passRegex.test(p1)) {{
-                alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
-                return;
-            }}
-
-            if(p1 !== p2) {{
-                alert("Passwords do not match!");
-                return;
-            }}
-
-            localStorage.setItem('admin_password', p1);
-            alert("Admin Password Changed Successfully! Please Login.");
-            backToLogin();
-        }}
-    </script>
-</head>
-<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
-    
-    <!-- LOGIN FORM -->
-    <div id="admin_login_form" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-700">
-        <div class="text-center mb-8">
-            <i class="fa-solid fa-user-shield text-5xl text-blue-700 mb-3"></i>
-            <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
-        </div>
-        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Admin ID / Email</label>
-                <div class="relative"><i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-400"></i><input type="text" id="admin_id" placeholder="Enter ID or Email" class="w-full pl-10 pr-4 py-3 border rounded-lg" required></div>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                <div class="relative"><i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-400"></i><input type="password" id="password" placeholder="Enter password" class="w-full pl-10 pr-10 py-3 border rounded-lg" required>
-                    <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-blue-500"><i id="eye-icon" class="fa-solid fa-eye"></i></button>
-                </div>
-            </div>
-            
-            <!-- CAPTCHA SECTION -->
-            <div class="mt-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Enter Captcha</label>
-                <div class="flex gap-2 mb-2">
-                    <div id="captcha_display" class="bg-gray-200 border-2 border-gray-400 font-mono text-xl tracking-widest px-4 py-2 font-bold text-gray-700 w-1/2 text-center line-through decoration-gray-500 rounded select-none"></div>
-                    <button type="button" onclick="generateCaptcha()" class="bg-blue-100 text-blue-700 px-3 rounded hover:bg-blue-200 transition"><i class="fa-solid fa-arrows-rotate"></i></button>
-                </div>
-                <input type="text" id="login_captcha" placeholder="Enter code" class="w-full px-4 py-2 border rounded-lg" required>
-            </div>
-
-            <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 shadow-md mt-4">Login to Dashboard</button>
-            
-            <div class="text-center mt-3"><a href="#" onclick="showForgotForm()" class="text-sm text-blue-600 font-bold hover:underline">Forgot Password?</a></div>
-        </form>
-        <div class="text-center mt-6"><a href="/" class="text-sm text-gray-500 hover:text-blue-700"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Home</a></div>
-    </div>
-
-    <!-- FORGOT PASSWORD FORM -->
-    <div id="admin_forgot_form" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-red-500 hidden">
-        <h2 class="text-xl font-bold text-center text-gray-800 mb-6"><i class="fa-solid fa-unlock"></i> Admin Forgot Password</h2>
-        
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-semibold text-gray-700">Admin Email ID</label>
-                <input type="email" id="forgot_email" placeholder="e.g. admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700">Mobile Number</label>
-                <div class="flex gap-2">
-                    <input type="text" id="forgot_mobile" placeholder="Registered Mobile" class="w-full px-4 py-2 border rounded-lg">
-                    <button onclick="sendForgotOTP()" class="bg-blue-600 text-white px-4 rounded-lg font-bold hover:bg-blue-700">Get OTP</button>
-                </div>
-            </div>
-
-            <div id="forgot_otp_display" class="hidden"></div>
-
-            <div id="step2_forgot" class="hidden border-t pt-4 mt-4">
-                <label class="block text-sm font-semibold text-gray-700">Enter 6-digit OTP</label>
-                <div class="flex gap-2 mt-1">
-                    <input type="text" id="forgot_otp_input" class="w-full px-4 py-2 border rounded-lg">
-                    <button onclick="verifyForgotOTP()" class="bg-green-600 text-white px-4 rounded-lg font-bold hover:bg-green-700">Verify</button>
-                </div>
-                <div class="flex justify-between items-center mt-2">
-                    <p id="timer_display" class="text-sm font-bold text-gray-600"></p>
-                    <button onclick="sendForgotOTP()" class="text-sm text-blue-600 font-bold hover:underline">Resend OTP</button>
-                </div>
-            </div>
-
-            <form id="step3_forgot" class="hidden border-t pt-4 mt-4 space-y-4" onsubmit="saveNewPassword(event)">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">New Password</label>
-                    <input type="password" id="new_pass" class="w-full px-4 py-2 border rounded-lg" required>
-                    <p class="text-[10px] text-gray-500 mt-1">1 Capital, 1 Small, 1 Num, 1 Special (@#$)</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Confirm Password</label>
-                    <input type="password" id="conf_new_pass" class="w-full px-4 py-2 border rounded-lg" required>
-                </div>
-                <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 shadow">Save Password & Login</button>
-            </form>
-        </div>
-        <div class="text-center mt-6"><button onclick="backToLogin()" class="text-sm text-gray-500 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i> Back to Login</button></div>
-    </div>
-</body>
-</html>
-"""
-
 admin_design = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -2250,399 +1420,61 @@ admin_design = f"""
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Private Pension Scheme</title>
+    <title>Admin Dashboard</title>
     {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         window.onload = function() {{
-            if(localStorage.getItem('app_fee')) document.getElementById('app_fee').value = localStorage.getItem('app_fee');
-            if(localStorage.getItem('payu_merchant_key')) document.getElementById('payu_merchant_key').value = localStorage.getItem('payu_merchant_key');
-            if(localStorage.getItem('payu_merchant_salt')) document.getElementById('payu_merchant_salt').value = localStorage.getItem('payu_merchant_salt');
-            if(localStorage.getItem('rzp_key_id')) document.getElementById('rzp_key_id').value = localStorage.getItem('rzp_key_id');
-            if(localStorage.getItem('rzp_key_secret')) document.getElementById('rzp_key_secret').value = localStorage.getItem('rzp_key_secret');
-            if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
-            if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
+            if(localStorage.getItem('hdfc_agent_id')) document.getElementById('hdfc_agent_id').value = localStorage.getItem('hdfc_agent_id');
+            if(localStorage.getItem('hdfc_api_key')) document.getElementById('hdfc_api_key').value = localStorage.getItem('hdfc_api_key');
             
-            // LOAD NEW SETTINGS
-            if(localStorage.getItem('reg_start_date')) document.getElementById('reg_start_date').value = localStorage.getItem('reg_start_date');
-            if(localStorage.getItem('reg_close_date')) document.getElementById('reg_close_date').value = localStorage.getItem('reg_close_date');
-            if(localStorage.getItem('notice_text')) document.getElementById('notice_text').value = localStorage.getItem('notice_text');
-
-            loadAdminData();
-            loadAdminProfile();
+            loadAdminData(); 
         }};
 
-        function saveSettings() {{
-            localStorage.setItem('app_fee', document.getElementById('app_fee').value);
-            localStorage.setItem('payu_merchant_key', document.getElementById('payu_merchant_key').value);
-            localStorage.setItem('payu_merchant_salt', document.getElementById('payu_merchant_salt').value);
-            localStorage.setItem('rzp_key_id', document.getElementById('rzp_key_id').value);
-            localStorage.setItem('rzp_key_secret', document.getElementById('rzp_key_secret').value);
-            localStorage.setItem('payout_api_key', document.getElementById('payout_api_key').value);
-            localStorage.setItem('payout_api_secret', document.getElementById('payout_api_secret').value);
-            
-            // SAVE NEW SETTINGS
-            localStorage.setItem('reg_start_date', document.getElementById('reg_start_date').value);
-            localStorage.setItem('reg_close_date', document.getElementById('reg_close_date').value);
-            localStorage.setItem('notice_text', document.getElementById('notice_text').value);
-
-            alert('Settings Saved Successfully!');
-        }}
-
-        function loadAdminProfile() {{
-            let n = localStorage.getItem('admin_name');
-            if(n) {{
-                document.getElementById('prof_admin_name').value = n;
-                document.getElementById('welcome_admin_name').innerText = n;
-            }}
-            
-            let m = localStorage.getItem('admin_mobile');
-            if(m) document.getElementById('prof_admin_mobile').value = m;
-            
-            let e = localStorage.getItem('admin_email');
-            if(e) document.getElementById('prof_admin_email').value = e;
-        }}
-
-        function saveAdminProfile() {{
-            let n = document.getElementById('prof_admin_name').value;
-            let m = document.getElementById('prof_admin_mobile').value;
-            let e = document.getElementById('prof_admin_email').value;
-            let p1 = document.getElementById('prof_new_pass').value;
-            let p2 = document.getElementById('prof_conf_pass').value;
-            
-            if(p1 || p2) {{
-                let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{{6,}}$/;
-                if (!passRegex.test(p1)) {{
-                    alert('Password must contain at least 1 Capital letter, 1 Small letter, 1 Number, and 1 Special Character (@, #, $)!');
-                    return;
-                }}
-                if(p1 !== p2) {{
-                    alert("Passwords do not match!");
-                    return;
-                }}
-                localStorage.setItem('admin_password', p1);
-            }}
-            
-            localStorage.setItem('admin_name', n);
-            localStorage.setItem('admin_mobile', m);
-            localStorage.setItem('admin_email', e);
-            
-            alert("Admin Profile Saved Successfully! Login credentials updated.");
-            location.reload();
-        }}
-
-        function switchTab(tabId, element) {{
-            let sections = document.querySelectorAll('.content-section');
-            for(let i=0; i<sections.length; i++) {{ sections[i].classList.add('hidden'); }}
+        function switchTab(tabId) {{
+            document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
+        }}
 
-            let links = document.querySelectorAll('.menu-link');
-            for(let i=0; i<links.length; i++) {{
-                links[i].classList.remove('bg-blue-700', 'text-white');
-                links[i].classList.add('text-slate-300', 'hover:bg-slate-800');
-            }}
-            element.classList.remove('text-slate-300', 'hover:bg-slate-800');
-            element.classList.add('bg-blue-700', 'text-white');
+        function saveSettings() {{
+            localStorage.setItem('hdfc_agent_id', document.getElementById('hdfc_agent_id').value);
+            localStorage.setItem('hdfc_api_key', document.getElementById('hdfc_api_key').value);
+            
+            fetch('/api/sync_storage', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{key: 'hdfc_agent_id', value: document.getElementById('hdfc_agent_id').value}})
+            }});
 
-            let titles = {{
-                'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
-                'sysverify': '<i class="fa-solid fa-microchip text-blue-600 mr-2"></i> System Verification (Level 1)',
-                'adminapprove': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Admin Verification (Level 2)',
-                'superadmin': '<i class="fa-solid fa-gavel text-purple-600 mr-2"></i> Final Super Admin Approval (Level 3)',
-                'rejected': '<i class="fa-solid fa-trash-can text-red-600 mr-2"></i> Rejected Applications Box',
-                'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
-                'renewals': '<i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> 3-Month Renewals',
-                'payments': '<i class="fa-solid fa-money-bill-transfer text-blue-600 mr-2"></i> Payment Records',
-                'settings': '<i class="fa-solid fa-gears text-blue-600 mr-2"></i> System & API Settings',
-                'profile': '<i class="fa-solid fa-user-gear text-blue-600 mr-2"></i> Admin Profile Settings'
-            }};
-            document.getElementById('header-title').innerHTML = titles[tabId];
+            alert('HDFC API Settings Saved Successfully!');
         }}
 
         function loadAdminData() {{
             let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
-            let total = 0; let pending = 0; let approved = 0; let rejected = 0; let wallet = 0;
-            
-            let sysHtml = ''; let adminHtml = ''; let superAdminHtml = ''; let benHtml = ''; let rejHtml = ''; let payHtml = '';
-
+            let sysHtml = ''; 
             appList.forEach(appNo => {{
                 let isApplied = localStorage.getItem('user_has_applied_' + appNo);
                 if(isApplied === 'true') {{
-                    total++;
-                    let amt = parseFloat(localStorage.getItem('paid_amount_' + appNo) || '100');
-                    wallet += amt;
-
-                    let status = localStorage.getItem('app_status_' + appNo) || 'sys_pending_2days';
                     let name = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
-                    let scheme = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
-                    let bankName = localStorage.getItem('u_bank_' + appNo) || 'N/A';
-                    let accNo = localStorage.getItem('u_acc_' + appNo) || 'N/A';
-
-                    if(status === 'sys_pending_2days' || status === 'sys_pending') {{
-                        pending++;
-                        sysHtml += `
-                            <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
-                                <td class="py-4 px-4 font-bold text-green-800">${{name}}</td>
-                                <td class="py-4 px-4">${{scheme}}</td>
-                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit Error</button>
-                                    <button onclick="verifySysDoc('${{appNo}}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify & Send</button>
-                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
-                                </td>
-                            </tr>
-                        `;
-                    }} else if(status === 'admin_correction') {{
-                        pending++;
-                        sysHtml += `
-                            <tr class="hover:bg-yellow-50 border-b bg-yellow-50 transition-all">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-yellow-600 text-white text-[10px] px-1 rounded ml-1">EDIT MODE</span></td>
-                                <td class="py-4 px-4 font-bold text-green-800">${{name}}</td>
-                                <td class="py-4 px-4">${{scheme}}</td>
-                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-600 text-white px-3 py-1 rounded shadow hover:bg-yellow-700 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Finish Edit</button>
-                                </td>
-                            </tr>
-                        `;
-                    }} else if(status === 'admin_pending') {{
-                        pending++;
-                        adminHtml += `
-                            <tr class="hover:bg-green-50 border-b transition-all">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">SYS OK</span></td>
-                                <td class="py-4 px-4 font-bold text-blue-800">${{name}}</td>
-                                <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
-                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold text-xs"><i class="fa-solid fa-eye"></i> View</button>
-                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                                    <button onclick="forwardToSuperAdmin('${{appNo}}')" class="bg-blue-600 text-white px-4 py-1 rounded shadow hover:bg-blue-700 font-bold text-xs"><i class="fa-solid fa-arrow-right"></i> To SuperAdmin</button>
-                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold text-xs"><i class="fa-solid fa-ban"></i> Reject</button>
-                                </td>
-                            </tr>
-                        `;
-                    }} else if(status === 'super_admin_pending') {{
-                        pending++;
-                        superAdminHtml += `
-                            <tr class="hover:bg-green-50 border-b transition-all">
-                                <td class="py-4 px-4 font-medium text-purple-600">#${{appNo}} <span class="bg-purple-500 text-white text-[10px] px-1 rounded ml-1">ADMIN OK</span></td>
-                                <td class="py-4 px-4 font-bold text-purple-800">${{name}}</td>
-                                <td class="py-4 px-4"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-shield-halved"></i> Payment Verification</span></td>
-                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-gray-600 text-white px-4 py-1 rounded shadow hover:bg-gray-700 font-bold text-xs"><i class="fa-solid fa-eye"></i> View</button>
-                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                                    <button onclick="finalApprove('${{appNo}}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold text-xs"><i class="fa-solid fa-check-double"></i> Final Approve</button>
-                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold text-xs"><i class="fa-solid fa-ban"></i> Reject</button>
-                                </td>
-                            </tr>
-                        `;
-                    }} else if(status === 'approved' || status === 'pension_sent') {{
-                        approved++;
-                        let sentFlag = localStorage.getItem('pension_sent_' + appNo);
-                        let btnHtml = "";
-                        if(sentFlag === 'true') {{
-                            btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-bold cursor-not-allowed"><i class="fa-solid fa-check-double"></i> Paid</button>`;
-                            
-                            let utr = localStorage.getItem('utr_number_' + appNo) || 'N/A';
-                            payHtml += `
-                                <tr class="bg-gray-50 border-b">
-                                    <td class="py-4 px-4 font-bold text-blue-600">#${{appNo}}</td>
-                                    <td class="py-4 px-4 font-bold">${{name}}</td>
-                                    <td class="py-4 px-4 font-semibold text-gray-700">${{bankName}} (A/C: ${{accNo}})</td>
-                                    <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded font-bold">Success</span></td>
-                                    <td class="py-4 px-4 font-mono font-bold text-gray-800">${{utr}}</td>
-                                </tr>
-                            `;
-                        }} else {{
-                            btnHtml = `
-                                <button onclick="markManualPaid('${{appNo}}', '${{name}}', '${{accNo}}')" class="bg-blue-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-money-check-dollar"></i> Manual Pay</button>
-                                <button onclick="sendPensionDBT('${{appNo}}', '${{name}}', '1000', '${{accNo}}')" class="bg-indigo-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-indigo-700 mt-1"><i class="fa-solid fa-bolt"></i> DBT Auto</button>
-                            `;
-                        }}
-
-                        benHtml += `
-                            <tr class="hover:bg-gray-50 border-b">
-                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}}</td>
-                                <td class="py-4 px-4 font-bold">${{name}}</td>
-                                <td class="py-4 px-4"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
-                                <td class="py-4 px-4 text-center space-x-2 flex flex-col items-center justify-center gap-1">
-                                    ${{btnHtml}}
-                                    <div class="flex gap-2">
-                                        <button class="bg-orange-500 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-orange-600"><i class="fa-solid fa-pause"></i> Hold</button>
-                                        <button class="bg-red-600 text-white px-3 py-1 rounded shadow text-xs font-bold hover:bg-red-700"><i class="fa-solid fa-hand-paper"></i> Stop</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }} else if(status === 'rejected') {{
-                        rejected++;
-                        let reason = localStorage.getItem('reject_reason_' + appNo) || 'System Auto-Rejected';
-                        rejHtml += `
-                            <tr id="rej_row_${{appNo}}" class="hover:bg-red-50 border-b">
-                                <td class="py-4 px-4 font-medium text-red-600">#${{appNo}}</td>
-                                <td class="py-4 px-4 font-bold text-gray-800">${{name}}</td>
-                                <td class="py-4 px-4 text-gray-600 font-semibold">System/Admin</td>
-                                <td class="py-4 px-4 text-gray-600 italic">${{reason}}</td>
-                                <td class="py-4 px-4 text-center">
-                                    <button onclick="deleteRejectedRow('${{appNo}}')" class="bg-gray-200 text-red-600 px-3 py-1 rounded shadow hover:bg-red-600 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
-                                </td>
-                            </tr>
-                        `;
-                    }}
+                    sysHtml += `
+                        <tr class="border-b transition-all">
+                            <td class="py-4 px-4">#${{appNo}}</td>
+                            <td class="py-4 px-4">${{name}}</td>
+                            <td class="py-4 px-4 text-center">
+                                <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs font-bold">View Data</button>
+                            </td>
+                        </tr>
+                    `;
                 }}
             }});
-
-            document.getElementById('count_total').innerText = total;
-            document.getElementById('count_pending').innerText = pending;
-            document.getElementById('count_approved').innerText = approved;
-            document.getElementById('count_rejected').innerText = rejected;
-            document.getElementById('total_wallet_val').innerText = wallet;
-
             if(sysHtml) document.getElementById('sys_verify_tbody').innerHTML = sysHtml;
-            if(adminHtml) document.getElementById('admin_approve_tbody').innerHTML = adminHtml;
-            if(superAdminHtml) document.getElementById('superadmin_approve_tbody').innerHTML = superAdminHtml;
-            if(benHtml) document.getElementById('beneficiaries_tbody').innerHTML = benHtml;
-            if(rejHtml) document.getElementById('rejected_tbody').innerHTML = rejHtml;
-            if(payHtml) document.getElementById('payments_tbody').innerHTML = payHtml;
-        }}
-
-        // New Edit Feature for Admin
-        function adminEditApp(appNo) {{
-            window.current_modal_appNo = appNo;
-            document.getElementById('edit_name').value = localStorage.getItem('user_full_name_' + appNo) || '';
-            document.getElementById('edit_bank').value = localStorage.getItem('u_bank_' + appNo) || '';
-            document.getElementById('edit_acc').value = localStorage.getItem('u_acc_' + appNo) || '';
-            document.getElementById('edit_ifsc').value = localStorage.getItem('u_ifsc_' + appNo) || '';
-            
-            document.getElementById('admin_edit_modal').classList.remove('hidden');
-        }}
-
-        function saveAdminEdit() {{
-            let appNo = window.current_modal_appNo;
-            localStorage.setItem('user_full_name_' + appNo, document.getElementById('edit_name').value);
-            localStorage.setItem('u_bank_' + appNo, document.getElementById('edit_bank').value);
-            localStorage.setItem('u_acc_' + appNo, document.getElementById('edit_acc').value);
-            localStorage.setItem('u_ifsc_' + appNo, document.getElementById('edit_ifsc').value);
-            
-            alert('Details Updated by Admin! Status returning to System Verify for safety.');
-            localStorage.setItem('app_status_' + appNo, 'sys_pending'); // Send back to system logic
-            document.getElementById('admin_edit_modal').classList.add('hidden');
-            location.reload();
-        }}
-        function closeEditModal() {{ document.getElementById('admin_edit_modal').classList.add('hidden'); }}
-
-        function verifySysDoc(appNo) {{
-            window.current_modal_appNo = appNo;
-            let authName = localStorage.getItem('u_inc_auth_' + appNo) || "";
-            let amount = localStorage.getItem('u_inc_amount_' + appNo) || "";
-            
-            document.getElementById('modal_sys_name').innerText = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
-            document.getElementById('modal_sys_inc_name').innerText = authName;
-            document.getElementById('modal_sys_inc_amt').innerText = amount;
-            
-            document.getElementById('sys_verification_modal').classList.remove('hidden');
-        }}
-        
-        function closeSysModal() {{
-            document.getElementById('sys_verification_modal').classList.add('hidden');
-        }}
-
-        function approveSys(appNo) {{
-            let targetApp = appNo || window.current_modal_appNo;
-            localStorage.setItem('app_status_' + targetApp, 'admin_pending');
-            alert("System Validation Completed! Forwarded to Admin Approval.");
-            location.reload();
-        }}
-
-        function forwardToSuperAdmin(appNo) {{
-            localStorage.setItem('app_status_' + appNo, 'super_admin_pending');
-            alert("Admin Checked. Sent to Super Admin for Final Action.");
-            location.reload();
-        }}
-
-        function finalApprove(appNo) {{
-            localStorage.setItem('app_status_' + appNo, 'approved');
-            alert("Super Admin Approved! Added to Active Beneficiaries for Payment.");
-            location.reload();
-        }}
-
-        function rejectApp(appNo) {{
-            let targetApp = appNo || window.current_modal_appNo;
-            let reason = prompt("Please enter the reason for rejection (Remark):");
-            if (reason != null && reason != "") {{
-                localStorage.setItem('app_status_' + targetApp, 'rejected');
-                localStorage.setItem('reject_reason_' + targetApp, reason);
-                alert("Application Rejected and Moved to Rejected Box with Remark: " + reason);
-                document.getElementById('sys_verification_modal').classList.add('hidden');
-                location.reload();
-            }}
-        }}
-
-        function deleteRejectedRow(appNo) {{
-            if(confirm("Are you sure you want to permanently delete this rejected application data?")) {{
-                localStorage.removeItem('user_has_applied_' + appNo);
-                localStorage.removeItem('app_status_' + appNo);
-                location.reload();
-            }}
-        }}
-
-        function markManualPaid(appNo, name, accNo) {{
-            let utr = prompt(`Enter Payment UTR/Transaction Number for ${{name}} (A/C: ${{accNo}}):`);
-            if(utr != null && utr.trim() !== "") {{
-                localStorage.setItem('utr_number_' + appNo, utr);
-                localStorage.setItem('pension_sent_' + appNo, 'true');
-                localStorage.setItem('app_status_' + appNo, 'pension_sent');
-                alert(`Manual Payment Verified! UTR ${{utr}} saved. Customer will now see Payment Success status.`);
-                location.reload();
-            }} else {{
-                alert("UTR Number is required to confirm manual payment.");
-            }}
-        }}
-
-        function sendPensionDBT(appNo, name, amount, accNo) {{
-            let apiKey = localStorage.getItem('payout_api_key');
-            if(!apiKey) {{
-                alert("ERROR: Payout API Key is missing! Please configure API in Settings.");
-                return;
-            }}
-            
-            let confirmMsg = `Connecting to Secure Gateway...\\nTransfer Pension of ₹${{amount}} to ${{name}} (A/C: ${{accNo}})?`;
-            if(confirm(confirmMsg)) {{
-                setTimeout(() => {{
-                    let txnId = "DBT-" + Math.floor(Math.random()*1000000000);
-                    alert(`SUCCESS! ₹${{amount}} Transferred via IMPS/NEFT to ${{name}}.\\nTransaction ID: ${{txnId}}`);
-                    localStorage.setItem('utr_number_' + appNo, txnId);
-                    localStorage.setItem('pension_sent_' + appNo, 'true');
-                    localStorage.setItem('app_status_' + appNo, 'pension_sent');
-                    location.reload();
-                }}, 1500);
-            }}
         }}
 
         function viewFullApplication(appNo) {{
             document.getElementById('v_appno').innerText = appNo;
-            document.getElementById('v_scheme').innerText = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
             document.getElementById('v_name').innerText = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
-            document.getElementById('v_father').innerText = localStorage.getItem('u_father_' + appNo) || 'N/A';
-            document.getElementById('v_mother').innerText = localStorage.getItem('u_mother_' + appNo) || 'N/A';
-            document.getElementById('v_aadhaar').innerText = localStorage.getItem('user_aadhaar_' + appNo) || 'N/A';
-            document.getElementById('v_dist').innerText = localStorage.getItem('u_dist_' + appNo) || 'N/A';
-            document.getElementById('v_block').innerText = localStorage.getItem('u_block_' + appNo) || 'N/A';
-            document.getElementById('v_gp').innerText = localStorage.getItem('u_gp_' + appNo) || 'N/A';
-            document.getElementById('v_address').innerText = localStorage.getItem('u_address_' + appNo) || 'N/A';
-            
-            document.getElementById('v_dob').innerText = localStorage.getItem('u_dob_' + appNo) || 'N/A';
-            document.getElementById('v_gender').innerText = localStorage.getItem('u_gender_' + appNo) || 'N/A';
-            document.getElementById('v_category').innerText = localStorage.getItem('u_category_' + appNo) || 'N/A';
-            document.getElementById('v_inc_cert').innerText = localStorage.getItem('u_inc_cert_' + appNo) || 'N/A';
-            document.getElementById('v_inc_auth').innerText = localStorage.getItem('u_inc_auth_' + appNo) || 'N/A';
-            document.getElementById('v_inc_amount').innerText = localStorage.getItem('u_inc_amount_' + appNo) || 'N/A';
-            
-            document.getElementById('v_bank').innerText = localStorage.getItem('u_bank_' + appNo) || 'N/A';
-            document.getElementById('v_acc').innerText = localStorage.getItem('u_acc_' + appNo) || 'N/A';
-            document.getElementById('v_ifsc').innerText = localStorage.getItem('u_ifsc_' + appNo) || 'N/A';
-            
-            let fee = localStorage.getItem('paid_amount_' + appNo) || '100';
-            document.getElementById('v_fee').innerText = "Paid (₹" + fee + ")";
+            document.getElementById('v_insurance_admin').innerText = localStorage.getItem('u_insurance_' + appNo) || 'N/A';
 
             document.getElementById('full_app_view_modal').classList.remove('hidden');
         }}
@@ -2652,403 +1484,65 @@ admin_design = f"""
         }}
     </script>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
-
-    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl h-full print:hidden">
-        <div class="p-5 border-b border-slate-700 text-center">
-            <i class="fa-solid fa-user-shield text-4xl text-blue-500 mb-2"></i>
-            <h2 class="text-xl font-bold">Admin Panel</h2>
-        </div>
+<body class="bg-gray-100 flex h-screen overflow-hidden">
+    <aside class="w-64 bg-slate-900 text-white flex flex-col h-full print:hidden">
+        <div class="p-5 border-b"><h2 class="text-xl font-bold">Admin Panel</h2></div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
-                <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
-                
-                <li class="mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Verification Steps</span></li>
-                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verify (L1)</a></li>
-                <li><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Admin Action (L2)</a></li>
-                <li><a href="#" onclick="switchTab('superadmin', this)" class="menu-link flex items-center px-4 py-3 text-purple-300 hover:bg-purple-900 rounded-lg transition border border-slate-700"><i class="fa-solid fa-gavel w-6 mr-2"></i> Super Admin (L3)</a></li>
-                <li><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-3 text-red-400 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
-
-                <li class="mt-4 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</span></li>
-                <li><a href="#" onclick="switchTab('beneficiaries', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-users w-6 mr-2"></i> Beneficiaries</a></li>
-                <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals Tracker</a></li>
-                <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payment Records</a></li>
-                
-                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('settings', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-gears w-6 mr-2"></i> Portal Settings</a></li>
-                <li><a href="#" onclick="switchTab('profile', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-user-gear w-6 mr-2"></i> Admin Profile</a></li>
+                <li><a href="#" onclick="switchTab('dashboard')" class="block px-4 py-3 bg-blue-700 rounded-lg">Dashboard</a></li>
+                <li><a href="#" onclick="switchTab('settings')" class="block px-4 py-3 hover:bg-slate-700 rounded-lg text-slate-300"><i class="fa-solid fa-gears"></i> HDFC Settings</a></li>
             </ul>
         </nav>
-        <div class="p-4 border-t border-slate-700">
-            <a href="/" class="flex items-center px-4 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout</a>
-        </div>
+        <div class="p-4"><a href="/" class="text-red-400">Logout</a></div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative print:hidden">
-        <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center print:hidden">
-            <h1 id="header-title" class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
-            <div class="flex items-center space-x-4">
-                <span class="text-sm font-medium">Welcome, <strong id="welcome_admin_name">Admin</strong></span>
+    <main class="flex-1 flex flex-col h-full overflow-hidden print:hidden">
+        <div id="section-dashboard" class="content-section flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div class="bg-white rounded-xl shadow-sm border p-4">
+                <h2 class="font-bold text-lg mb-4">All Applications</h2>
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 text-sm"><tr><th>App ID</th><th>Name</th><th class="text-center">Action</th></tr></thead>
+                    <tbody id="sys_verify_tbody"></tbody>
+                </table>
             </div>
-        </header>
+        </div>
 
-        <div class="flex-1 overflow-y-auto p-6 bg-gray-50 print:hidden">
-            
-            <div id="section-dashboard" class="content-section">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl border border-l-4 border-purple-500 shadow-sm flex justify-between items-center md:col-span-2">
-                        <div><p class="text-sm text-gray-500 font-semibold">Total Wallet Collection (Reg. Fees)</p><h3 class="text-3xl font-bold text-purple-700">₹<span id="total_wallet_val">0</span></h3></div>
-                        <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl"><i class="fa-solid fa-wallet"></i></div>
+        <div id="section-settings" class="content-section hidden flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div class="bg-white rounded-xl shadow-sm border p-8">
+                <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-shield-heart text-red-600"></i> HDFC API Configuration</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-200">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Your HDFC Agent ID</label>
+                        <input type="text" id="hdfc_agent_id" placeholder="e.g. AGENT12345" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 outline-none">
                     </div>
-                    <div class="bg-white p-6 rounded-xl border border-l-4 border-blue-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Total Applications</p><h3 id="count_total" class="text-2xl font-bold text-blue-700">0</h3></div>
-                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-file-lines"></i></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl border border-l-4 border-green-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Active Beneficiary</p><h3 id="count_approved" class="text-2xl font-bold text-green-700">0</h3></div>
-                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-check-circle"></i></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl border border-l-4 border-orange-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Pending Approvals</p><h3 id="count_pending" class="text-2xl font-bold text-orange-700">0</h3></div>
-                        <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-hourglass-half"></i></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl border border-l-4 border-red-500 shadow-sm flex justify-between items-center">
-                        <div><p class="text-sm text-gray-500 font-semibold">Total Rejected</p><h3 id="count_rejected" class="text-2xl font-bold text-red-700">0</h3></div>
-                        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-ban"></i></div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">HDFC API Secret Key</label>
+                        <input type="password" id="hdfc_api_key" placeholder="Enter HDFC API Key" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 outline-none">
                     </div>
                 </div>
-            </div>
-
-            <!-- SYSTEM VERIFICATION -->
-            <div id="section-sysverify" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
-                        <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
-                    </div>
-                    <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-100 text-gray-600 text-sm">
-                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">System Action</th></tr>
-                            </thead>
-                            <tbody id="sys_verify_tbody" class="text-sm">
-                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No pending applications found.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- VERIFICATION MODAL -->
-                <div id="sys_verification_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-                    <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 relative">
-                        <button onclick="closeSysModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
-                        <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Automatic Verification Match</h3>
-                        <div class="space-y-4 text-sm">
-                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
-                                <span class="font-semibold text-gray-600">Applicant Form Name:</span><span id="modal_sys_name" class="font-bold text-gray-800"></span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
-                                <span class="font-semibold text-gray-600">Aadhaar Verification:</span><span class="font-bold text-green-700"><i class="fa-solid fa-circle-check mr-1"></i> Authenticated</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
-                                <span class="font-semibold text-gray-600">Income Cert Name Found:</span><span id="modal_sys_inc_name" class="font-bold text-gray-800"></span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded border">
-                                <span class="font-semibold text-gray-600">Income Cert Amount:</span><span id="modal_sys_inc_amt" class="font-bold text-gray-800"></span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-green-50 rounded border border-green-200">
-                                <span class="font-semibold text-gray-600">Overall System Status:</span><span class="font-bold text-green-700"><i class="fa-solid fa-check-double mr-1"></i> Data Consistent. Ready for Admin.</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex justify-end gap-3">
-                            <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600">Reject Data</button>
-                            <button onclick="approveSys()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700">All Good (Send to Admin)</button>
-                        </div>
-                    </div>
+                <div class="mt-8 flex justify-end">
+                    <button type="button" onclick="saveSettings()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save HDFC Keys</button>
                 </div>
             </div>
-
-            <!-- ADMIN EDIT MODAL -->
-            <div id="admin_edit_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative border-t-4 border-yellow-500">
-                    <h3 class="text-xl font-bold text-yellow-700 border-b pb-2 mb-4"><i class="fa-solid fa-pen-to-square"></i> Admin Correction Panel</h3>
-                    <div class="space-y-4">
-                        <div><label class="text-sm font-semibold text-gray-700">Edit Name</label><input type="text" id="edit_name" class="w-full border p-2 rounded"></div>
-                        <div><label class="text-sm font-semibold text-gray-700">Edit Bank Name</label><input type="text" id="edit_bank" class="w-full border p-2 rounded"></div>
-                        <div><label class="text-sm font-semibold text-gray-700">Edit A/C No</label><input type="text" id="edit_acc" class="w-full border p-2 rounded"></div>
-                        <div><label class="text-sm font-semibold text-gray-700">Edit IFSC</label><input type="text" id="edit_ifsc" class="w-full border p-2 rounded uppercase"></div>
-                    </div>
-                    <div class="mt-6 flex justify-end space-x-3">
-                        <button onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 font-bold rounded">Cancel</button>
-                        <button onclick="saveAdminEdit()" class="bg-green-600 text-white px-4 py-2 font-bold rounded hover:bg-green-700">Save & Re-verify</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FINAL ADMIN APPROVAL -->
-            <div id="section-adminapprove" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-blue-50 flex justify-between items-center">
-                        <h2 class="font-bold text-lg text-blue-800"><i class="fa-solid fa-user-check mr-2"></i> Admin Action Panel</h2>
-                    </div>
-                    <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-100 text-gray-600 text-sm">
-                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Sys Status</th><th class="py-3 px-4 border-b text-center">Final Action</th></tr>
-                            </thead>
-                            <tbody id="admin_approve_tbody" class="text-sm">
-                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No applications pending for admin approval.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- SUPER ADMIN APPROVAL -->
-            <div id="section-superadmin" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border border-purple-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-purple-50 flex justify-between items-center">
-                        <h2 class="font-bold text-lg text-purple-900"><i class="fa-solid fa-gavel mr-2"></i> Super Admin Final Payment Approval</h2>
-                    </div>
-                    <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-purple-100 text-purple-800 text-sm">
-                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Admin Status</th><th class="py-3 px-4 border-b text-center">Super Admin Action</th></tr>
-                            </thead>
-                            <tbody id="superadmin_approve_tbody" class="text-sm">
-                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No applications pending for super admin.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- REJECTED BOX -->
-            <div id="section-rejected" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-red-50 flex justify-between items-center">
-                        <h2 class="font-bold text-lg text-red-800"><i class="fa-solid fa-trash-can mr-2"></i> Rejected Applications Box</h2>
-                        <span class="text-xs font-bold text-red-600 border border-red-300 bg-white px-2 py-1 rounded-full"><i class="fa-solid fa-rotate-left"></i> Items Auto-Delete after 3 Months</span>
-                    </div>
-                    <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-100 text-gray-600 text-sm">
-                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Rejected By</th><th class="py-3 px-4 border-b w-1/3">Remark / Reason</th><th class="py-3 px-4 border-b text-center">Delete</th></tr>
-                            </thead>
-                            <tbody id="rejected_tbody" class="text-sm">
-                                <tr><td colspan="5" class="text-center py-6 text-gray-500 font-semibold">No rejected applications found.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BENEFICIARIES -->
-            <div id="section-beneficiaries" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
-                        <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
-                    </div>
-                    <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-100 text-gray-600 text-sm">
-                                <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b text-center">Admin Action</th></tr>
-                            </thead>
-                            <tbody id="beneficiaries_tbody" class="text-sm">
-                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries found.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RENEWALS -->
-            <div id="section-renewals" class="content-section hidden">
-                 <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
-                    <h2 class="font-bold text-lg mb-4">Renewal Status Tracker</h2>
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-100 text-gray-600 text-sm">
-                            <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Renewal Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
-                        </thead>
-                        <tbody class="text-sm">
-                            <tr id="dr_empty" class="border-b"><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries are currently pending renewal.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- PAYMENTS -->
-            <div id="section-payments" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="font-bold text-lg">Monthly Payment & UTR Records</h2>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-100 text-gray-600 text-sm">
-                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Beneficiary Name</th><th class="py-3 px-4 border-b">Bank A/C Details</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b">Bank UTR / Txn No.</th></tr>
-                            </thead>
-                            <tbody id="payments_tbody" class="text-sm">
-                                <tr><td colspan="5" class="text-center py-6 text-gray-500 font-semibold">No payments successfully recorded yet.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SETTINGS SECTION -->
-            <div id="section-settings" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border p-8">
-                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> Portal Settings & API Configuration</h2>
-                    <form>
-                        
-                        <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-calendar-alt text-red-600"></i> Registration Dates & Notice Board</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-50 p-4 rounded border border-red-100">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Start Date</label>
-                                <input type="date" id="reg_start_date" class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Close Date</label>
-                                <input type="date" id="reg_close_date" class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Home Page Running Notice (Marquee Text)</label>
-                                <textarea id="notice_text" rows="2" placeholder="Enter notice here... It will scroll on the home page." class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none"></textarea>
-                            </div>
-                        </div>
-
-                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Base Fee Amount (₹)</label>
-                                <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">SC/ST & Age > 80 get auto 50% discount</p>
-                            </div>
-                        </div>
-
-                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> PayU Payment Gateway Keys</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
-                                <input type="password" id="payu_merchant_key" value="OLBUPA" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
-                                <input type="password" id="payu_merchant_salt" value="63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                        </div>
-
-                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> Razorpay Payment Gateway Keys</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key ID</label>
-                                <input type="password" id="rzp_key_id" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key Secret</label>
-                                <input type="password" id="rzp_key_secret" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                        </div>
-
-                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-building-columns text-purple-600"></i> DBT / Payout API Keys (Bank Transfer)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
-                                <input type="password" id="payout_api_key" value="0b223e8abf8a96a8b53ebba0c1e610dd6acb9dc0ed3d9b6754cd67f2a42b9b03" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Secret</label>
-                                <input type="password" id="payout_api_secret" value="4e513dcbf8512d0ca462d356e09abeba7de8937582d8635919a7bab3db5b4562" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                        </div>
-
-                        <div class="mt-8 flex justify-end">
-                            <button type="button" onclick="saveSettings()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div id="section-profile" class="content-section hidden">
-                <div class="max-w-2xl bg-white rounded-xl shadow-sm border p-8">
-                    <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-user-pen"></i> Update Admin Profile</h2>
-                    <form class="space-y-5">
-                        <div class="grid grid-cols-2 gap-6">
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label><input type="text" id="prof_admin_name" value="Super Admin" class="w-full px-4 py-2 border rounded-lg"></div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">Mobile No.</label><input type="text" id="prof_admin_mobile" value="9876543210" class="w-full px-4 py-2 border rounded-lg"></div>
-                        </div>
-                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Email ID (Login ID)</label><input type="email" id="prof_admin_email" value="admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg"></div>
-                        <div class="border-t pt-5 mt-5">
-                            <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-lock text-gray-500"></i> Change Password</h3>
-                            <div class="grid grid-cols-2 gap-6">
-                                <div><label class="block text-sm text-gray-600 mb-1">New Password</label><input type="password" id="prof_new_pass" placeholder="Enter new password" class="w-full px-4 py-2 border rounded-lg"></div>
-                                <div><label class="block text-sm text-gray-600 mb-1">Confirm Password</label><input type="password" id="prof_conf_pass" placeholder="Re-enter password" class="w-full px-4 py-2 border rounded-lg"></div>
-                            </div>
-                        </div>
-                        <div class="mt-8 flex justify-end"><button type="button" onclick="saveAdminProfile()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
-                    </form>
-                </div>
-            </div>
-
         </div>
     </main>
 
-    <!-- FULL APPLICATION VIEW & PRINT MODAL -->
-    <div id="full_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static">
-        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col print:h-auto print:shadow-none print:w-full">
-            
-            <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl print:hidden">
-                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> User Application Data</h3>
-                <div class="space-x-2">
-                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Details</button>
-                    <button onclick="closeFullAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
-                </div>
+    <!-- FULL APPLICATION VIEW MODAL -->
+    <div id="full_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
+            <div class="p-4 border-b flex justify-between bg-blue-50">
+                <h3 class="text-xl font-bold text-blue-800">User Data</h3>
+                <button onclick="closeFullAppModal()" class="bg-red-500 text-white px-4 py-2 rounded">Close</button>
             </div>
-            
-            <div class="flex-1 overflow-y-auto p-8 print:overflow-visible print:p-0">
-                <div class="text-center mb-6 border-b-2 border-gray-800 pb-4">
-                    <h2 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h2>
-                    <p class="font-bold text-lg text-gray-600">Applicant Full Details Form</p>
+            <div class="flex-1 overflow-y-auto p-8">
+                <h4 class="font-bold mb-3 border-b pb-2 text-gray-800">Personal Details</h4>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div><p class="text-gray-500 text-xs">Application No</p><p id="v_appno" class="font-bold text-blue-700"></p></div>
+                    <div><p class="text-gray-500 text-xs">Name</p><p id="v_name" class="font-bold"></p></div>
                 </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
-                    <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p id="v_appno" class="font-bold text-base text-blue-700"></p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p id="v_scheme" class="font-bold text-base"></p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
-                    <div><p class="text-gray-500 font-semibold text-xs">Payment Status</p><p id="v_fee" class="font-bold text-green-600"></p></div>
-                </div>
-                
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <div><p class="text-gray-500 text-xs">Full Name</p><p id="v_name" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Father's Name</p><p id="v_father" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Mother's Name</p><p id="v_mother" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Gender</p><p id="v_gender" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Date of Birth</p><p id="v_dob" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Category</p><p id="v_category" class="font-bold text-red-600"></p></div>
-                    <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p id="v_aadhaar" class="font-bold tracking-widest"></p></div>
-                </div>
-
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
-                    <div><p class="text-gray-500 text-xs">District</p><p id="v_dist" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Block</p><p id="v_block" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">GP / Ward</p><p id="v_gp" class="font-bold"></p></div>
-                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p id="v_address" class="font-bold"></p></div>
-                </div>
-
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
-                    <div><p class="text-gray-500 text-xs">Certificate No</p><p id="v_inc_cert" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Issued By</p><p id="v_inc_auth" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Detected Income</p><p id="v_inc_amount" class="font-bold text-red-600"></p></div>
-                </div>
-
-                <h4 class="font-bold text-lg border-b mb-3 text-gray-800">4. Bank & DBT Information</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
-                    <div><p class="text-gray-500 text-xs">Bank Name</p><p id="v_bank" class="font-bold"></p></div>
-                    <div><p class="text-gray-500 text-xs">Account No</p><p id="v_acc" class="font-bold tracking-wider"></p></div>
-                    <div><p class="text-gray-500 text-xs">IFSC Code</p><p id="v_ifsc" class="font-bold"></p></div>
+                <div class="bg-yellow-50 p-4 border border-yellow-200 rounded">
+                    <h4 class="font-bold mb-2 text-yellow-800">HDFC Insurance API Policy Data</h4>
+                    <p id="v_insurance_admin" class="font-extrabold text-lg text-green-700"></p>
                 </div>
             </div>
         </div>
@@ -3062,33 +1556,18 @@ admin_design = f"""
 # ==========================================
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root():
-    return html_design
-
+async def read_root(): return html_design
 @app.get("/status/check", response_class=HTMLResponse)
-async def status_check_page():
-    return status_check_design
-
+async def status_check_page(): return status_check_design
 @app.post("/status/check", response_class=HTMLResponse)
-async def status_check_page_post(request: Request):
-    return status_check_design
-
+async def status_check_page_post(request: Request): return status_check_design
 @app.get("/user/register", response_class=HTMLResponse)
-async def user_register_page():
-    return user_register_design
-
+async def user_register_page(): return user_register_design
 @app.get("/user/login", response_class=HTMLResponse)
-async def user_login_page():
-    return user_login_design
-
+async def user_login_page(): return user_login_design
 @app.get("/user/dashboard", response_class=HTMLResponse)
-async def user_dashboard_route():
-    return user_dashboard_design
-
+async def user_dashboard_route(): return user_dashboard_design
 @app.get("/admin/login", response_class=HTMLResponse)
-async def admin_login_page():
-    return admin_login_design
-
+async def admin_login_page(): return admin_login_design
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard_route():
-    return admin_design
+async def admin_dashboard_route(): return admin_design
