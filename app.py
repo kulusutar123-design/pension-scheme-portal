@@ -510,11 +510,17 @@ status_check_design = f"""
                     statText.innerText = "Rejected by System/Admin";
                     statRemark.innerHTML = "<strong>Remark:</strong> " + reason;
                     statRemark.classList.remove('hidden');
-                }} else if (appStatus === 'admin_pending') {{
+                }} else if (appStatus === 'sys_pending_2days' || appStatus === 'admin_correction' || appStatus === 'sys_pending') {{
+                    resBox.className = "mt-6 border p-4 rounded-lg bg-orange-50 border-orange-200";
+                    statIcon.className = "fa-solid fa-hourglass-half text-orange-600 mr-1";
+                    statText.className = "text-orange-600 font-bold";
+                    statText.innerText = (appStatus === 'admin_correction') ? "Pending Correction by Admin" : "Pending System Verification (Processing in 2 days)";
+                    statRemark.classList.add('hidden');
+                }} else if (appStatus === 'admin_pending' || appStatus === 'super_admin_pending') {{
                     resBox.className = "mt-6 border p-4 rounded-lg bg-blue-50 border-blue-200";
                     statIcon.className = "fa-solid fa-user-check text-blue-600 mr-1";
                     statText.className = "text-blue-600 font-bold";
-                    statText.innerText = "Pending Final Admin Approval";
+                    statText.innerText = "Pending Final Approval (Super Admin)";
                     statRemark.classList.add('hidden');
                 }} else if (appStatus === 'approved' || appStatus === 'pension_sent') {{
                     if(pensionSent === 'true') {{
@@ -1209,6 +1215,9 @@ user_dashboard_design = f"""
                     </div>
                 `;
             }}
+            
+            // Check Category details on load
+            checkCategoryAndAge();
         }};
 
         function resetApplicationForm() {{
@@ -1268,6 +1277,37 @@ user_dashboard_design = f"""
             document.getElementById('age').value = age;
             let scheme = document.getElementById('scheme').value;
             if(scheme === 'Old Age Pension' && age < 55) {{ alert('System Error: Age must be 55 or above for Old Age Pension.'); }}
+            checkCategoryAndAge();
+        }}
+        
+        function checkCategoryAndAge() {{
+            let category = document.getElementById('category_select') ? document.getElementById('category_select').value : 'General';
+            let age = parseInt(document.getElementById('age').value) || 0;
+            let incomeSection = document.getElementById('income_section_full');
+            let casteBox = document.getElementById('caste_cert_box');
+            
+            let baseFee = parseFloat(localStorage.getItem('app_fee') || '100');
+            let finalFee = baseFee;
+
+            if(casteBox) {{
+                if (category === 'SC' || category === 'ST') {{
+                    casteBox.classList.remove('hidden');
+                }} else {{
+                    casteBox.classList.add('hidden');
+                }}
+            }}
+
+            if (incomeSection) {{
+                if ((category === 'SC' || category === 'ST') || (age >= 80 && age <= 100)) {{
+                    incomeSection.classList.add('hidden');
+                    finalFee = baseFee * 0.5; // 50% discount
+                }} else {{
+                    incomeSection.classList.remove('hidden');
+                    finalFee = baseFee;
+                }}
+            }}
+            
+            document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = finalFee.toFixed(2));
         }}
 
         function checkSchemeCondition() {{
@@ -1394,6 +1434,7 @@ user_dashboard_design = f"""
             localStorage.setItem('u_gp_' + appNo, document.getElementById('panchayat').value);
             localStorage.setItem('u_address_' + appNo, document.getElementById('manual_address').value);
             
+            localStorage.setItem('u_category_' + appNo, document.getElementById('category_select').value);
             localStorage.setItem('u_gender_' + appNo, document.getElementById('gender_select').value);
             localStorage.setItem('u_dob_' + appNo, document.getElementById('dob').value);
             localStorage.setItem('u_inc_cert_' + appNo, document.getElementById('income_cert_no').value);
@@ -1423,30 +1464,39 @@ user_dashboard_design = f"""
             let gateway = document.querySelector('input[name="pay_gateway"]:checked').value;
             let appNo = localStorage.getItem('active_app_no');
             
-            // Setting Amount
-            let amtSetting = localStorage.getItem('app_fee') || '100';
-            let amount = parseFloat(amtSetting).toFixed(2);
+            // Setting Amount (With discount if applicable)
+            let baseFee = parseFloat(localStorage.getItem('app_fee') || '100');
+            let category = document.getElementById('category_select').value;
+            let age = parseInt(document.getElementById('age').value) || 0;
+            let finalFee = baseFee;
+            
+            if ((category === 'SC' || category === 'ST') || (age >= 80 && age <= 100)) {{
+                finalFee = baseFee * 0.5;
+            }}
+            let amount = finalFee.toFixed(2);
             localStorage.setItem('paid_amount_' + appNo, amount); 
             
-            // AUTO SYSTEM VERIFICATION LOGIC (REAL)
+            // SYSTEM AUTO VERIFICATION
             let incAmt = document.getElementById('inc_amount').value || "";
             let authName = document.getElementById('inc_issued_to').value || "";
             let firstname = document.getElementById('full_name').value || "User";
             
             let autoRemark = "";
-            let autoStatus = "sys_pending"; 
+            let autoStatus = "sys_pending_2days"; // Changed to wait 2 days status
             
-            if (!incAmt || !incAmt.includes("Rs.")) {{
-                autoStatus = "rejected";
-                autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
-            }} else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {{
-                autoStatus = "rejected";
-                autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
-            }} else {{
-                let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
-                if (numAmt > 50000) {{
+            if (!((category === 'SC' || category === 'ST') || (age >= 80 && age <= 100))) {{
+                if (!incAmt || !incAmt.includes("Rs.")) {{
                     autoStatus = "rejected";
-                    autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
+                    autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
+                }} else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {{
+                    autoStatus = "rejected";
+                    autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
+                }} else {{
+                    let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
+                    if (numAmt > 50000) {{
+                        autoStatus = "rejected";
+                        autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
+                    }}
                 }}
             }}
             
@@ -1541,6 +1591,7 @@ user_dashboard_design = f"""
             safeSetId('print_u_bank', 'u_bank');
             safeSetId('print_u_acc', 'u_acc');
             safeSetId('print_u_ifsc', 'u_ifsc');
+            safeSetId('print_u_category', 'u_category');
         }}
         
         function viewUserAppModal() {{
@@ -1588,8 +1639,8 @@ user_dashboard_design = f"""
                 <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
                 <form onsubmit="goToPaymentStep(event)" class="space-y-6">
                     
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 border-b pb-4">
+                        <div class="col-span-2">
                             <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
                             <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
                         </div>
@@ -1616,6 +1667,22 @@ user_dashboard_design = f"""
                         </div>
                         <div><label class="block text-sm font-semibold">Date of Birth</label><input type="date" id="dob" onchange="calculateAge()" class="w-full border-b border-gray-300 p-2 outline-none bg-transparent" required></div>
                         <div><label class="block text-sm font-semibold">Age (Auto Calculate)</label><input type="text" id="age" readonly class="w-full border-b border-gray-300 p-2 outline-none bg-gray-50"></div>
+                        
+                        <!-- NEW CATEGORY FIELD ADDED -->
+                        <div>
+                            <label class="block text-sm font-semibold text-red-600">Category (ବର୍ଗ)</label>
+                            <select id="category_select" onchange="checkCategoryAndAge()" class="w-full border-b border-red-300 p-2 outline-none bg-red-50 text-red-800 font-bold">
+                                <option value="General">General</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div id="caste_cert_box" class="hidden">
+                            <label class="block text-sm font-semibold text-purple-700">Upload Caste Certificate (SC/ST)</label>
+                            <input type="file" id="caste_cert_file" class="w-full border-b border-purple-300 p-2 text-sm outline-none bg-purple-50" accept=".pdf, image/*">
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-6 border-t pt-4">
@@ -1704,7 +1771,7 @@ user_dashboard_design = f"""
                         </div>
                     </div>
 
-                    <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
+                    <div id="income_section_full" class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm transition-all duration-300">
                         <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
                         <div class="grid grid-cols-3 gap-4">
                             <div>
@@ -1761,7 +1828,7 @@ user_dashboard_design = f"""
                         
                         <div class="mt-4 border-t border-blue-200 pt-4">
                             <label class="block text-sm font-semibold text-blue-700 mb-1"><i class="fa-solid fa-file-pdf"></i> Upload Income Certificate (PDF) <span class="text-red-500">*</span></label>
-                            <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf" required>
+                            <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf">
                         </div>
                     </div>
 
@@ -1839,7 +1906,7 @@ user_dashboard_design = f"""
                 <h2 class="text-2xl font-bold text-orange-700 mb-4 text-center border-b border-orange-300 pb-2"><i class="fa-solid fa-file-shield mr-2"></i> Application Declaration & Payment</h2>
                 
                 <div class="bg-white p-5 rounded border border-gray-200 shadow-inner mb-6 text-gray-700 leading-relaxed text-lg font-medium text-justify">
-                    <p>I declare that all information provided is true and my annual income is strictly below Rs. 50,000. If my income is found to exceed 50,000 or if any data is false, Admin holds the right to reject my application without prior notice. I agree to all terms and conditions.</p>
+                    <p>I declare that all information provided is true. If my data is found false, Admin holds the right to reject my application. I agree to all terms and conditions.</p>
                 </div>
 
                 <label class="flex items-start gap-3 cursor-pointer p-3 bg-white rounded border border-gray-300 hover:bg-gray-50 transition mb-6 shadow-sm">
@@ -1903,9 +1970,10 @@ user_dashboard_design = f"""
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
                 <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
                     <p><strong>Name:</strong> <span class="print_u_name"></span></p>
-                    <p><strong>Aadhaar:</strong> <script>document.write(localStorage.getItem('user_aadhaar_' + localStorage.getItem('active_app_no')) || 'N/A');</script></p>
-                    <p><strong>District:</strong> <script>document.write(localStorage.getItem('u_dist_' + localStorage.getItem('active_app_no')) || 'N/A');</script></p>
-                    <p><strong>Block:</strong> <script>document.write(localStorage.getItem('u_block_' + localStorage.getItem('active_app_no')) || 'N/A');</script></p>
+                    <p><strong>Category:</strong> <span id="print_u_category"></span></p>
+                    <p><strong>Aadhaar:</strong> <span id="print_u_aadhaar"></span></p>
+                    <p><strong>District:</strong> <span id="print_u_dist"></span></p>
+                    <p><strong>Block:</strong> <span id="print_u_block"></span></p>
                 </div>
             </div>
         </div>
@@ -2280,7 +2348,8 @@ admin_design = f"""
             let titles = {{
                 'dashboard': '<i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview',
                 'sysverify': '<i class="fa-solid fa-microchip text-blue-600 mr-2"></i> System Verification (Level 1)',
-                'adminapprove': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Final Admin Approval (Level 2)',
+                'adminapprove': '<i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Admin Verification (Level 2)',
+                'superadmin': '<i class="fa-solid fa-gavel text-purple-600 mr-2"></i> Final Super Admin Approval (Level 3)',
                 'rejected': '<i class="fa-solid fa-trash-can text-red-600 mr-2"></i> Rejected Applications Box',
                 'beneficiaries': '<i class="fa-solid fa-users text-blue-600 mr-2"></i> Manage Beneficiaries',
                 'renewals': '<i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> 3-Month Renewals',
@@ -2295,7 +2364,7 @@ admin_design = f"""
             let appList = JSON.parse(localStorage.getItem('app_list') || '[]');
             let total = 0; let pending = 0; let approved = 0; let rejected = 0; let wallet = 0;
             
-            let sysHtml = ''; let adminHtml = ''; let benHtml = ''; let rejHtml = ''; let payHtml = '';
+            let sysHtml = ''; let adminHtml = ''; let superAdminHtml = ''; let benHtml = ''; let rejHtml = ''; let payHtml = '';
 
             appList.forEach(appNo => {{
                 let isApplied = localStorage.getItem('user_has_applied_' + appNo);
@@ -2304,13 +2373,13 @@ admin_design = f"""
                     let amt = parseFloat(localStorage.getItem('paid_amount_' + appNo) || '100');
                     wallet += amt;
 
-                    let status = localStorage.getItem('app_status_' + appNo) || 'sys_pending';
+                    let status = localStorage.getItem('app_status_' + appNo) || 'sys_pending_2days';
                     let name = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
                     let scheme = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
                     let bankName = localStorage.getItem('u_bank_' + appNo) || 'N/A';
                     let accNo = localStorage.getItem('u_acc_' + appNo) || 'N/A';
 
-                    if(status === 'sys_pending') {{
+                    if(status === 'sys_pending_2days' || status === 'sys_pending') {{
                         pending++;
                         sysHtml += `
                             <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
@@ -2318,9 +2387,21 @@ admin_design = f"""
                                 <td class="py-4 px-4 font-bold text-green-800">${{name}}</td>
                                 <td class="py-4 px-4">${{scheme}}</td>
                                 <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit Error</button>
                                     <button onclick="verifySysDoc('${{appNo}}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify & Send</button>
                                     <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </td>
+                            </tr>
+                        `;
+                    }} else if(status === 'admin_correction') {{
+                        pending++;
+                        sysHtml += `
+                            <tr class="hover:bg-yellow-50 border-b bg-yellow-50 transition-all">
+                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-yellow-600 text-white text-[10px] px-1 rounded ml-1">EDIT MODE</span></td>
+                                <td class="py-4 px-4 font-bold text-green-800">${{name}}</td>
+                                <td class="py-4 px-4">${{scheme}}</td>
+                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-600 text-white px-3 py-1 rounded shadow hover:bg-yellow-700 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Finish Edit</button>
                                 </td>
                             </tr>
                         `;
@@ -2332,9 +2413,25 @@ admin_design = f"""
                                 <td class="py-4 px-4 font-bold text-blue-800">${{name}}</td>
                                 <td class="py-4 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-check"></i> System Approved</span></td>
                                 <td class="py-4 px-4 flex justify-center space-x-2 items-center">
-                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold"><i class="fa-solid fa-eye"></i> View Details</button>
-                                    <button onclick="finalApprove('${{appNo}}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold"><i class="fa-solid fa-signature"></i> Final Approve</button>
-                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold"><i class="fa-solid fa-ban"></i> Reject</button>
+                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-4 py-1 rounded shadow hover:bg-purple-700 font-bold text-xs"><i class="fa-solid fa-eye"></i> View</button>
+                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                    <button onclick="forwardToSuperAdmin('${{appNo}}')" class="bg-blue-600 text-white px-4 py-1 rounded shadow hover:bg-blue-700 font-bold text-xs"><i class="fa-solid fa-arrow-right"></i> To SuperAdmin</button>
+                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold text-xs"><i class="fa-solid fa-ban"></i> Reject</button>
+                                </td>
+                            </tr>
+                        `;
+                    }} else if(status === 'super_admin_pending') {{
+                        pending++;
+                        superAdminHtml += `
+                            <tr class="hover:bg-green-50 border-b transition-all">
+                                <td class="py-4 px-4 font-medium text-purple-600">#${{appNo}} <span class="bg-purple-500 text-white text-[10px] px-1 rounded ml-1">ADMIN OK</span></td>
+                                <td class="py-4 px-4 font-bold text-purple-800">${{name}}</td>
+                                <td class="py-4 px-4"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-shield-halved"></i> Payment Verification</span></td>
+                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-gray-600 text-white px-4 py-1 rounded shadow hover:bg-gray-700 font-bold text-xs"><i class="fa-solid fa-eye"></i> View</button>
+                                    <button onclick="adminEditApp('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                    <button onclick="finalApprove('${{appNo}}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700 font-bold text-xs"><i class="fa-solid fa-check-double"></i> Final Approve</button>
+                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-4 py-1 rounded shadow hover:bg-red-600 font-bold text-xs"><i class="fa-solid fa-ban"></i> Reject</button>
                                 </td>
                             </tr>
                         `;
@@ -2402,10 +2499,36 @@ admin_design = f"""
 
             if(sysHtml) document.getElementById('sys_verify_tbody').innerHTML = sysHtml;
             if(adminHtml) document.getElementById('admin_approve_tbody').innerHTML = adminHtml;
+            if(superAdminHtml) document.getElementById('superadmin_approve_tbody').innerHTML = superAdminHtml;
             if(benHtml) document.getElementById('beneficiaries_tbody').innerHTML = benHtml;
             if(rejHtml) document.getElementById('rejected_tbody').innerHTML = rejHtml;
             if(payHtml) document.getElementById('payments_tbody').innerHTML = payHtml;
         }}
+
+        // New Edit Feature for Admin
+        function adminEditApp(appNo) {{
+            window.current_modal_appNo = appNo;
+            document.getElementById('edit_name').value = localStorage.getItem('user_full_name_' + appNo) || '';
+            document.getElementById('edit_bank').value = localStorage.getItem('u_bank_' + appNo) || '';
+            document.getElementById('edit_acc').value = localStorage.getItem('u_acc_' + appNo) || '';
+            document.getElementById('edit_ifsc').value = localStorage.getItem('u_ifsc_' + appNo) || '';
+            
+            document.getElementById('admin_edit_modal').classList.remove('hidden');
+        }}
+
+        function saveAdminEdit() {{
+            let appNo = window.current_modal_appNo;
+            localStorage.setItem('user_full_name_' + appNo, document.getElementById('edit_name').value);
+            localStorage.setItem('u_bank_' + appNo, document.getElementById('edit_bank').value);
+            localStorage.setItem('u_acc_' + appNo, document.getElementById('edit_acc').value);
+            localStorage.setItem('u_ifsc_' + appNo, document.getElementById('edit_ifsc').value);
+            
+            alert('Details Updated by Admin! Status returning to System Verify for safety.');
+            localStorage.setItem('app_status_' + appNo, 'sys_pending'); // Send back to system logic
+            document.getElementById('admin_edit_modal').classList.add('hidden');
+            location.reload();
+        }}
+        function closeEditModal() {{ document.getElementById('admin_edit_modal').classList.add('hidden'); }}
 
         function verifySysDoc(appNo) {{
             window.current_modal_appNo = appNo;
@@ -2426,13 +2549,19 @@ admin_design = f"""
         function approveSys(appNo) {{
             let targetApp = appNo || window.current_modal_appNo;
             localStorage.setItem('app_status_' + targetApp, 'admin_pending');
-            alert("System Validation Completed! Forwarded to Final Admin Approval Portal.");
+            alert("System Validation Completed! Forwarded to Admin Approval.");
+            location.reload();
+        }}
+
+        function forwardToSuperAdmin(appNo) {{
+            localStorage.setItem('app_status_' + appNo, 'super_admin_pending');
+            alert("Admin Checked. Sent to Super Admin for Final Action.");
             location.reload();
         }}
 
         function finalApprove(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'approved');
-            alert("Application Finally Approved! Added to Beneficiaries.");
+            alert("Super Admin Approved! Added to Active Beneficiaries for Payment.");
             location.reload();
         }}
 
@@ -2472,11 +2601,11 @@ admin_design = f"""
         function sendPensionDBT(appNo, name, amount, accNo) {{
             let apiKey = localStorage.getItem('payout_api_key');
             if(!apiKey) {{
-                alert("ERROR: Payout API Key is missing! Please configure Decentro/RazorpayX keys in API & Settings first.");
+                alert("ERROR: Payout API Key is missing! Please configure API in Settings.");
                 return;
             }}
             
-            let confirmMsg = `Connecting to Secure Payout Gateway...\\nAre you sure you want to transfer Pension of ₹${{amount}} to ${{name}} (A/C: ${{accNo}})?`;
+            let confirmMsg = `Connecting to Secure Gateway...\\nTransfer Pension of ₹${{amount}} to ${{name}} (A/C: ${{accNo}})?`;
             if(confirm(confirmMsg)) {{
                 setTimeout(() => {{
                     let txnId = "DBT-" + Math.floor(Math.random()*1000000000);
@@ -2503,6 +2632,7 @@ admin_design = f"""
             
             document.getElementById('v_dob').innerText = localStorage.getItem('u_dob_' + appNo) || 'N/A';
             document.getElementById('v_gender').innerText = localStorage.getItem('u_gender_' + appNo) || 'N/A';
+            document.getElementById('v_category').innerText = localStorage.getItem('u_category_' + appNo) || 'N/A';
             document.getElementById('v_inc_cert').innerText = localStorage.getItem('u_inc_cert_' + appNo) || 'N/A';
             document.getElementById('v_inc_auth').innerText = localStorage.getItem('u_inc_auth_' + appNo) || 'N/A';
             document.getElementById('v_inc_amount').innerText = localStorage.getItem('u_inc_amount_' + appNo) || 'N/A';
@@ -2534,8 +2664,9 @@ admin_design = f"""
                 <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-3 bg-blue-700 text-white rounded-lg transition"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
                 
                 <li class="mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Verification Steps</span></li>
-                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verification</a></li>
-                <li><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Final Admin Approval</a></li>
+                <li><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verify (L1)</a></li>
+                <li><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Admin Action (L2)</a></li>
+                <li><a href="#" onclick="switchTab('superadmin', this)" class="menu-link flex items-center px-4 py-3 text-purple-300 hover:bg-purple-900 rounded-lg transition border border-slate-700"><i class="fa-solid fa-gavel w-6 mr-2"></i> Super Admin (L3)</a></li>
                 <li><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-3 text-red-400 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
 
                 <li class="mt-4 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</span></li>
@@ -2543,7 +2674,7 @@ admin_design = f"""
                 <li><a href="#" onclick="switchTab('renewals', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-clock-rotate-left w-6 mr-2"></i> Renewals Tracker</a></li>
                 <li><a href="#" onclick="switchTab('payments', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer w-6 mr-2"></i> Payment Records</a></li>
                 
-                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('settings', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-gears w-6 mr-2"></i> Portal & API Settings</a></li>
+                <li class="mt-8 border-t border-slate-700 pt-4"><a href="#" onclick="switchTab('settings', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-gears w-6 mr-2"></i> Portal Settings</a></li>
                 <li><a href="#" onclick="switchTab('profile', this)" class="menu-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition"><i class="fa-solid fa-user-gear w-6 mr-2"></i> Admin Profile</a></li>
             </ul>
         </nav>
@@ -2592,9 +2723,6 @@ admin_design = f"""
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-orange-50 flex justify-between items-center">
                         <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
-                        <div class="space-x-2">
-                            <button class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Download Excel</button>
-                        </div>
                     </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border-collapse">
@@ -2632,8 +2760,25 @@ admin_design = f"""
                         </div>
                         <div class="mt-6 flex justify-end gap-3">
                             <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600">Reject Data</button>
-                            <button onclick="approveSys()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700">All Good (Send to Admin Portal)</button>
+                            <button onclick="approveSys()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700">All Good (Send to Admin)</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN EDIT MODAL -->
+            <div id="admin_edit_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative border-t-4 border-yellow-500">
+                    <h3 class="text-xl font-bold text-yellow-700 border-b pb-2 mb-4"><i class="fa-solid fa-pen-to-square"></i> Admin Correction Panel</h3>
+                    <div class="space-y-4">
+                        <div><label class="text-sm font-semibold text-gray-700">Edit Name</label><input type="text" id="edit_name" class="w-full border p-2 rounded"></div>
+                        <div><label class="text-sm font-semibold text-gray-700">Edit Bank Name</label><input type="text" id="edit_bank" class="w-full border p-2 rounded"></div>
+                        <div><label class="text-sm font-semibold text-gray-700">Edit A/C No</label><input type="text" id="edit_acc" class="w-full border p-2 rounded"></div>
+                        <div><label class="text-sm font-semibold text-gray-700">Edit IFSC</label><input type="text" id="edit_ifsc" class="w-full border p-2 rounded uppercase"></div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 font-bold rounded">Cancel</button>
+                        <button onclick="saveAdminEdit()" class="bg-green-600 text-white px-4 py-2 font-bold rounded hover:bg-green-700">Save & Re-verify</button>
                     </div>
                 </div>
             </div>
@@ -2642,8 +2787,7 @@ admin_design = f"""
             <div id="section-adminapprove" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-blue-50 flex justify-between items-center">
-                        <h2 class="font-bold text-lg text-blue-800"><i class="fa-solid fa-user-check mr-2"></i> Final Admin Approval</h2>
-                        <span class="text-xs font-bold text-gray-500 bg-white px-2 py-1 border rounded">System Verified Applications Only</span>
+                        <h2 class="font-bold text-lg text-blue-800"><i class="fa-solid fa-user-check mr-2"></i> Admin Action Panel</h2>
                     </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border-collapse">
@@ -2651,7 +2795,26 @@ admin_design = f"""
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Sys Status</th><th class="py-3 px-4 border-b text-center">Final Action</th></tr>
                             </thead>
                             <tbody id="admin_approve_tbody" class="text-sm">
-                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No applications pending for final approval.</td></tr>
+                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No applications pending for admin approval.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SUPER ADMIN APPROVAL -->
+            <div id="section-superadmin" class="content-section hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-purple-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-purple-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-purple-900"><i class="fa-solid fa-gavel mr-2"></i> Super Admin Final Payment Approval</h2>
+                    </div>
+                    <div class="overflow-x-auto p-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-purple-100 text-purple-800 text-sm">
+                                <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Admin Status</th><th class="py-3 px-4 border-b text-center">Super Admin Action</th></tr>
+                            </thead>
+                            <tbody id="superadmin_approve_tbody" class="text-sm">
+                                <tr><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No applications pending for super admin.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2683,9 +2846,6 @@ admin_design = f"""
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
                         <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
-                        <div class="space-x-2">
-                            <button class="bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
-                        </div>
                     </div>
                     <div class="overflow-x-auto p-4">
                         <table class="w-full text-left border-collapse">
@@ -2720,9 +2880,6 @@ admin_design = f"""
                 <div class="bg-white rounded-xl shadow-sm border p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="font-bold text-lg">Monthly Payment & UTR Records</h2>
-                        <div class="space-x-2">
-                            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
-                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
@@ -2743,7 +2900,6 @@ admin_design = f"""
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> Portal Settings & API Configuration</h2>
                     <form>
                         
-                        <!-- REGISTRATION DATE CONTROL & NOTICE BOARD -->
                         <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-calendar-alt text-red-600"></i> Registration Dates & Notice Board</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-50 p-4 rounded border border-red-100">
                             <div>
@@ -2763,8 +2919,9 @@ admin_design = f"""
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Fee Amount (₹)</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Base Fee Amount (₹)</label>
                                 <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
+                                <p class="text-xs text-gray-500 mt-1">SC/ST & Age > 80 get auto 50% discount</p>
                             </div>
                         </div>
 
@@ -2772,11 +2929,11 @@ admin_design = f"""
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
-                                <input type="password" id="payu_merchant_key" value="OLBUPA" placeholder="Enter Merchant Key" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payu_merchant_key" value="OLBUPA" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Salt</label>
-                                <input type="password" id="payu_merchant_salt" value="63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" placeholder="Enter Merchant Salt" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payu_merchant_salt" value="63LJwDVAEKqfR32B3ynr0TKayqyVjGg7" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
@@ -2784,11 +2941,11 @@ admin_design = f"""
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key ID</label>
-                                <input type="password" id="rzp_key_id" placeholder="Enter Key ID" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="rzp_key_id" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key Secret</label>
-                                <input type="password" id="rzp_key_secret" placeholder="Enter Key Secret" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="rzp_key_secret" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
@@ -2796,11 +2953,11 @@ admin_design = f"""
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
-                                <input type="password" id="payout_api_key" value="0b223e8abf8a96a8b53ebba0c1e610dd6acb9dc0ed3d9b6754cd67f2a42b9b03" placeholder="Enter API Key" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payout_api_key" value="0b223e8abf8a96a8b53ebba0c1e610dd6acb9dc0ed3d9b6754cd67f2a42b9b03" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Secret</label>
-                                <input type="password" id="payout_api_secret" value="4e513dcbf8512d0ca462d356e09abeba7de8937582d8635919a7bab3db5b4562" placeholder="Enter API Secret" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="password" id="payout_api_secret" value="4e513dcbf8512d0ca462d356e09abeba7de8937582d8635919a7bab3db5b4562" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
@@ -2867,6 +3024,7 @@ admin_design = f"""
                     <div><p class="text-gray-500 text-xs">Mother's Name</p><p id="v_mother" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Gender</p><p id="v_gender" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Date of Birth</p><p id="v_dob" class="font-bold"></p></div>
+                    <div><p class="text-gray-500 text-xs">Category</p><p id="v_category" class="font-bold text-red-600"></p></div>
                     <div><p class="text-gray-500 text-xs">Aadhaar Number</p><p id="v_aadhaar" class="font-bold tracking-widest"></p></div>
                 </div>
 
