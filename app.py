@@ -10,6 +10,7 @@ import json
 import os
 import threading
 import sqlite3
+import datetime
 
 app = FastAPI()
 
@@ -152,7 +153,7 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     return {"hash": hash_val, "key": key}
 
 # ==========================================
-# LIVE GMAIL OTP SENDER API
+# LIVE GMAIL OTP SENDER API (UPDATED FOR PRIMARY INBOX)
 # ==========================================
 class EmailRequest(BaseModel):
     email: str
@@ -166,22 +167,39 @@ async def send_email_api(req: EmailRequest):
     SENDER_PASSWORD = "gzafqvjphaftybhy" 
 
     try:
-        msg = MIMEMultipart()
-        msg['From'] = SENDER_EMAIL
+        # Using 'alternative' helps bypass spam filters
+        msg = MIMEMultipart('alternative')
+        msg['From'] = f"Pension Portal <{SENDER_EMAIL}>"
         msg['To'] = req.email
         msg['Subject'] = req.subject
 
-        body = f"""Dear User,
-
-Your One Time Password (OTP) for the Private Social Security Pension Scheme is: {req.otp}
-
-This OTP is valid for 5 minutes. Please do not share this secure code with anyone to keep your account 100% safe.
-
-Regards,
-Admin Team
-Private Social Security Pension Scheme"""
+        # Professional HTML template for Primary Inbox
+        html_body = f"""
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px; margin: 0;">
+            <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 5px solid #1d4ed8;">
+              <h2 style="color: #1e3a8a; margin-top: 0; text-align: center;">Pension Portal Security</h2>
+              <p style="color: #374151; font-size: 16px;">Dear User,</p>
+              <p style="color: #374151; font-size: 16px;">Your One Time Password (OTP) for the Private Social Security Pension Scheme is:</p>
+              
+              <div style="background-color: #fef08a; padding: 15px; text-align: center; border-radius: 8px; margin: 25px 0;">
+                  <span style="font-size: 32px; font-weight: bold; color: #b45309; letter-spacing: 8px;">{req.otp}</span>
+              </div>
+              
+              <p style="color: #4b5563; font-size: 14px;">This OTP is strictly valid for 5 minutes. Please do not share this secure code with anyone to keep your account 100% safe.</p>
+              
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+              <p style="font-size: 12px; color: #9ca3af; text-align: center;">
+                Regards,<br>
+                <strong>Admin Team</strong><br>
+                Private Social Security Pension Scheme
+              </p>
+            </div>
+          </body>
+        </html>
+        """
         
-        msg.attach(MIMEText(body, 'plain'))
+        msg.attach(MIMEText(html_body, 'html'))
 
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
@@ -1251,6 +1269,7 @@ user_dashboard_design = f"""
             document.getElementById('age').value = age;
             let scheme = document.getElementById('scheme').value;
             if(scheme === 'Old Age Pension' && age < 55) {{ alert('System Error: Age must be 55 or above for Old Age Pension.'); }}
+            handleDiscountLogic();
         }}
 
         function checkSchemeCondition() {{
@@ -1259,6 +1278,39 @@ user_dashboard_design = f"""
             if(scheme === 'Widow Pension' || scheme === 'Disability Pension' || scheme === 'Divorcee Pension' || scheme === 'Transgender Pension') {{
                 specialBox.classList.remove('hidden');
             }} else {{ specialBox.classList.add('hidden'); }}
+        }}
+
+        function checkCategoryCondition() {{
+            let category = document.getElementById('category').value;
+            let casteBox = document.getElementById('caste_cert_box');
+            
+            if(category === 'SC' || category === 'ST') {{
+                casteBox.classList.remove('hidden');
+            }} else {{
+                casteBox.classList.add('hidden');
+            }}
+            handleDiscountLogic();
+        }}
+
+        function handleDiscountLogic() {{
+            let category = document.getElementById('category').value;
+            let age = parseInt(document.getElementById('age').value) || 0;
+            let baseFee = parseFloat(localStorage.getItem('app_fee') || '100');
+            let incSection = document.getElementById('income_section_container');
+            let isDiscounted = false;
+
+            if (category === 'SC' || category === 'ST' || age >= 80) {{
+                isDiscounted = true;
+            }}
+
+            if (isDiscounted) {{
+                let newFee = baseFee * 0.5; // 50% discount
+                document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = newFee.toFixed(2));
+                incSection.classList.add('hidden'); // Hide income section
+            }} else {{
+                document.querySelectorAll('.display_app_fee').forEach(el => el.innerText = baseFee.toFixed(2));
+                incSection.classList.remove('hidden'); // Show income section
+            }}
         }}
 
         function updateAgeProof() {{
@@ -1372,6 +1424,7 @@ user_dashboard_design = f"""
             localStorage.setItem('u_father_' + appNo, document.getElementById('father_name').value);
             localStorage.setItem('u_mother_' + appNo, document.getElementById('mother_name').value);
             localStorage.setItem('u_scheme_' + appNo, document.getElementById('scheme').value);
+            localStorage.setItem('u_category_' + appNo, document.getElementById('category').value);
             localStorage.setItem('u_dist_' + appNo, document.getElementById('district').value);
             localStorage.setItem('u_block_' + appNo, document.getElementById('block').value);
             localStorage.setItem('u_gp_' + appNo, document.getElementById('panchayat').value);
@@ -1379,9 +1432,16 @@ user_dashboard_design = f"""
             
             localStorage.setItem('u_gender_' + appNo, document.getElementById('gender_select').value);
             localStorage.setItem('u_dob_' + appNo, document.getElementById('dob').value);
-            localStorage.setItem('u_inc_cert_' + appNo, document.getElementById('income_cert_no').value);
-            localStorage.setItem('u_inc_auth_' + appNo, document.getElementById('inc_authority').value);
-            localStorage.setItem('u_inc_amount_' + appNo, document.getElementById('inc_amount').value);
+            
+            // Income info optional based on logic
+            let incAmt = document.getElementById('inc_amount').value;
+            if(document.getElementById('income_section_container').classList.contains('hidden')) {
+                incAmt = "EXEMPTED";
+            }
+            localStorage.setItem('u_inc_cert_' + appNo, document.getElementById('income_cert_no').value || "EXEMPTED");
+            localStorage.setItem('u_inc_auth_' + appNo, document.getElementById('inc_authority').value || "EXEMPTED");
+            localStorage.setItem('u_inc_amount_' + appNo, incAmt);
+            
             localStorage.setItem('u_ifsc_' + appNo, document.getElementById('ifsc_code').value);
             localStorage.setItem('u_bank_' + appNo, document.getElementById('bank_name_display').value); 
             localStorage.setItem('u_acc_' + appNo, document.getElementById('acc_no').value);
@@ -1406,46 +1466,53 @@ user_dashboard_design = f"""
             let gateway = document.querySelector('input[name="pay_gateway"]:checked').value;
             let appNo = localStorage.getItem('active_app_no');
             
-            // Setting Amount
-            let amtSetting = localStorage.getItem('app_fee') || '100';
-            let amount = parseFloat(amtSetting).toFixed(2);
+            // Dynamic Amount
+            let amount = document.querySelector('.display_app_fee').innerText;
             localStorage.setItem('paid_amount_' + appNo, amount); 
             
-            // AUTO SYSTEM VERIFICATION LOGIC (REAL)
-            let incAmt = document.getElementById('inc_amount').value || "";
+            // SYSTEM VERIFICATION LOGIC (REAL)
+            let incAmtStr = localStorage.getItem('u_inc_amount_' + appNo);
             let authName = document.getElementById('inc_issued_to').value || "";
             let firstname = document.getElementById('full_name').value || "User";
+            let bankName = document.getElementById('bank_name_display').value || "";
             
             let autoRemark = "";
-            let autoStatus = "sys_pending"; 
+            let autoStatus = "sys_pending_time"; // 2-day wait state
             
-            if (!incAmt || !incAmt.includes("Rs.")) {{
-                autoStatus = "rejected";
-                autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
-            }} else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {{
-                autoStatus = "rejected";
-                autoRemark = "System Auto-Reject: Aadhaar Name and Income Certificate Name Mismatch.";
-            }} else {{
-                let numAmt = parseInt(incAmt.replace(/[^0-9]/g, ''));
-                if (numAmt > 50000) {{
+            if (incAmtStr !== "EXEMPTED") {{
+                if (!incAmtStr || !incAmtStr.includes("Rs.")) {{
                     autoStatus = "rejected";
-                    autoRemark = "System Auto-Reject: Annual Income (" + incAmt + ") exceeds Rs. 50,000 limit.";
+                    autoRemark = "System Auto-Reject: Income Certificate data missing or not correctly verified.";
+                }} else if (authName.toLowerCase().trim() !== firstname.toLowerCase().trim() && authName !== "") {{
+                    autoStatus = "sys_admin_action_needed";
+                    autoRemark = "System Warning: Aadhaar Name and Income Certificate Name Mismatch.";
+                }} else {{
+                    let numAmt = parseInt(incAmtStr.replace(/[^0-9]/g, ''));
+                    if (numAmt > 50000) {{
+                        autoStatus = "rejected";
+                        autoRemark = "System Auto-Reject: Annual Income exceeds Rs. 50,000 limit.";
+                    }}
                 }}
             }}
             
+            if(bankName === "") {
+                 autoStatus = "sys_admin_action_needed";
+                 autoRemark += " | System Warning: Bank details missing or invalid.";
+            }
+
             localStorage.setItem('user_has_applied_' + appNo, 'true');
             localStorage.setItem('app_status_' + appNo, autoStatus);
-            if(autoStatus === 'rejected') {{
+            if(autoRemark) {{
                 localStorage.setItem('reject_reason_' + appNo, autoRemark);
             }}
 
             if(gateway === 'razorpay') {{
-                alert('Redirecting to Asali Razorpay Live Secure Payment Gateway...');
+                alert('Redirecting to Secure Payment Gateway...');
                 setTimeout(() => {{
                     window.location.href = "/payment_success";
                 }}, 1000);
             }} else {{
-                alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
+                alert('Redirecting to Secure Payment Gateway...');
                 let txnid = "TXN" + new Date().getTime();
                 let productinfo = "PensionApplication";
                 let email = document.getElementById('app_email').value || "user@example.com"; 
@@ -1487,7 +1554,7 @@ user_dashboard_design = f"""
                     form.submit(); 
                     
                 }} catch (error) {{
-                    alert("Error connecting to PayU Gateway. Checking connection...");
+                    alert("Error connecting to Gateway. Checking connection...");
                 }}
             }}
         }}
@@ -1512,6 +1579,7 @@ user_dashboard_design = f"""
             safeSetId('print_u_father', 'u_father');
             safeSetId('print_u_mother', 'u_mother');
             safeSetId('print_u_aadhaar', 'user_aadhaar');
+            safeSetId('print_u_category', 'u_category');
             safeSetId('print_u_dist', 'u_dist');
             safeSetId('print_u_block', 'u_block');
             safeSetId('print_u_gp', 'u_gp');
@@ -1603,6 +1671,20 @@ user_dashboard_design = f"""
                     
                     <div class="grid grid-cols-2 gap-6 border-t pt-4">
                         <div>
+                            <label class="block text-sm font-semibold mb-2">Category (ବର୍ଗ)</label>
+                            <select id="category" onchange="checkCategoryCondition()" class="w-full border p-2 rounded bg-white">
+                                <option value="General">General</option>
+                                <option value="OBC">OBC/SEBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div id="caste_cert_box" class="hidden mt-4 bg-blue-50 p-2 rounded border border-blue-300">
+                                <label class="font-bold text-blue-800 text-sm">Upload Caste Certificate (PDF):</label>
+                                <input type="file" class="border p-1 mt-1 w-full bg-white text-sm" accept=".pdf">
+                            </div>
+                        </div>
+                        <div>
                             <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                             <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
                                 <option value="Old Age Pension">Old Age (ବୃଦ୍ଧାବସ୍ଥା)</option><option value="Widow Pension">Widow (ବିଧବା)</option><option value="Disability Pension">Disability (ଭିନ୍ନକ୍ଷମ)</option><option value="Unmarried Pension">Unmarried (ଅବିବାହିତା)</option><option value="Divorcee Pension">Divorcee (ଛାଡପତ୍ର ପାଇଥିବା)</option><option value="Transgender Pension">Transgender (କିନ୍ନର)</option>
@@ -1687,7 +1769,7 @@ user_dashboard_design = f"""
                         </div>
                     </div>
 
-                    <div class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
+                    <div id="income_section_container" class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm">
                         <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
                         <div class="grid grid-cols-3 gap-4">
                             <div>
@@ -1744,7 +1826,7 @@ user_dashboard_design = f"""
                         
                         <div class="mt-4 border-t border-blue-200 pt-4">
                             <label class="block text-sm font-semibold text-blue-700 mb-1"><i class="fa-solid fa-file-pdf"></i> Upload Income Certificate (PDF) <span class="text-red-500">*</span></label>
-                            <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf" required>
+                            <input type="file" class="w-full md:w-1/2 border p-1 rounded text-sm bg-white" accept=".pdf">
                         </div>
                     </div>
 
@@ -2293,8 +2375,18 @@ admin_design = f"""
                     let bankName = localStorage.getItem('u_bank_' + appNo) || 'N/A';
                     let accNo = localStorage.getItem('u_acc_' + appNo) || 'N/A';
 
-                    if(status === 'sys_pending') {{
+                    if(status === 'sys_pending' || status === 'sys_pending_time') {{
                         pending++;
+                        
+                        let sysActionHtml = '';
+                        if(status === 'sys_pending_time') {
+                            sysActionHtml = `<span class="text-orange-500 font-bold text-xs"><i class="fa-solid fa-clock"></i> Checking (Wait 2 Days)</span>`;
+                        } else if(status === 'sys_admin_action_needed') {
+                            sysActionHtml = `<button onclick="verifySysDoc('${{appNo}}')" class="bg-yellow-500 text-white px-3 py-1 rounded shadow hover:bg-yellow-600 text-xs font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Action Needed</button>`;
+                        } else {
+                            sysActionHtml = `<button onclick="verifySysDoc('${{appNo}}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify</button>`;
+                        }
+
                         sysHtml += `
                             <tr class="hover:bg-green-50 border-b bg-green-50 transition-all">
                                 <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-green-500 text-white text-[10px] px-1 rounded ml-1">NEW</span></td>
@@ -2302,7 +2394,21 @@ admin_design = f"""
                                 <td class="py-4 px-4">${{scheme}}</td>
                                 <td class="py-4 px-4 flex justify-center space-x-2 items-center">
                                     <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
-                                    <button onclick="verifySysDoc('${{appNo}}')" class="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600 text-xs font-bold"><i class="fa-solid fa-robot"></i> Verify & Send</button>
+                                    ${{sysActionHtml}}
+                                    <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </td>
+                            </tr>
+                        `;
+                    }} else if(status === 'sys_admin_action_needed') {{
+                        pending++;
+                        sysHtml += `
+                            <tr class="hover:bg-yellow-50 border-b bg-yellow-50 transition-all">
+                                <td class="py-4 px-4 font-medium text-blue-600">#${{appNo}} <span class="bg-yellow-500 text-white text-[10px] px-1 rounded ml-1">FLAGGED</span></td>
+                                <td class="py-4 px-4 font-bold text-yellow-800">${{name}}</td>
+                                <td class="py-4 px-4">${{scheme}}</td>
+                                <td class="py-4 px-4 flex justify-center space-x-2 items-center">
+                                    <button onclick="viewFullApplication('${{appNo}}')" class="bg-purple-600 text-white px-3 py-1 rounded shadow hover:bg-purple-700 text-xs font-bold"><i class="fa-solid fa-eye"></i> View</button>
+                                    <button onclick="verifySysDoc('${{appNo}}')" class="bg-yellow-600 text-white px-3 py-1 rounded shadow hover:bg-yellow-700 text-xs font-bold"><i class="fa-solid fa-wrench"></i> Fix & Send</button>
                                     <button onclick="rejectApp('${{appNo}}')" class="bg-red-500 text-white px-3 py-1 rounded shadow hover:bg-red-600 text-xs font-bold"><i class="fa-solid fa-xmark"></i> Reject</button>
                                 </td>
                             </tr>
@@ -2479,6 +2585,7 @@ admin_design = f"""
             document.getElementById('v_father').innerText = localStorage.getItem('u_father_' + appNo) || 'N/A';
             document.getElementById('v_mother').innerText = localStorage.getItem('u_mother_' + appNo) || 'N/A';
             document.getElementById('v_aadhaar').innerText = localStorage.getItem('user_aadhaar_' + appNo) || 'N/A';
+            document.getElementById('v_category').innerText = localStorage.getItem('u_category_' + appNo) || 'N/A';
             document.getElementById('v_dist').innerText = localStorage.getItem('u_dist_' + appNo) || 'N/A';
             document.getElementById('v_block').innerText = localStorage.getItem('u_block_' + appNo) || 'N/A';
             document.getElementById('v_gp').innerText = localStorage.getItem('u_gp_' + appNo) || 'N/A';
