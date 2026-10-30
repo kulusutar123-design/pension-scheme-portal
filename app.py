@@ -1224,7 +1224,7 @@ user_dashboard_design = f"""
                     </div>
                 `;
             }} else {{
-                 document.getElementById('section-renew').innerHTML = `
+                document.getElementById('section-renew').innerHTML = `
                     <h2 class="text-2xl font-bold mb-4 text-orange-600"><i class="fa-solid fa-clock-rotate-left"></i> 3-Month Renewal</h2>
                     <div class="bg-white border rounded-xl p-6 shadow-sm mb-6 text-center">
                         <i class="fa-solid fa-folder-open text-gray-300 text-5xl mb-3"></i>
@@ -1280,11 +1280,20 @@ user_dashboard_design = f"""
             }}
         }}
 
+        function toggleSidebar() {{
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebar_overlay').classList.toggle('hidden');
+        }}
+
         function switchUserTab(tabId) {{
             document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
             if(tabId === 'status') {{
                 loadPrintData();
+            }}
+            if(window.innerWidth < 768) {{
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar_overlay').classList.add('hidden');
             }}
         }}
         
@@ -1621,9 +1630,16 @@ user_dashboard_design = f"""
         }}
     </script>
 </head>
-<body class="bg-gray-100 flex h-screen overflow-hidden">
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full print:hidden">
-        <div class="p-5 border-b border-slate-700 text-center"><h2 class="text-xl font-bold">User Portal</h2></div>
+<body class="bg-gray-100 flex h-screen overflow-hidden relative">
+    
+    <!-- Mobile overlay -->
+    <div id="sidebar_overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+
+    <aside id="sidebar" class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl h-full absolute z-40 inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out print:hidden">
+        <div class="p-5 border-b border-slate-700 text-center flex justify-between items-center md:block">
+            <h2 class="text-xl font-bold">User Portal</h2>
+            <button onclick="toggleSidebar()" class="md:hidden text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
                 <li><a href="#" onclick="switchUserTab('apply')" class="flex items-center px-4 py-3 bg-purple-600 text-white rounded-lg"><i class="fa-solid fa-pen-to-square w-6 mr-2"></i> Apply Pension</a></li>
@@ -1634,9 +1650,15 @@ user_dashboard_design = f"""
         <div class="p-4"><a href="/" class="flex items-center text-red-400 hover:text-red-300"><i class="fa-solid fa-power-off w-6 mr-2"></i> Logout / Back Home</a></div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 print:p-0 print:overflow-visible w-full">
         
-        <div id="section-apply" class="content-section bg-white p-6 rounded-xl shadow print:hidden">
+        <!-- Mobile Header -->
+        <div class="md:hidden flex justify-between items-center mb-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <h2 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-user-circle text-blue-600 mr-2"></i> User Dashboard</h2>
+            <button onclick="toggleSidebar()" class="text-blue-700 text-2xl p-1"><i class="fa-solid fa-bars"></i></button>
+        </div>
+
+        <div id="section-apply" class="content-section bg-white p-4 md:p-6 rounded-xl shadow print:hidden">
             
             <div id="apply_form_container">
                 <div class="bg-blue-50 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center mb-6 border border-blue-200">
@@ -1653,11 +1675,11 @@ user_dashboard_design = f"""
                     </div>
                 </div>
 
-                <h2 class="text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
+                <h2 class="text-xl md:text-2xl font-bold text-purple-800 mb-6 border-b pb-2">Apply New Pension (ପେନସନ୍ ଆବେଦନ)</h2>
                 <form onsubmit="goToPaymentStep(event)" class="space-y-6">
                     
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 border-b pb-4">
-                        <div class="col-span-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border-b pb-4">
+                        <div class="sm:col-span-2">
                             <label class="block text-sm font-semibold">Full Name (ପୂରା ନାମ)</label>
                             <input type="text" id="full_name" class="w-full border-b border-gray-300 p-2 outline-none font-bold text-blue-800 bg-transparent" required>
                         </div>
@@ -1671,7 +1693,7 @@ user_dashboard_design = f"""
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
                         <div>
                             <label class="block text-sm font-semibold text-blue-600">Profile Photo <i class="fa-solid fa-camera"></i></label>
                             <input type="file" class="w-full border-b border-gray-300 p-2 text-sm outline-none bg-transparent" accept="image/*" required>
@@ -1702,7 +1724,7 @@ user_dashboard_design = f"""
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-6 border-t pt-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t pt-4">
                         <div>
                             <label class="block text-sm font-semibold mb-2">Scheme Category (ଯୋଜନା ବାଛନ୍ତୁ)</label>
                             <select id="scheme" onchange="checkSchemeCondition()" class="w-full border p-2 rounded bg-purple-50">
@@ -1734,7 +1756,7 @@ user_dashboard_design = f"""
 
                     <div class="mt-6 border-t pt-4">
                         <h3 class="font-bold text-lg mb-4 text-gray-800">Address Information</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
                             <div>
                                 <label class="block text-sm text-gray-500 mb-1">District</label>
                                 <select id="district" onchange="populateBlocks()" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent text-gray-800 font-semibold" required>
@@ -1770,7 +1792,7 @@ user_dashboard_design = f"""
 
                     <div class="border p-4 rounded-lg bg-gray-50 mt-6 shadow-sm border-gray-200">
                         <h3 class="font-bold text-sm mb-2 text-gray-700"><i class="fa-solid fa-id-card mr-1"></i> Age Proof Document Upload</h3>
-                        <div class="grid grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <select id="age_proof_type" onchange="updateAgeProof()" class="w-full border p-2 rounded bg-white" required>
                                     <option value="">Select Document...</option>
@@ -1790,7 +1812,7 @@ user_dashboard_design = f"""
 
                     <div id="income_section_full" class="border border-blue-200 bg-blue-50 p-4 rounded-lg mt-6 shadow-sm transition-all duration-300">
                         <h3 class="text-lg font-bold text-blue-800 mb-4 border-b border-blue-200 pb-2">Income Certificate Details</h3>
-                        <div class="grid grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700">Issuing Year <span class="text-red-500">*</span></label>
                                 <select id="income_year" class="w-full border p-2 rounded bg-white">
@@ -1823,7 +1845,7 @@ user_dashboard_design = f"""
                                 <label class="block text-xs font-semibold text-gray-500">Issuing District</label>
                                 <input type="text" id="inc_district" placeholder="Enter District" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                             </div>
-                            <div class="col-span-2">
+                            <div class="sm:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-500">Issuing Authority</label>
                                 <input type="text" id="inc_authority" placeholder="Enter Authority" class="w-full border border-gray-300 rounded p-2 bg-white outline-none font-bold text-gray-800">
                             </div>
@@ -1849,7 +1871,7 @@ user_dashboard_design = f"""
                         </div>
                     </div>
 
-                    <div class="border border-blue-200 bg-white p-6 rounded-lg mt-6 shadow-sm">
+                    <div class="border border-blue-200 bg-white p-4 md:p-6 rounded-lg mt-6 shadow-sm">
                         <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Bank Information</h3>
                         
                         <div class="bg-red-50 border border-red-200 p-4 rounded text-red-600 text-sm mb-6 space-y-2 italic shadow-sm">
@@ -1858,7 +1880,7 @@ user_dashboard_design = f"""
                             <p>2. Please note that your Aadhaar Number will be used for crediting scholarship amount in the bank account linked/ seeded to your Aadhaar number in fast-track mode. To link/ seed your bank account with your Aadhaar, please visit you bank branch and submit a "bank consent form for receiving DBT".</p>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mb-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-end mb-6">
                             <div>
                                 <label class="block text-sm text-gray-600 mb-1">IFSC Code <span class="text-red-500">*</span></label>
                                 <div class="flex">
@@ -1866,7 +1888,7 @@ user_dashboard_design = f"""
                                     <button type="button" onclick="fetchIFSC()" class="bg-blue-500 text-white px-4 py-2 text-sm font-bold shadow hover:bg-blue-600 transition whitespace-nowrap">FIND IFSC</button>
                                 </div>
                             </div>
-                            <div class="text-center col-span-2 md:col-span-1">
+                            <div class="text-center sm:col-span-1 md:col-span-2">
                                 <label class="block text-sm text-gray-600 mb-1">Bank Name & Branch</label>
                                 <input type="text" id="bank_name_display" placeholder="Auto fetched or type manual" class="w-full border-b border-gray-300 outline-none p-2 bg-transparent font-bold text-gray-800">
                             </div>
@@ -1918,50 +1940,50 @@ user_dashboard_design = f"""
             </div>
         </div>
 
-        <div id="section-payment-step" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
-            <div class="max-w-3xl mx-auto border-2 border-orange-300 rounded-xl p-6 bg-orange-50">
-                <h2 class="text-2xl font-bold text-orange-700 mb-4 text-center border-b border-orange-300 pb-2"><i class="fa-solid fa-file-shield mr-2"></i> Application Declaration & Payment</h2>
+        <div id="section-payment-step" class="content-section hidden bg-white p-4 md:p-6 rounded-xl shadow print:hidden">
+            <div class="max-w-3xl mx-auto border-2 border-orange-300 rounded-xl p-4 md:p-6 bg-orange-50">
+                <h2 class="text-xl md:text-2xl font-bold text-orange-700 mb-4 text-center border-b border-orange-300 pb-2"><i class="fa-solid fa-file-shield mr-2"></i> Application Declaration & Payment</h2>
                 
-                <div class="bg-white p-5 rounded border border-gray-200 shadow-inner mb-6 text-gray-700 leading-relaxed text-lg font-medium text-justify">
+                <div class="bg-white p-5 rounded border border-gray-200 shadow-inner mb-6 text-gray-700 leading-relaxed text-base md:text-lg font-medium text-justify">
                     <p>I declare that all information provided is true. If my data is found false, Admin holds the right to reject my application. I agree to all terms and conditions.</p>
                 </div>
 
                 <label class="flex items-start gap-3 cursor-pointer p-3 bg-white rounded border border-gray-300 hover:bg-gray-50 transition mb-6 shadow-sm">
                     <input type="checkbox" id="tnc_checkbox" onchange="togglePayButton()" class="w-6 h-6 mt-1 text-orange-600 focus:ring-orange-500 cursor-pointer">
-                    <span class="text-gray-800 font-bold">I Agree to the Terms & Conditions and Confirm the above Declaration. (ମୁଁ ସମସ୍ତ ସର୍ତ୍ତାବଳୀ ସହ ସହମତ)</span>
+                    <span class="text-gray-800 font-bold text-sm md:text-base">I Agree to the Terms & Conditions and Confirm the above Declaration. (ମୁଁ ସମସ୍ତ ସର୍ତ୍ତାବଳୀ ସହ ସହମତ)</span>
                 </label>
 
                 <div class="text-center">
                     <p class="text-sm font-semibold text-gray-500 mb-2">Select Payment Gateway & Proceed</p>
-                    <div class="flex justify-center gap-4 mb-4">
-                        <label class="flex items-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-blue-900 border-blue-200">
+                    <div class="flex flex-col md:flex-row justify-center gap-4 mb-4">
+                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-blue-900 border-blue-200">
                             <input type="radio" name="pay_gateway" value="razorpay" checked class="w-5 h-5 text-blue-600 focus:ring-blue-500">
                             <i class="fa-solid fa-credit-card"></i> Razorpay
                         </label>
-                        <label class="flex items-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-orange-700 border-orange-200">
+                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-orange-700 border-orange-200">
                             <input type="radio" name="pay_gateway" value="payu" class="w-5 h-5 text-orange-500 focus:ring-orange-500">
                             <i class="fa-solid fa-wallet"></i> PayU
                         </label>
                     </div>
                     
-                    <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-extrabold text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
+                    <button type="button" id="payu_button" onclick="processPayment()" disabled class="bg-green-600 text-white font-extrabold text-lg md:text-xl py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 opacity-50 cursor-not-allowed transition-all w-full md:w-auto">
                         <i class="fa-solid fa-lock mr-2"></i> Pay Now (₹<span class="display_app_fee"></span>)
                     </button>
-                    <div class="mt-4 flex justify-center items-center gap-4 text-gray-400 text-3xl">
+                    <div class="mt-4 flex justify-center items-center gap-4 text-gray-400 text-2xl md:text-3xl">
                         <i class="fa-brands fa-cc-visa"></i>
                         <i class="fa-brands fa-cc-mastercard"></i>
                         <i class="fa-solid fa-building-columns"></i>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" class="h-6 grayscale opacity-60">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" class="h-5 md:h-6 grayscale opacity-60">
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="section-status" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
+        <div id="section-status" class="content-section hidden bg-white p-4 md:p-6 rounded-xl shadow print:hidden">
             <!-- Content Managed dynamically by checkAppStatus -->
         </div>
         
-        <div id="section-renew" class="content-section hidden bg-white p-6 rounded-xl shadow print:hidden">
+        <div id="section-renew" class="content-section hidden bg-white p-4 md:p-6 rounded-xl shadow print:hidden">
             <!-- Dynamic Renewal HTML -->
         </div>
     </main>
@@ -1970,14 +1992,14 @@ user_dashboard_design = f"""
     <div id="user_app_view_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 print:hidden">
         <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col">
             <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl">
-                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> My Application Data</h3>
-                <div class="space-x-2">
-                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Form & Receipt</button>
-                    <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
+                <h3 class="text-lg md:text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> My Application Data</h3>
+                <div class="space-x-2 flex">
+                    <button onclick="window.print()" class="bg-gray-800 text-white px-3 md:px-4 py-2 rounded shadow font-bold hover:bg-gray-900 text-sm md:text-base"><i class="fa-solid fa-print"></i> Print</button>
+                    <button onclick="closeUserAppModal()" class="bg-red-500 text-white px-3 md:px-4 py-2 rounded shadow font-bold hover:bg-red-600 text-sm md:text-base"><i class="fa-solid fa-xmark"></i> Close</button>
                 </div>
             </div>
-            <div class="flex-1 overflow-y-auto p-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
                     <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p class="font-bold text-base text-blue-700"><span class="print_u_appno"></span></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p class="print_u_scheme font-bold text-base"></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
@@ -1985,7 +2007,7 @@ user_dashboard_design = f"""
                 </div>
                 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">Application Details</h4>
-                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded border">
                     <p><strong>Name:</strong> <span class="print_u_name"></span></p>
                     <p><strong>Category:</strong> <span id="print_u_category"></span></p>
                     <p><strong>Aadhaar:</strong> <span id="print_u_aadhaar"></span></p>
@@ -2173,7 +2195,7 @@ admin_login_design = f"""
         }}
     </script>
 </head>
-<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
     
     <!-- LOGIN FORM -->
     <div id="admin_login_form" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-700">
@@ -2359,6 +2381,11 @@ admin_design = f"""
             location.reload();
         }}
 
+        function toggleSidebar() {{
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebar_overlay').classList.toggle('hidden');
+        }}
+
         function switchTab(tabId, element) {{
             let sections = document.querySelectorAll('.content-section');
             for(let i=0; i<sections.length; i++) {{ sections[i].classList.add('hidden'); }}
@@ -2385,6 +2412,11 @@ admin_design = f"""
                 'profile': '<i class="fa-solid fa-user-gear text-blue-600 mr-2"></i> Admin Profile Settings'
             }};
             document.getElementById('header-title').innerHTML = titles[tabId];
+            
+            if(window.innerWidth < 768) {{
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar_overlay').classList.add('hidden');
+            }}
         }}
 
         function loadAdminData() {{
@@ -2679,12 +2711,18 @@ admin_design = f"""
         }}
     </script>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden">
+<body class="bg-gray-100 font-sans text-gray-800 flex h-screen overflow-hidden relative">
 
-    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl h-full print:hidden">
-        <div class="p-5 border-b border-slate-700 text-center">
-            <i class="fa-solid fa-user-shield text-4xl text-blue-500 mb-2"></i>
-            <h2 class="text-xl font-bold">Admin Panel</h2>
+    <!-- Mobile overlay -->
+    <div id="sidebar_overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+
+    <aside id="sidebar" class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl h-full absolute z-40 inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out print:hidden">
+        <div class="p-5 border-b border-slate-700 text-center flex justify-between items-center md:block">
+            <div class="flex flex-col items-center">
+                <i class="fa-solid fa-user-shield text-3xl md:text-4xl text-blue-500 mb-2 md:block hidden"></i>
+                <h2 class="text-xl font-bold">Admin Panel</h2>
+            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-2 px-3">
@@ -2710,18 +2748,21 @@ admin_design = f"""
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative print:hidden">
-        <header class="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center print:hidden">
-            <h1 id="header-title" class="text-2xl font-bold"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative print:hidden w-full">
+        <header class="bg-white shadow-sm border-b px-4 md:px-6 py-4 flex justify-between items-center print:hidden">
+            <div class="flex items-center">
+                <button onclick="toggleSidebar()" class="md:hidden text-blue-700 text-2xl mr-3"><i class="fa-solid fa-bars"></i></button>
+                <h1 id="header-title" class="text-lg md:text-2xl font-bold truncate"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Dashboard Overview</h1>
+            </div>
             <div class="flex items-center space-x-4">
-                <span class="text-sm font-medium">Welcome, <strong id="welcome_admin_name">Admin</strong></span>
+                <span class="text-sm font-medium hidden sm:inline">Welcome, <strong id="welcome_admin_name">Admin</strong></span>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 bg-gray-50 print:hidden">
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 print:hidden w-full">
             
             <div id="section-dashboard" class="content-section">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-8">
                     <div class="bg-white p-6 rounded-xl border border-l-4 border-purple-500 shadow-sm flex justify-between items-center md:col-span-2">
                         <div><p class="text-sm text-gray-500 font-semibold">Total Wallet Collection (Reg. Fees)</p><h3 class="text-3xl font-bold text-purple-700">₹<span id="total_wallet_val">0</span></h3></div>
                         <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl"><i class="fa-solid fa-wallet"></i></div>
@@ -2752,7 +2793,7 @@ admin_design = f"""
                         <h2 class="font-bold text-lg text-orange-800"><i class="fa-solid fa-microchip mr-2"></i> System Verification Stage</h2>
                     </div>
                     <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Scheme</th><th class="py-3 px-4 border-b text-center">System Action</th></tr>
                             </thead>
@@ -2764,7 +2805,7 @@ admin_design = f"""
                 </div>
 
                 <!-- VERIFICATION MODAL -->
-                <div id="sys_verification_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div id="sys_verification_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
                     <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 relative">
                         <button onclick="closeSysModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
                         <h3 class="text-xl font-bold mb-4 border-b pb-2 text-blue-800">System Automatic Verification Match</h3>
@@ -2785,9 +2826,9 @@ admin_design = f"""
                                 <span class="font-semibold text-gray-600">Overall System Status:</span><span class="font-bold text-green-700"><i class="fa-solid fa-check-double mr-1"></i> Data Consistent. Ready for Admin.</span>
                             </div>
                         </div>
-                        <div class="mt-6 flex justify-end gap-3">
-                            <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600">Reject Data</button>
-                            <button onclick="approveSys()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700">All Good (Send to Admin)</button>
+                        <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+                            <button onclick="rejectApp()" class="bg-red-500 text-white px-4 py-2 rounded font-bold hover:bg-red-600 w-full sm:w-auto">Reject Data</button>
+                            <button onclick="approveSys()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 w-full sm:w-auto">All Good (Send to Admin)</button>
                         </div>
                     </div>
                 </div>
@@ -2817,7 +2858,7 @@ admin_design = f"""
                         <h2 class="font-bold text-lg text-blue-800"><i class="fa-solid fa-user-check mr-2"></i> Admin Action Panel</h2>
                     </div>
                     <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Sys Status</th><th class="py-3 px-4 border-b text-center">Final Action</th></tr>
                             </thead>
@@ -2836,7 +2877,7 @@ admin_design = f"""
                         <h2 class="font-bold text-lg text-purple-900"><i class="fa-solid fa-gavel mr-2"></i> Super Admin Final Payment Approval</h2>
                     </div>
                     <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
                             <thead class="bg-purple-100 text-purple-800 text-sm">
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Admin Status</th><th class="py-3 px-4 border-b text-center">Super Admin Action</th></tr>
                             </thead>
@@ -2851,12 +2892,12 @@ admin_design = f"""
             <!-- REJECTED BOX -->
             <div id="section-rejected" class="content-section hidden">
                 <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-red-50 flex justify-between items-center">
+                    <div class="px-4 md:px-6 py-4 border-b bg-red-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                         <h2 class="font-bold text-lg text-red-800"><i class="fa-solid fa-trash-can mr-2"></i> Rejected Applications Box</h2>
                         <span class="text-xs font-bold text-red-600 border border-red-300 bg-white px-2 py-1 rounded-full"><i class="fa-solid fa-rotate-left"></i> Items Auto-Delete after 3 Months</span>
                     </div>
                     <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Applicant Name</th><th class="py-3 px-4 border-b">Rejected By</th><th class="py-3 px-4 border-b w-1/3">Remark / Reason</th><th class="py-3 px-4 border-b text-center">Delete</th></tr>
                             </thead>
@@ -2875,7 +2916,7 @@ admin_design = f"""
                         <h2 class="font-bold text-lg">Active Beneficiaries List</h2>
                     </div>
                     <div class="overflow-x-auto p-4">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
                                 <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b text-center">Admin Action</th></tr>
                             </thead>
@@ -2891,25 +2932,27 @@ admin_design = f"""
             <div id="section-renewals" class="content-section hidden">
                  <div class="bg-white border rounded-xl p-6 shadow-sm mb-6">
                     <h2 class="font-bold text-lg mb-4">Renewal Status Tracker</h2>
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-100 text-gray-600 text-sm">
-                            <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Renewal Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
-                        </thead>
-                        <tbody class="text-sm">
-                            <tr id="dr_empty" class="border-b"><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries are currently pending renewal.</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <tr><th class="py-3 px-4 border-b">Ben. ID</th><th class="py-3 px-4 border-b">Name</th><th class="py-3 px-4 border-b">Renewal Alert</th><th class="py-3 px-4 border-b text-center">Action</th></tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr id="dr_empty" class="border-b"><td colspan="4" class="text-center py-6 text-gray-500 font-semibold">No active beneficiaries are currently pending renewal.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- PAYMENTS -->
             <div id="section-payments" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border p-6">
+                <div class="bg-white rounded-xl shadow-sm border p-4 md:p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="font-bold text-lg">Monthly Payment & UTR Records</h2>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
                             <thead class="bg-gray-100 text-gray-600 text-sm">
                                 <tr><th class="py-3 px-4 border-b">App ID</th><th class="py-3 px-4 border-b">Beneficiary Name</th><th class="py-3 px-4 border-b">Bank A/C Details</th><th class="py-3 px-4 border-b">Status</th><th class="py-3 px-4 border-b">Bank UTR / Txn No.</th></tr>
                             </thead>
@@ -2923,12 +2966,12 @@ admin_design = f"""
 
             <!-- SETTINGS SECTION -->
             <div id="section-settings" class="content-section hidden">
-                <div class="bg-white rounded-xl shadow-sm border p-8">
+                <div class="bg-white rounded-xl shadow-sm border p-4 md:p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-gears"></i> Portal Settings & API Configuration</h2>
                     <form>
                         
                         <h3 class="font-bold text-gray-800 mb-3 mt-4"><i class="fa-solid fa-calendar-alt text-red-600"></i> Registration Dates & Notice Board</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-50 p-4 rounded border border-red-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-red-50 p-4 rounded border border-red-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Start Date</label>
                                 <input type="date" id="reg_start_date" class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none">
@@ -2937,7 +2980,7 @@ admin_design = f"""
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Close Date</label>
                                 <input type="date" id="reg_close_date" class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none">
                             </div>
-                            <div class="md:col-span-2">
+                            <div class="sm:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Home Page Running Notice (Marquee Text)</label>
                                 <textarea id="notice_text" rows="2" placeholder="Enter notice here... It will scroll on the home page." class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none"></textarea>
                             </div>
@@ -2945,7 +2988,7 @@ admin_design = f"""
 
                         <!-- NEW CONTACT DETAILS SECTION ADDED HERE -->
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-address-book text-blue-600"></i> Home Page Contact Details (Public)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Contact Name</label>
                                 <input type="text" id="contact_name" placeholder="e.g. Admin Support" class="w-full px-4 py-2 border rounded-lg">
@@ -2961,7 +3004,7 @@ admin_design = f"""
                         </div>
 
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-indian-rupee-sign text-green-600"></i> Application Fee Setting</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded border">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded border">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Base Fee Amount (₹)</label>
                                 <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
@@ -2970,7 +3013,7 @@ admin_design = f"""
                         </div>
 
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> PayU Payment Gateway Keys</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">PayU Merchant Key</label>
                                 <input type="password" id="payu_merchant_key" value="OLBUPA" class="w-full px-4 py-2 border rounded-lg">
@@ -2982,7 +3025,7 @@ admin_design = f"""
                         </div>
 
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-credit-card text-blue-600"></i> Razorpay Payment Gateway Keys</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50 p-4 rounded border border-blue-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Razorpay Key ID</label>
                                 <input type="password" id="rzp_key_id" class="w-full px-4 py-2 border rounded-lg">
@@ -2994,7 +3037,7 @@ admin_design = f"""
                         </div>
 
                         <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-building-columns text-purple-600"></i> DBT / Payout API Keys (Bank Transfer)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-purple-50 p-4 rounded border border-purple-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-purple-50 p-4 rounded border border-purple-100">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Payout API Key</label>
                                 <input type="password" id="payout_api_key" value="0b223e8abf8a96a8b53ebba0c1e610dd6acb9dc0ed3d9b6754cd67f2a42b9b03" class="w-full px-4 py-2 border rounded-lg">
@@ -3006,29 +3049,29 @@ admin_design = f"""
                         </div>
 
                         <div class="mt-8 flex justify-end">
-                            <button type="button" onclick="saveSettings()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
+                            <button type="button" onclick="saveSettings()" class="w-full md:w-auto bg-blue-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-800 shadow">Save All Settings</button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <div id="section-profile" class="content-section hidden">
-                <div class="max-w-2xl bg-white rounded-xl shadow-sm border p-8">
+                <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border p-4 md:p-8">
                     <h2 class="font-bold text-xl mb-6 text-blue-900 border-b pb-2"><i class="fa-solid fa-user-pen"></i> Update Admin Profile</h2>
                     <form class="space-y-5">
-                        <div class="grid grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                             <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label><input type="text" id="prof_admin_name" value="Super Admin" class="w-full px-4 py-2 border rounded-lg"></div>
                             <div><label class="block text-sm font-semibold text-gray-700 mb-1">Mobile No.</label><input type="text" id="prof_admin_mobile" value="9876543210" class="w-full px-4 py-2 border rounded-lg"></div>
                         </div>
                         <div><label class="block text-sm font-semibold text-gray-700 mb-1">Admin Email ID (Login ID)</label><input type="email" id="prof_admin_email" value="admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg"></div>
                         <div class="border-t pt-5 mt-5">
                             <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-lock text-gray-500"></i> Change Password</h3>
-                            <div class="grid grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                 <div><label class="block text-sm text-gray-600 mb-1">New Password</label><input type="password" id="prof_new_pass" placeholder="Enter new password" class="w-full px-4 py-2 border rounded-lg"></div>
                                 <div><label class="block text-sm text-gray-600 mb-1">Confirm Password</label><input type="password" id="prof_conf_pass" placeholder="Re-enter password" class="w-full px-4 py-2 border rounded-lg"></div>
                             </div>
                         </div>
-                        <div class="mt-8 flex justify-end"><button type="button" onclick="saveAdminProfile()" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
+                        <div class="mt-8 flex justify-end"><button type="button" onclick="saveAdminProfile()" class="w-full md:w-auto bg-blue-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-800 shadow">Save Changes</button></div>
                     </form>
                 </div>
             </div>
@@ -3041,20 +3084,20 @@ admin_design = f"""
         <div class="bg-white w-full max-w-4xl h-[90vh] rounded-xl shadow-2xl flex flex-col print:h-auto print:shadow-none print:w-full">
             
             <div class="p-4 border-b flex justify-between items-center bg-blue-50 rounded-t-xl print:hidden">
-                <h3 class="text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> User Application Data</h3>
-                <div class="space-x-2">
-                    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded shadow font-bold hover:bg-gray-900"><i class="fa-solid fa-print"></i> Print Details</button>
-                    <button onclick="closeFullAppModal()" class="bg-red-500 text-white px-4 py-2 rounded shadow font-bold hover:bg-red-600"><i class="fa-solid fa-xmark"></i> Close</button>
+                <h3 class="text-lg md:text-xl font-bold text-blue-800"><i class="fa-solid fa-file-lines mr-2"></i> User Application Data</h3>
+                <div class="space-x-2 flex">
+                    <button onclick="window.print()" class="bg-gray-800 text-white px-3 md:px-4 py-2 rounded shadow font-bold hover:bg-gray-900 text-sm md:text-base"><i class="fa-solid fa-print"></i> Print</button>
+                    <button onclick="closeFullAppModal()" class="bg-red-500 text-white px-3 md:px-4 py-2 rounded shadow font-bold hover:bg-red-600 text-sm md:text-base"><i class="fa-solid fa-xmark"></i> Close</button>
                 </div>
             </div>
             
-            <div class="flex-1 overflow-y-auto p-8 print:overflow-visible print:p-0">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 print:overflow-visible print:p-0">
                 <div class="text-center mb-6 border-b-2 border-gray-800 pb-4">
-                    <h2 class="text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h2>
-                    <p class="font-bold text-lg text-gray-600">Applicant Full Details Form</p>
+                    <h2 class="text-xl md:text-2xl font-extrabold uppercase">Private Social Security Pension Scheme</h2>
+                    <p class="font-bold text-base md:text-lg text-gray-600">Applicant Full Details Form</p>
                 </div>
                 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6 bg-gray-50 p-4 rounded border">
                     <div><p class="text-gray-500 font-semibold text-xs">Application No</p><p id="v_appno" class="font-bold text-base text-blue-700"></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Scheme Category</p><p id="v_scheme" class="font-bold text-base"></p></div>
                     <div><p class="text-gray-500 font-semibold text-xs">Applied Date</p><p class="font-bold text-base">23-Oct-2026</p></div>
@@ -3062,7 +3105,7 @@ admin_design = f"""
                 </div>
                 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">1. Personal Details</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <div><p class="text-gray-500 text-xs">Full Name</p><p id="v_name" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Father's Name</p><p id="v_father" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Mother's Name</p><p id="v_mother" class="font-bold"></p></div>
@@ -3073,23 +3116,23 @@ admin_design = f"""
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">2. Address Information</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div><p class="text-gray-500 text-xs">State</p><p class="font-bold">Odisha</p></div>
                     <div><p class="text-gray-500 text-xs">District</p><p id="v_dist" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Block</p><p id="v_block" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">GP / Ward</p><p id="v_gp" class="font-bold"></p></div>
-                    <div class="col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p id="v_address" class="font-bold"></p></div>
+                    <div class="sm:col-span-2 md:col-span-4"><p class="text-gray-500 text-xs">Full Address</p><p id="v_address" class="font-bold"></p></div>
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">3. Income Certificate Details</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-blue-50 p-3 rounded">
                     <div><p class="text-gray-500 text-xs">Certificate No</p><p id="v_inc_cert" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Issued By</p><p id="v_inc_auth" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Detected Income</p><p id="v_inc_amount" class="font-bold text-red-600"></p></div>
                 </div>
 
                 <h4 class="font-bold text-lg border-b mb-3 text-gray-800">4. Bank & DBT Information</h4>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6 bg-green-50 p-3 rounded">
                     <div><p class="text-gray-500 text-xs">Bank Name</p><p id="v_bank" class="font-bold"></p></div>
                     <div><p class="text-gray-500 text-xs">Account No</p><p id="v_acc" class="font-bold tracking-wider"></p></div>
                     <div><p class="text-gray-500 text-xs">IFSC Code</p><p id="v_ifsc" class="font-bold"></p></div>
