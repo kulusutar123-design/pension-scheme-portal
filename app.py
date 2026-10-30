@@ -370,6 +370,14 @@ html_design = f"""
                 document.getElementById('notice_container').classList.remove('hidden');
                 document.getElementById('notice_marquee').innerText = notice;
             }}
+
+            // CONTACT DETAILS AUTO UPDATE
+            let cName = localStorage.getItem('contact_name');
+            let cMob = localStorage.getItem('contact_mobile');
+            let cEmail = localStorage.getItem('contact_email');
+            if(cName) document.getElementById('home_contact_name').innerText = cName;
+            if(cMob) document.getElementById('home_contact_mobile').innerText = cMob;
+            if(cEmail) document.getElementById('home_contact_email').innerText = cEmail;
         }});
     </script>
 
@@ -457,12 +465,21 @@ html_design = f"""
         </div>
     </section>
 
+    <!-- NEW CONTACT US SECTION (AUTO UPDATE FROM ADMIN) -->
     <section id="contact" class="container mx-auto px-4 py-12">
-        <div class="bg-blue-900 text-white rounded-xl p-8 shadow-xl text-center max-w-3xl mx-auto">
+        <div class="bg-blue-900 text-white rounded-xl p-8 shadow-xl text-center max-w-4xl mx-auto">
             <h2 class="text-3xl font-bold mb-4"><i class="fa-solid fa-envelope-open-text mr-2"></i> ଯୋଗାଯୋଗ (Contact Us)</h2>
-            <p class="mb-6 text-blue-200">For any inquiries, application support, or grievances, please reach out to us at our official email address.</p>
-            <div class="inline-block bg-white text-blue-900 px-6 py-4 rounded-lg font-bold text-xl shadow-inner">
-                <i class="fa-solid fa-envelope mr-2"></i> admin@kulusutar.in
+            <p class="mb-6 text-blue-200">For any inquiries, application support, or grievances, please reach out to us:</p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <div class="bg-white text-blue-900 px-4 py-3 rounded-lg font-bold text-lg shadow-inner flex items-center justify-center">
+                    <i class="fa-solid fa-user mr-2 text-xl"></i> <span id="home_contact_name">Admin Support</span>
+                </div>
+                <div class="bg-white text-blue-900 px-4 py-3 rounded-lg font-bold text-lg shadow-inner flex items-center justify-center">
+                    <i class="fa-solid fa-phone mr-2 text-xl"></i> <span id="home_contact_mobile">+91 9876543210</span>
+                </div>
+                <div class="bg-white text-blue-900 px-4 py-3 rounded-lg font-bold text-lg shadow-inner flex items-center justify-center">
+                    <i class="fa-solid fa-envelope mr-2 text-xl"></i> <span id="home_contact_email">admin@kulusutar.in</span>
+                </div>
             </div>
         </div>
     </section>
@@ -2269,6 +2286,11 @@ admin_design = f"""
             if(localStorage.getItem('reg_close_date')) document.getElementById('reg_close_date').value = localStorage.getItem('reg_close_date');
             if(localStorage.getItem('notice_text')) document.getElementById('notice_text').value = localStorage.getItem('notice_text');
 
+            // NEW CONTACT DETAILS
+            if(localStorage.getItem('contact_name')) document.getElementById('contact_name').value = localStorage.getItem('contact_name');
+            if(localStorage.getItem('contact_mobile')) document.getElementById('contact_mobile').value = localStorage.getItem('contact_mobile');
+            if(localStorage.getItem('contact_email')) document.getElementById('contact_email').value = localStorage.getItem('contact_email');
+
             loadAdminData();
             loadAdminProfile();
         }};
@@ -2287,7 +2309,12 @@ admin_design = f"""
             localStorage.setItem('reg_close_date', document.getElementById('reg_close_date').value);
             localStorage.setItem('notice_text', document.getElementById('notice_text').value);
 
-            alert('Settings Saved Successfully!');
+            // SAVE CONTACT DETAILS
+            localStorage.setItem('contact_name', document.getElementById('contact_name').value);
+            localStorage.setItem('contact_mobile', document.getElementById('contact_mobile').value);
+            localStorage.setItem('contact_email', document.getElementById('contact_email').value);
+
+            alert('Settings Saved Successfully! Home page contact details updated automatically.');
         }}
 
         function loadAdminProfile() {{
@@ -2913,6 +2940,23 @@ admin_design = f"""
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Home Page Running Notice (Marquee Text)</label>
                                 <textarea id="notice_text" rows="2" placeholder="Enter notice here... It will scroll on the home page." class="w-full px-4 py-2 border rounded-lg focus:ring-red-500 outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- NEW CONTACT DETAILS SECTION ADDED HERE -->
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-address-book text-blue-600"></i> Home Page Contact Details (Public)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-blue-50 p-4 rounded border border-blue-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Contact Name</label>
+                                <input type="text" id="contact_name" placeholder="e.g. Admin Support" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Mobile Number</label>
+                                <input type="text" id="contact_mobile" placeholder="e.g. +91 9876543210" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Email ID</label>
+                                <input type="email" id="contact_email" placeholder="e.g. admin@kulusutar.in" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
