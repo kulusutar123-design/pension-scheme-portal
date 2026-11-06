@@ -10,8 +10,15 @@ import json
 import os
 import threading
 import sqlite3
+import urllib.request
 
 app = FastAPI()
+
+# ==========================================
+# CASHFREE CREDENTIALS (ADDED AS REQUESTED)
+# ==========================================
+CASHFREE_APP_ID = "1515812276f3edeb0677e6e62642185151"
+CASHFREE_SECRET_KEY = "cfsk_ma_prod_1b755875b3e4253c4e2865ddd5f27524_fa5dfc25"
 
 # ==========================================
 # HEAVY SECURITY HEADERS (Anti-Hacking)
@@ -150,6 +157,49 @@ async def generate_payu_hash(txnid: str, amount: str, productinfo: str, firstnam
     hash_val = hashlib.sha512(hash_string.encode('utf-8')).hexdigest().lower()
     
     return {"hash": hash_val, "key": key}
+
+# ==========================================
+# LIVE CASHFREE ORDER API (NEWLY ADDED)
+# ==========================================
+@app.post("/api/cashfree_order")
+async def create_cashfree_order(req: Request):
+    try:
+        data = await req.json()
+        db_data = read_db()
+        app_id = db_data.get("cashfree_app_id", CASHFREE_APP_ID)
+        secret_key = db_data.get("cashfree_secret_key", CASHFREE_SECRET_KEY)
+        
+        order_id = "CF_" + str(data.get("txnid"))
+        amount = float(data.get("amount", 100.0))
+        
+        url = "https://api.cashfree.com/pg/orders"
+        headers = {
+            "x-client-id": app_id,
+            "x-client-secret": secret_key,
+            "x-api-version": "2023-08-01",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        payload = {
+            "order_id": order_id,
+            "order_amount": amount,
+            "order_currency": "INR",
+            "customer_details": {
+                "customer_id": str(data.get("appNo", "USER_001")),
+                "customer_name": str(data.get("firstname", "Applicant")),
+                "customer_email": str(data.get("email", "user@example.com")),
+                "customer_phone": str(data.get("phone", "9876543210"))
+            },
+            "order_meta": {
+                "return_url": str(data.get("surl"))
+            }
+        }
+        req_obj = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method="POST")
+        with urllib.request.urlopen(req_obj) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            return {"status": "success", "payment_session_id": res_data.get("payment_session_id"), "order_id": order_id}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 # ==========================================
 # LIVE GMAIL OTP SENDER API (UPDATED FOR PRIMARY INBOX)
@@ -1114,6 +1164,7 @@ user_dashboard_design = f"""
     <title>User Dashboard</title>
     {cloud_sync_script}
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         const stateLanguages = {{
@@ -1537,6 +1588,42 @@ user_dashboard_design = f"""
                 setTimeout(() => {{
                     window.location.href = "/payment_success";
                 }}, 1000);
+            }} else if(gateway === 'cashfree') {{
+                alert('Redirecting to Asali Cashfree Live Secure Payment Gateway...');
+                let txnid = "TXN" + new Date().getTime();
+                let email = document.getElementById('app_email').value || "user@example.com"; 
+                let phone = document.getElementById('app_mobile').value || "9876543210";
+                let surl = window.location.origin + "/payment_success";
+
+                try {{
+                    let response = await fetch('/api/cashfree_order', {{
+                        method: 'POST',
+                        headers: {{ 'Content-Type': 'application/json' }},
+                        body: JSON.stringify({{
+                            txnid: txnid,
+                            amount: amount,
+                            appNo: appNo,
+                            firstname: firstname,
+                            email: email,
+                            phone: phone,
+                            surl: surl
+                        }})
+                    }});
+                    let data = await response.json();
+                    if(data.status === 'success' && data.payment_session_id) {{
+                        const cashfree = Cashfree({{ mode: "production" }});
+                        cashfree.checkout({{
+                            paymentSessionId: data.payment_session_id,
+                            redirectTarget: "_self"
+                        }});
+                    }} else {{
+                        alert("Cashfree Session Redirect...");
+                        window.location.href = "/payment_success";
+                    }}
+                }} catch (error) {{
+                    alert("Error connecting to Cashfree Gateway. Proceeding...");
+                    window.location.href = "/payment_success";
+                }}
             }} else {{
                 alert('Redirecting to Asali PayU Live Secure Payment Gateway...');
                 let txnid = "TXN" + new Date().getTime();
@@ -1956,11 +2043,15 @@ user_dashboard_design = f"""
                 <div class="text-center">
                     <p class="text-sm font-semibold text-gray-500 mb-2">Select Payment Gateway & Proceed</p>
                     <div class="flex flex-col md:flex-row justify-center gap-4 mb-4">
-                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-blue-900 border-blue-200">
-                            <input type="radio" name="pay_gateway" value="razorpay" checked class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-purple-900 border-purple-200 bg-white">
+                            <input type="radio" name="pay_gateway" value="cashfree" checked class="w-5 h-5 text-purple-600 focus:ring-purple-500">
+                            <i class="fa-solid fa-bolt"></i> Cashfree
+                        </label>
+                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-blue-900 border-blue-200 bg-white">
+                            <input type="radio" name="pay_gateway" value="razorpay" class="w-5 h-5 text-blue-600 focus:ring-blue-500">
                             <i class="fa-solid fa-credit-card"></i> Razorpay
                         </label>
-                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-orange-700 border-orange-200">
+                        <label class="flex items-center justify-center gap-2 border p-3 rounded-lg cursor-pointer hover:bg-gray-50 font-bold text-orange-700 border-orange-200 bg-white">
                             <input type="radio" name="pay_gateway" value="payu" class="w-5 h-5 text-orange-500 focus:ring-orange-500">
                             <i class="fa-solid fa-wallet"></i> PayU
                         </label>
@@ -2300,6 +2391,8 @@ admin_design = f"""
             if(localStorage.getItem('payu_merchant_salt')) document.getElementById('payu_merchant_salt').value = localStorage.getItem('payu_merchant_salt');
             if(localStorage.getItem('rzp_key_id')) document.getElementById('rzp_key_id').value = localStorage.getItem('rzp_key_id');
             if(localStorage.getItem('rzp_key_secret')) document.getElementById('rzp_key_secret').value = localStorage.getItem('rzp_key_secret');
+            if(localStorage.getItem('cashfree_app_id')) document.getElementById('cashfree_app_id').value = localStorage.getItem('cashfree_app_id');
+            if(localStorage.getItem('cashfree_secret_key')) document.getElementById('cashfree_secret_key').value = localStorage.getItem('cashfree_secret_key');
             if(localStorage.getItem('payout_api_key')) document.getElementById('payout_api_key').value = localStorage.getItem('payout_api_key');
             if(localStorage.getItem('payout_api_secret')) document.getElementById('payout_api_secret').value = localStorage.getItem('payout_api_secret');
             
@@ -2323,6 +2416,8 @@ admin_design = f"""
             localStorage.setItem('payu_merchant_salt', document.getElementById('payu_merchant_salt').value);
             localStorage.setItem('rzp_key_id', document.getElementById('rzp_key_id').value);
             localStorage.setItem('rzp_key_secret', document.getElementById('rzp_key_secret').value);
+            localStorage.setItem('cashfree_app_id', document.getElementById('cashfree_app_id').value);
+            localStorage.setItem('cashfree_secret_key', document.getElementById('cashfree_secret_key').value);
             localStorage.setItem('payout_api_key', document.getElementById('payout_api_key').value);
             localStorage.setItem('payout_api_secret', document.getElementById('payout_api_secret').value);
             
@@ -3009,6 +3104,19 @@ admin_design = f"""
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Registration Base Fee Amount (₹)</label>
                                 <input type="number" id="app_fee" value="100" class="w-full px-4 py-2 border rounded-lg">
                                 <p class="text-xs text-gray-500 mt-1">SC/ST & Age > 80 get auto 50% discount</p>
+                            </div>
+                        </div>
+
+                        <!-- CASHFREE GATEWAY KEYS ADDED HERE -->
+                        <h3 class="font-bold text-gray-800 mb-3 mt-6"><i class="fa-solid fa-bolt text-purple-600"></i> Cashfree Payment Gateway Keys</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-purple-50 p-4 rounded border border-purple-100">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Cashfree App ID</label>
+                                <input type="password" id="cashfree_app_id" value="1515812276f3edeb0677e6e62642185151" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Cashfree Secret Key</label>
+                                <input type="password" id="cashfree_secret_key" value="cfsk_ma_prod_1b755875b3e4253c4e2865ddd5f27524_fa5dfc25" class="w-full px-4 py-2 border rounded-lg">
                             </div>
                         </div>
 
