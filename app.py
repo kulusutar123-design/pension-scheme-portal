@@ -21,6 +21,16 @@ CASHFREE_APP_ID = "1515812276f3edeb0677e6e62642185151"
 CASHFREE_SECRET_KEY = "cfsk_ma_prod_1b755875b3e4253c4e2865ddd5f27524_fa5dfc25"
 
 # ==========================================
+# WHATSAPP DEFAULT CONFIG (GOPABANDHU PENSION YOJANA)
+# ==========================================
+DEFAULT_WA_PHONE_NUMBER_ID = "1102595176278679"
+DEFAULT_WA_SENDER_NUMBER = "+919522410504"
+DEFAULT_WA_WABA_ID = "2466243887173048"
+DEFAULT_WA_API_URL = os.getenv("WA_API_URL", "")
+DEFAULT_WA_TOKEN = os.getenv("WA_ACCESS_TOKEN", "")
+DEFAULT_WA_TEMPLATE = os.getenv("WA_TEMPLATE_NAME", "gopabandhu_pension_update")
+
+# ==========================================
 # HEAVY SECURITY HEADERS (Anti-Hacking)
 # ==========================================
 @app.middleware("http")
@@ -201,12 +211,13 @@ async def create_cashfree_order(req: Request):
         return {"status": "error", "message": str(e)}
 
 # ==========================================
-# LIVE GMAIL OTP & NOTIFICATION SENDER API
+# LIVE GMAIL OTP & NOTIFICATION SENDER API + WHATSAPP GOPABANDHU PENSION YOJANA DISPATCH
 # ==========================================
 class EmailRequest(BaseModel):
     email: str
     otp: str
     subject: str
+    phone: str = ""
 
 class NotificationRequest(BaseModel):
     email: str
@@ -214,12 +225,88 @@ class NotificationRequest(BaseModel):
     message: str
     app_no: str = ""
     status_label: str = ""
+    phone: str = ""
 
 SENDER_EMAIL = "privatesocialsecuritypensionsc@gmail.com" 
-SENDER_PASSWORD = "gzafqvjphaftybhy" 
+SENDER_PASSWORD = "gzafqvjphaftybhy"
+
+def _normalize_phone(phone: str) -> str:
+    digits = "".join(ch for ch in str(phone or "") if ch.isdigit())
+    if len(digits) == 10:
+        return "91" + digits
+    return digits
+
+def _dispatch_whatsapp_gopabandhu(phone: str, body_text: str, app_no: str = "", status_label: str = ""):
+    db_data = read_db()
+    wa_enabled = db_data.get("wa_enabled", "true").lower() != "false"
+    if not wa_enabled:
+        return {"status": "disabled"}
+
+    clean_phone = _normalize_phone(phone)
+    if not clean_phone:
+        return {"status": "skipped", "reason": "no_phone"}
+
+    phone_number_id = db_data.get("wa_phone_number_id") or DEFAULT_WA_PHONE_NUMBER_ID
+    access_token = db_data.get("wa_access_token") or DEFAULT_WA_TOKEN
+    api_url = db_data.get("wa_api_url") or DEFAULT_WA_API_URL
+    template_name = db_data.get("wa_template_name") or DEFAULT_WA_TEMPLATE
+
+    final_message = f"Gopabandhu Pension Yojana\n{body_text}".strip()
+
+    try:
+        if api_url:
+            payload = {
+                "phone": clean_phone,
+                "sender": db_data.get("wa_sender_number") or DEFAULT_WA_SENDER_NUMBER,
+                "phone_number_id": phone_number_id,
+                "template": template_name,
+                "message": final_message,
+                "app_no": app_no,
+                "status_label": status_label
+            }
+            headers = {"Content-Type": "application/json", "Accept": "application/json"}
+            if access_token:
+                headers["Authorization"] = f"Bearer {access_token}"
+            req_obj = urllib.request.Request(api_url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
+            with urllib.request.urlopen(req_obj, timeout=10) as resp:
+                return {"status": "sent", "provider": "custom_api", "response": resp.read().decode("utf-8")}
+
+        if access_token and phone_number_id:
+            url = f"https://graph.facebook.com/v20.0/{phone_number_id}/messages"
+            payload = {
+                "messaging_product": "whatsapp",
+                "to": clean_phone,
+                "type": "text",
+                "text": {"preview_url": False, "body": final_message}
+            }
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+            req_obj = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
+            with urllib.request.urlopen(req_obj, timeout=10) as resp:
+                return {"status": "sent", "provider": "meta_cloud", "response": resp.read().decode("utf-8")}
+
+        # Log queued WhatsApp message in SQLite storage when token/url not yet set
+        log_key = f"wa_outbox_{app_no or 'MSG'}_{clean_phone}"
+        write_db_key(log_key, json.dumps({
+            "to": clean_phone,
+            "sender": db_data.get("wa_sender_number") or DEFAULT_WA_SENDER_NUMBER,
+            "template": template_name,
+            "message": final_message
+        }))
+        return {"status": "queued_gopabandhu_pension_yojana", "to": clean_phone, "message": final_message}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/send_email")
 async def send_email_api(req: EmailRequest):
+    wa_res = None
+    if req.phone:
+        wa_res = _dispatch_whatsapp_gopabandhu(
+            req.phone,
+            f"Gopabandhu Pension Yojana OTP: {req.otp} (Valid for 5 minutes. Do not share with anyone.)"
+        )
     try:
         msg = MIMEMultipart('alternative')
         msg['From'] = f"Gopabandhu Pension Yojana <{SENDER_EMAIL}>"
@@ -251,12 +338,20 @@ async def send_email_api(req: EmailRequest):
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.send_message(msg)
         server.quit()
-        return {"status": "success"}
+        return {"status": "success", "whatsapp": wa_res}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": str(e), "whatsapp": wa_res}
 
 @app.post("/api/send_notification")
 async def send_notification_api(req: NotificationRequest):
+    db_data = read_db()
+    target_phone = req.phone
+    if not target_phone and req.app_no:
+        target_phone = db_data.get("user_mobile_" + str(req.app_no).upper(), "")
+
+    wa_body = f"Gopabandhu Pension Yojana\nApplication No: {req.app_no}\nStatus: {req.status_label}\n{req.message}".strip()
+    wa_res = _dispatch_whatsapp_gopabandhu(target_phone, wa_body, app_no=req.app_no, status_label=req.status_label)
+
     try:
         msg = MIMEMultipart('alternative')
         msg['From'] = f"Gopabandhu Pension Yojana <{SENDER_EMAIL}>"
@@ -288,9 +383,21 @@ async def send_notification_api(req: NotificationRequest):
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.send_message(msg)
         server.quit()
-        return {"status": "success"}
+        return {"status": "success", "whatsapp": wa_res}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": str(e), "whatsapp": wa_res}
+
+@app.post("/api/send_whatsapp")
+async def send_whatsapp_direct_api(req: Request):
+    data = await req.json()
+    msg_text = data.get("message") or f"Gopabandhu Pension Yojana update for {data.get('app_no', '')}: {data.get('status_label', '')}"
+    res = _dispatch_whatsapp_gopabandhu(
+        data.get("phone", ""),
+        msg_text,
+        app_no=data.get("app_no", ""),
+        status_label=data.get("status_label", "")
+    )
+    return res
 
 # ==========================================
 # PAYMENT SUCCESS / FAILURE ROUTES
@@ -793,20 +900,21 @@ user_register_design = f"""
         
         async function generateOTP() {{
             let emailId = document.getElementById('reg_email').value;
+            let mobileNo = document.getElementById('reg_mobile').value;
             if(!emailId) {{ alert("Please enter Email ID first to get OTP."); return; }}
             currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('otpDisplay').innerText = `Sending Real OTP to ${{emailId}}... (Demo OTP: ${{currentOTP}})`;
+            document.getElementById('otpDisplay').innerText = `Sending Real OTP to ${{emailId}} & WhatsApp... (Demo OTP: ${{currentOTP}})`;
             document.getElementById('otpDisplay').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse mt-2";
             document.getElementById('otpDisplay').classList.remove('hidden');
             try {{
                 let response = await fetch('/api/send_email', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ email: emailId, otp: currentOTP, subject: "Your Registration OTP - Gopabandhu Pension Yojana" }})
+                    body: JSON.stringify({{ email: emailId, phone: mobileNo, otp: currentOTP, subject: "Your Registration OTP - Gopabandhu Pension Yojana" }})
                 }});
                 let data = await response.json();
                 if(data.status === 'success') {{
-                    document.getElementById('otpDisplay').innerText = `Real OTP sent to ${{emailId}}! (Demo OTP: ${{currentOTP}})`;
+                    document.getElementById('otpDisplay').innerText = `Real OTP sent to ${{emailId}} & WhatsApp! (Demo OTP: ${{currentOTP}})`;
                     document.getElementById('otpDisplay').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm mt-2";
                 }} else {{
                     document.getElementById('otpDisplay').innerText = `Email failed. (Demo OTP: ${{currentOTP}})`;
@@ -983,20 +1091,21 @@ user_login_design = f"""
         async function sendForgotOTP() {{
             let appNo = document.getElementById('forgot_app_no').value.trim().toUpperCase();
             let userEmail = localStorage.getItem('user_email_' + appNo);
+            let userPhone = localStorage.getItem('user_mobile_' + appNo) || '';
             if (!userEmail) {{ alert("Application Number not found in system!"); return; }}
             forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{userEmail}}... (Demo OTP: ${{forgotOTP}})`;
+            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{userEmail}} & WhatsApp... (Demo OTP: ${{forgotOTP}})`;
             document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
             document.getElementById('forgot_otp_display').classList.remove('hidden');
             try {{
                 let response = await fetch('/api/send_email', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ email: userEmail, otp: forgotOTP, subject: "Password Reset OTP - Gopabandhu Pension Yojana" }})
+                    body: JSON.stringify({{ email: userEmail, phone: userPhone, otp: forgotOTP, subject: "Password Reset OTP - Gopabandhu Pension Yojana" }})
                 }});
                 let data = await response.json();
                 if(data.status === 'success') {{
-                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${{userEmail}}! (Demo OTP: ${{forgotOTP}})`;
+                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${{userEmail}} & WhatsApp! (Demo OTP: ${{forgotOTP}})`;
                     document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
                     document.getElementById('step2_forgot').classList.remove('hidden');
                     startOtpTimer();
@@ -1999,7 +2108,7 @@ admin_login_design = f"""
             }}
 
             forgotOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{email}}... (Demo OTP: ${{forgotOTP}})`;
+            document.getElementById('forgot_otp_display').innerText = `Sending Real OTP to ${{email}} & WhatsApp... (Demo OTP: ${{forgotOTP}})`;
             document.getElementById('forgot_otp_display').className = "text-center bg-yellow-100 text-yellow-800 font-bold p-2 rounded text-sm animate-pulse";
             document.getElementById('forgot_otp_display').classList.remove('hidden');
             
@@ -2007,11 +2116,11 @@ admin_login_design = f"""
                 let response = await fetch('/api/send_email', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ email: email, otp: forgotOTP, subject: "Officer/Admin Password Reset OTP - Gopabandhu Pension Yojana" }})
+                    body: JSON.stringify({{ email: email, phone: mobile, otp: forgotOTP, subject: "Officer/Admin Password Reset OTP - Gopabandhu Pension Yojana" }})
                 }});
                 let data = await response.json();
                 if(data.status === 'success') {{
-                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${{email}}! (Demo OTP: ${{forgotOTP}})`;
+                    document.getElementById('forgot_otp_display').innerText = `Real OTP sent to ${{email}} & WhatsApp! (Demo OTP: ${{forgotOTP}})`;
                     document.getElementById('forgot_otp_display').className = "text-center bg-green-100 text-green-800 font-bold p-2 rounded text-sm";
                     document.getElementById('step2_forgot').classList.remove('hidden');
                     startOtpTimer();
@@ -2149,7 +2258,7 @@ admin_login_design = f"""
 """
 
 # ==========================================
-# 7. FULL ADMIN & OFFICER DASHBOARD (BLOCK -> DIST -> STATE -> SYSTEM -> ADMIN)
+# 7. FULL ADMIN & OFFICER DASHBOARD (STRICT BLOCK -> DIST -> STATE -> SYSTEM -> ADMIN + WHATSAPP & EMAIL)
 # ==========================================
 admin_design = f"""
 <!DOCTYPE html>
@@ -2178,9 +2287,16 @@ admin_design = f"""
         window.onload = function() {{
             document.getElementById('welcome_admin_name').innerText = currentSession.name + " (" + currentSession.role.toUpperCase() + (currentSession.block ? " - " + currentSession.block : (currentSession.district ? " - " + currentSession.district : "")) + ")";
             
-            // Hide Admin-only menus for Block/Dist/State Officers
+            // STRICT ROLE-BASED MENU & TAB VISIBILITY:
+            // Block login sees ONLY Block Verify & Rejected Box; District login sees ONLY District Verify & Rejected Box; State login sees ONLY State Verify & Rejected Box
             if(currentSession.role !== 'super_admin') {{
                 document.querySelectorAll('.admin-only-menu').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.role-flow-item').forEach(el => {{
+                    let allowedRoles = (el.getAttribute('data-roles') || '').split(',');
+                    if(!allowedRoles.includes(currentSession.role)) {{
+                        el.classList.add('hidden');
+                    }}
+                }});
             }}
 
             populateOfficerDistricts();
@@ -2202,20 +2318,35 @@ admin_design = f"""
             if(localStorage.getItem('contact_mobile')) document.getElementById('contact_mobile').value = localStorage.getItem('contact_mobile');
             if(localStorage.getItem('contact_email')) document.getElementById('contact_email').value = localStorage.getItem('contact_email');
 
+            // WhatsApp Settings Load
+            if(localStorage.getItem('wa_phone_number_id')) document.getElementById('wa_phone_number_id').value = localStorage.getItem('wa_phone_number_id');
+            if(localStorage.getItem('wa_sender_number')) document.getElementById('wa_sender_number').value = localStorage.getItem('wa_sender_number');
+            if(localStorage.getItem('wa_access_token')) document.getElementById('wa_access_token').value = localStorage.getItem('wa_access_token');
+            if(localStorage.getItem('wa_api_url')) document.getElementById('wa_api_url').value = localStorage.getItem('wa_api_url');
+            if(localStorage.getItem('wa_template_name')) document.getElementById('wa_template_name').value = localStorage.getItem('wa_template_name');
+            if(localStorage.getItem('wa_enabled')) document.getElementById('wa_enabled').value = localStorage.getItem('wa_enabled');
+
             loadAdminData();
             loadAdminProfile();
         }};
 
         async function sendUserEmailUpdate(appNo, statusLabel, message) {{
-            let userEmail = localStorage.getItem('user_email_' + appNo);
-            if(!userEmail) return;
+            let userEmail = localStorage.getItem('user_email_' + appNo) || '';
+            let userPhone = localStorage.getItem('user_mobile_' + appNo) || '';
             try {{
                 await fetch('/api/send_notification', {{
                     method: 'POST',
                     headers: {{ 'Content-Type': 'application/json' }},
-                    body: JSON.stringify({{ email: userEmail, subject: "Gopabandhu Pension Yojana Update - " + appNo, status_label: statusLabel, message: message, app_no: appNo }})
+                    body: JSON.stringify({{
+                        email: userEmail,
+                        phone: userPhone,
+                        subject: "Gopabandhu Pension Yojana Update - " + appNo,
+                        status_label: statusLabel,
+                        message: "Gopabandhu Pension Yojana: " + message,
+                        app_no: appNo
+                    }})
                 }});
-            }} catch(e) {{ console.log("Email notify error", e); }}
+            }} catch(e) {{ console.log("Email/WhatsApp notify error", e); }}
         }}
 
         function addAppHistory(appNo, stage, status, remark) {{
@@ -2308,6 +2439,15 @@ admin_design = f"""
             localStorage.setItem('contact_name', document.getElementById('contact_name').value);
             localStorage.setItem('contact_mobile', document.getElementById('contact_mobile').value);
             localStorage.setItem('contact_email', document.getElementById('contact_email').value);
+
+            // WhatsApp Settings Save
+            localStorage.setItem('wa_phone_number_id', document.getElementById('wa_phone_number_id').value);
+            localStorage.setItem('wa_sender_number', document.getElementById('wa_sender_number').value);
+            localStorage.setItem('wa_access_token', document.getElementById('wa_access_token').value);
+            localStorage.setItem('wa_api_url', document.getElementById('wa_api_url').value);
+            localStorage.setItem('wa_template_name', document.getElementById('wa_template_name').value);
+            localStorage.setItem('wa_enabled', document.getElementById('wa_enabled').value);
+
             alert('Settings Saved Successfully!');
         }}
 
@@ -2337,6 +2477,10 @@ admin_design = f"""
         }}
 
         function switchTab(tabId, element) {{
+            if(currentSession.role === 'block' && !['dashboard', 'blockverify', 'rejected'].includes(tabId)) return;
+            if(currentSession.role === 'district' && !['dashboard', 'distverify', 'rejected'].includes(tabId)) return;
+            if(currentSession.role === 'state' && !['dashboard', 'stateverify', 'rejected'].includes(tabId)) return;
+
             document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('section-' + tabId).classList.remove('hidden');
             document.querySelectorAll('.menu-link').forEach(l => {{ l.classList.remove('bg-blue-700', 'text-white'); l.classList.add('text-slate-300'); }});
@@ -2357,16 +2501,28 @@ admin_design = f"""
                 let uDist = localStorage.getItem('u_dist_' + appNo) || '';
                 let uBlock = localStorage.getItem('u_block_' + appNo) || '';
                 let uState = localStorage.getItem('u_state_' + appNo) || 'Odisha';
+                let status = localStorage.getItem('app_status_' + appNo) || 'block_pending';
 
-                // Filter by Officer Jurisdiction
-                if(currentSession.role === 'block' && (uBlock !== currentSession.block || uDist !== currentSession.district)) return;
-                if(currentSession.role === 'district' && uDist !== currentSession.district) return;
-                if(currentSession.role === 'state' && uState !== currentSession.state) return;
+                // STRICT ROLE FILTERING:
+                // Block login sees ONLY block_pending in its own block/district
+                if(currentSession.role === 'block') {{
+                    if(uBlock !== currentSession.block || uDist !== currentSession.district) return;
+                    if(status !== 'block_pending' && status !== 'rejected') return;
+                }}
+                // District login sees ONLY dist_pending in its own district
+                if(currentSession.role === 'district') {{
+                    if(uDist !== currentSession.district) return;
+                    if(status !== 'dist_pending' && status !== 'rejected') return;
+                }}
+                // State login sees ONLY state_pending in its own state
+                if(currentSession.role === 'state') {{
+                    if(uState !== currentSession.state) return;
+                    if(status !== 'state_pending' && status !== 'rejected') return;
+                }}
 
                 total++;
                 wallet += parseFloat(localStorage.getItem('paid_amount_' + appNo) || '100');
 
-                let status = localStorage.getItem('app_status_' + appNo) || 'block_pending';
                 let name = localStorage.getItem('user_full_name_' + appNo) || 'N/A';
                 let scheme = localStorage.getItem('u_scheme_' + appNo) || 'N/A';
                 let bankName = localStorage.getItem('u_bank_' + appNo) || 'N/A';
@@ -2491,28 +2647,28 @@ admin_design = f"""
             if(payHtml) document.getElementById('payments_tbody').innerHTML = payHtml;
         }}
 
-        // MULTI-TIER APPROVAL ACTIONS WITH AUTO EMAIL
+        // MULTI-TIER APPROVAL ACTIONS WITH AUTO EMAIL + WHATSAPP (GOPABANDHU PENSION YOJANA)
         async function approveBlock(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'dist_pending');
             addAppHistory(appNo, "Block Officer Verification", "Approved", "Approved by Block Officer (" + currentSession.name + "). Forwarded to District Officer.");
-            await sendUserEmailUpdate(appNo, "Block Verification Approved", "Your application has been approved at Block Level and forwarded to District Officer.");
-            alert("Block Approved! Sent to District Officer & Email sent to Applicant.");
+            await sendUserEmailUpdate(appNo, "Block Verification Approved", "Gopabandhu Pension Yojana: Your application has been approved at Block Level and forwarded to District Officer.");
+            alert("Block Approved! Sent to District Officer & Email/WhatsApp sent to Applicant.");
             location.reload();
         }}
 
         async function approveDistrict(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'state_pending');
             addAppHistory(appNo, "District Officer Verification", "Approved", "Approved by District Officer (" + currentSession.name + "). Forwarded to State Officer.");
-            await sendUserEmailUpdate(appNo, "District Verification Approved", "Your application has been approved at District Level and forwarded to State Officer.");
-            alert("District Approved! Sent to State Officer & Email sent to Applicant.");
+            await sendUserEmailUpdate(appNo, "District Verification Approved", "Gopabandhu Pension Yojana: Your application has been approved at District Level and forwarded to State Officer.");
+            alert("District Approved! Sent to State Officer & Email/WhatsApp sent to Applicant.");
             location.reload();
         }}
 
         async function approveState(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'sys_pending');
             addAppHistory(appNo, "State Officer Verification", "Approved", "Approved by State Officer (" + currentSession.name + "). Forwarded to System Verification.");
-            await sendUserEmailUpdate(appNo, "State Verification Approved", "Your application has been approved at State Level and forwarded to System Verification.");
-            alert("State Approved! Sent to System Verification & Email sent to Applicant.");
+            await sendUserEmailUpdate(appNo, "State Verification Approved", "Gopabandhu Pension Yojana: Your application has been approved at State Level and forwarded to System Verification.");
+            alert("State Approved! Sent to System Verification & Email/WhatsApp sent to Applicant.");
             location.reload();
         }}
 
@@ -2561,7 +2717,7 @@ admin_design = f"""
             let appNo = window.current_modal_appNo;
             localStorage.setItem('app_status_' + appNo, 'admin_pending');
             addAppHistory(appNo, "System Verification", "Approved", "Documents & data verified by System.");
-            await sendUserEmailUpdate(appNo, "System Verification Passed", "Your uploaded documents and data passed System Verification.");
+            await sendUserEmailUpdate(appNo, "System Verification Passed", "Gopabandhu Pension Yojana: Your uploaded documents and data passed System Verification.");
             alert("System Approved! Forwarded to Admin.");
             location.reload();
         }}
@@ -2569,7 +2725,7 @@ admin_design = f"""
         async function forwardToSuperAdmin(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'super_admin_pending');
             addAppHistory(appNo, "Admin Action", "Approved", "Forwarded to Super Admin for Final Approval.");
-            await sendUserEmailUpdate(appNo, "Admin Verification Approved", "Your application has been forwarded to Super Admin for final approval.");
+            await sendUserEmailUpdate(appNo, "Admin Verification Approved", "Gopabandhu Pension Yojana: Your application has been forwarded to Super Admin for final approval.");
             alert("Forwarded to Super Admin!");
             location.reload();
         }}
@@ -2577,8 +2733,8 @@ admin_design = f"""
         async function finalApprove(appNo) {{
             localStorage.setItem('app_status_' + appNo, 'approved');
             addAppHistory(appNo, "Super Admin Final Approval", "Approved", "Congratulations! Approved as Active Beneficiary.");
-            await sendUserEmailUpdate(appNo, "Application Finally Approved!", "Congratulations! Your Gopabandhu Pension Yojana application is approved.");
-            alert("Super Admin Approved! User notified via Email.");
+            await sendUserEmailUpdate(appNo, "Application Finally Approved!", "Gopabandhu Pension Yojana: Congratulations! Your application is approved.");
+            alert("Super Admin Approved! User notified via Email & WhatsApp.");
             location.reload();
         }}
 
@@ -2589,8 +2745,8 @@ admin_design = f"""
                 localStorage.setItem('app_status_' + targetApp, 'rejected');
                 localStorage.setItem('reject_reason_' + targetApp, (byRole ? byRole + ": " : "") + reason);
                 addAppHistory(targetApp, (byRole || "Officer") + " Verification", "Rejected", reason);
-                await sendUserEmailUpdate(targetApp, "Application Rejected", "Your application was rejected by " + (byRole || "Officer") + ". Remark: " + reason);
-                alert("Application Rejected & Email sent to User.");
+                await sendUserEmailUpdate(targetApp, "Application Rejected", "Gopabandhu Pension Yojana: Your application was rejected by " + (byRole || "Officer") + ". Remark: " + reason);
+                alert("Application Rejected & Email/WhatsApp sent to User.");
                 location.reload();
             }}
         }}
@@ -2666,7 +2822,7 @@ admin_design = f"""
                 localStorage.setItem('pension_sent_' + appNo, 'true');
                 localStorage.setItem('app_status_' + appNo, 'pension_sent');
                 addAppHistory(appNo, "Pension Disbursement", "Paid", "Manual Payment UTR: " + utr);
-                sendUserEmailUpdate(appNo, "Pension Paid!", "Your pension has been credited. UTR: " + utr);
+                sendUserEmailUpdate(appNo, "Pension Paid!", "Gopabandhu Pension Yojana: Your pension has been credited. UTR: " + utr);
                 alert("Manual Payment Saved!");
                 location.reload();
             }}
@@ -2678,7 +2834,7 @@ admin_design = f"""
             localStorage.setItem('pension_sent_' + appNo, 'true');
             localStorage.setItem('app_status_' + appNo, 'pension_sent');
             addAppHistory(appNo, "Pension Disbursement", "Paid", "DBT Auto Transfer Txn: " + txnId);
-            sendUserEmailUpdate(appNo, "Pension Paid via DBT!", "Rs." + amount + " credited. Txn ID: " + txnId);
+            sendUserEmailUpdate(appNo, "Pension Paid via DBT!", "Gopabandhu Pension Yojana: Rs." + amount + " credited. Txn ID: " + txnId);
             alert("DBT Transfer Success! Txn ID: " + txnId);
             location.reload();
         }}
@@ -2733,13 +2889,13 @@ admin_design = f"""
                 <li><a href="#" onclick="switchTab('dashboard', this)" class="menu-link flex items-center px-4 py-2.5 bg-blue-700 text-white rounded-lg"><i class="fa-solid fa-gauge w-6 mr-2"></i> Dashboard</a></li>
                 
                 <li class="mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase">Verification Flow</span></li>
-                <li><a href="#" onclick="switchTab('blockverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-building-user w-6 mr-2"></i> Block Verify (Step 1)</a></li>
-                <li><a href="#" onclick="switchTab('distverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-landmark w-6 mr-2"></i> District Verify (Step 2)</a></li>
-                <li><a href="#" onclick="switchTab('stateverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-flag w-6 mr-2"></i> State Verify (Step 3)</a></li>
+                <li class="role-flow-item" data-roles="block"><a href="#" onclick="switchTab('blockverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-building-user w-6 mr-2"></i> Block Verify (Step 1)</a></li>
+                <li class="role-flow-item" data-roles="district"><a href="#" onclick="switchTab('distverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-landmark w-6 mr-2"></i> District Verify (Step 2)</a></li>
+                <li class="role-flow-item" data-roles="state"><a href="#" onclick="switchTab('stateverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-flag w-6 mr-2"></i> State Verify (Step 3)</a></li>
                 <li class="admin-only-menu"><a href="#" onclick="switchTab('sysverify', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-microchip w-6 mr-2"></i> System Verify (Step 4)</a></li>
                 <li class="admin-only-menu"><a href="#" onclick="switchTab('adminapprove', this)" class="menu-link flex items-center px-4 py-2.5 text-slate-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-file-signature w-6 mr-2"></i> Admin Action (Step 5)</a></li>
                 <li class="admin-only-menu"><a href="#" onclick="switchTab('superadmin', this)" class="menu-link flex items-center px-4 py-2.5 text-purple-300 hover:bg-purple-900 rounded-lg"><i class="fa-solid fa-gavel w-6 mr-2"></i> Super Admin (Final)</a></li>
-                <li><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-2.5 text-red-400 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
+                <li class="role-flow-item" data-roles="block,district,state"><a href="#" onclick="switchTab('rejected', this)" class="menu-link flex items-center px-4 py-2.5 text-red-400 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-trash-can w-6 mr-2"></i> Rejected Box</a></li>
 
                 <li class="admin-only-menu mt-2 border-t border-slate-700 pt-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase">Admin Management</span></li>
                 <li class="admin-only-menu"><a href="#" onclick="switchTab('officers', this)" class="menu-link flex items-center px-4 py-2.5 text-yellow-300 hover:bg-slate-800 rounded-lg"><i class="fa-solid fa-user-tie w-6 mr-2"></i> Manage Officers</a></li>
@@ -2910,7 +3066,7 @@ admin_design = f"""
             </div>
 
             <div id="section-settings" class="content-section hidden bg-white rounded-xl shadow-sm border p-6">
-                <h2 class="font-bold text-xl mb-4 text-blue-900 border-b pb-2">Portal Settings & API Keys</h2>
+                <h2 class="font-bold text-xl mb-4 text-blue-900 border-b pb-2">Portal Settings, WhatsApp & API Keys</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div><label class="text-xs font-bold">Reg Start Date</label><input type="date" id="reg_start_date" class="w-full border p-2 rounded"></div>
                     <div><label class="text-xs font-bold">Reg Close Date</label><input type="date" id="reg_close_date" class="w-full border p-2 rounded"></div>
@@ -2919,6 +3075,16 @@ admin_design = f"""
                     <div><label class="text-xs font-bold">Contact Mobile</label><input type="text" id="contact_mobile" class="w-full border p-2 rounded"></div>
                     <div><label class="text-xs font-bold">Contact Email</label><input type="email" id="contact_email" class="w-full border p-2 rounded"></div>
                     <div><label class="text-xs font-bold">Base Fee (₹)</label><input type="number" id="app_fee" value="100" class="w-full border p-2 rounded"></div>
+
+                    <!-- WHATSAPP SETTINGS FOR GOPABANDHU PENSION YOJANA -->
+                    <div class="md:col-span-2 border-t pt-3 mt-2"><h3 class="font-bold text-sm text-green-700"><i class="fa-brands fa-whatsapp mr-1"></i> WhatsApp Message Settings (Gopabandhu Pension Yojana)</h3></div>
+                    <div><label class="text-xs font-bold">WhatsApp Auto Message</label><select id="wa_enabled" class="w-full border p-2 rounded bg-green-50 font-bold"><option value="true">Enabled (Mail + WhatsApp)</option><option value="false">Disabled</option></select></div>
+                    <div><label class="text-xs font-bold">WhatsApp Phone Number ID</label><input type="text" id="wa_phone_number_id" value="1102595176278679" class="w-full border p-2 rounded"></div>
+                    <div><label class="text-xs font-bold">WhatsApp Sender Number</label><input type="text" id="wa_sender_number" value="+919522410504" class="w-full border p-2 rounded"></div>
+                    <div><label class="text-xs font-bold">WhatsApp Template / Message Tag</label><input type="text" id="wa_template_name" value="gopabandhu_pension_update" class="w-full border p-2 rounded"></div>
+                    <div><label class="text-xs font-bold">WhatsApp API URL (Optional)</label><input type="text" id="wa_api_url" placeholder="https://..." class="w-full border p-2 rounded"></div>
+                    <div><label class="text-xs font-bold">WhatsApp Access / API Token</label><input type="password" id="wa_access_token" placeholder="Enter WhatsApp Token" class="w-full border p-2 rounded"></div>
+
                     <div><label class="text-xs font-bold">Cashfree App ID</label><input type="password" id="cashfree_app_id" value="1515812276f3edeb0677e6e62642185151" class="w-full border p-2 rounded"></div>
                     <div><label class="text-xs font-bold">Cashfree Secret</label><input type="password" id="cashfree_secret_key" value="cfsk_ma_prod_1b755875b3e4253c4e2865ddd5f27524_fa5dfc25" class="w-full border p-2 rounded"></div>
                     <div><label class="text-xs font-bold">PayU Key</label><input type="password" id="payu_merchant_key" value="OLBUPA" class="w-full border p-2 rounded"></div>
